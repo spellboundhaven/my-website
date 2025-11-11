@@ -62,17 +62,17 @@ export const propertyData = {
     ],
     images: [
       {
-        src: "/images/hero/livingroom.jpg",
+        src: "/images/rooms/livingroom/3.jpg",
         alt: "Spacious living room",
         caption: "Large family gathering space"
       },
       {
-        src: "/images/hero/arcade.jpg",
-        alt: "Exterior view of Spellbound Haven",
+        src: "/images/amenities/20.jpg",
+        alt: "Marvel arcade game room",
         caption: "Marvel arcade game room"
       },     
       {
-        src: "/images/hero/1.jpg",
+        src: "/images/rooms/loft/1.jpg",
         alt: "Entertainment Loft",
         caption: "Cozy entertainment loft space"
       }
@@ -592,8 +592,8 @@ export const propertyData = {
 
   contact: {
     phone: "+1 (555) 123-4567",
-    email: "info@spellboundhaven.com",
-    address: "123 Disney Way, Orlando, FL 32830",
+    email: "spellboundhaven.disney@gmail.com",
+    address: "Windsor Island Resort, Orlando, FL",
     hours: "Available 24/7 for bookings and Disney vacation planning"
   }
 }

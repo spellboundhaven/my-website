@@ -133,7 +133,7 @@ spellbound-haven-website/
 ## Support
 
 For questions or support, contact:
-- Email: info@spellboundhaven.com
+- Email: spellboundhaven.disney@gmail.com
 - Phone: +1 (555) 123-4567
 
 ## License

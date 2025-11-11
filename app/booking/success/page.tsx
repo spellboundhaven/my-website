@@ -108,7 +108,7 @@ function BookingSuccessContent() {
 
         <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm text-gray-600">
           <p>Need help? Contact us at:</p>
-          <p className="font-medium text-gray-800 mt-1">info@spellboundhaven.com</p>
+          <p className="font-medium text-gray-800 mt-1">spellboundhaven.disney@gmail.com</p>
         </div>
       </div>
     </div>

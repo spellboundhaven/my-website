@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
                 <div style="background-color: #f3f4f6; border-radius: 8px; padding: 20px; margin: 20px 0;">
                   <h2>Need Help?</h2>
                   <p>If you have any questions, please contact us:</p>
-                  <p>📧 Email: ${process.env.HOST_EMAIL || 'info@spellboundhaven.com'}</p>
+                  <p>📧 Email: ${process.env.HOST_EMAIL || 'spellboundhaven.disney@gmail.com'}</p>
                 </div>
 
                 <p style="margin-top: 30px;">We can't wait to host you at Spellbound Haven!</p>
