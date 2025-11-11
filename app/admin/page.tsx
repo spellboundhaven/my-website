@@ -751,6 +751,17 @@ export default function AdminDashboard() {
                 <div>
                   <h2 className="text-2xl font-bold text-gray-800 mb-6">Airbnb Calendar Sync</h2>
                   <div className="bg-gray-50 rounded-lg p-6">
+                    <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-2xl">⏰</span>
+                        <h3 className="font-semibold text-green-800">Automatic Hourly Sync Enabled</h3>
+                      </div>
+                      <p className="text-sm text-green-700">
+                        Your Airbnb calendar syncs automatically every hour via Vercel Cron.
+                        New bookings from Airbnb will be blocked on your website automatically!
+                      </p>
+                    </div>
+
                     <div className="mb-4">
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Airbnb iCal URL
@@ -772,12 +783,20 @@ export default function AdminDashboard() {
                       disabled={loading || !airbnbUrl}
                       className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition disabled:bg-gray-400"
                     >
-                      {loading ? 'Syncing...' : 'Sync Now'}
+                      {loading ? 'Syncing...' : 'Manual Sync Now'}
                     </button>
 
                     {lastSync && (
-                      <div className="mt-4 text-sm text-gray-600">
-                        Last synced: {new Date(lastSync.last_synced).toLocaleString()}
+                      <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                        <div className="text-sm">
+                          <div className="font-medium text-blue-800 mb-1">Last Sync Status:</div>
+                          <div className="text-blue-700">
+                            🕐 {new Date(lastSync.last_synced).toLocaleString()}
+                          </div>
+                          <div className="text-xs text-blue-600 mt-2">
+                            Next automatic sync: {new Date(new Date(lastSync.last_synced).getTime() + 3600000).toLocaleString()}
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -795,6 +814,7 @@ export default function AdminDashboard() {
                         <li><code className="bg-gray-200 px-2 py-0.5 rounded">STRIPE_SECRET_KEY</code> - Stripe secret key</li>
                         <li><code className="bg-gray-200 px-2 py-0.5 rounded">STRIPE_WEBHOOK_SECRET</code> - Stripe webhook secret</li>
                         <li><code className="bg-gray-200 px-2 py-0.5 rounded">NEXT_PUBLIC_ADMIN_PASSWORD</code> - Admin dashboard password</li>
+                        <li><code className="bg-gray-200 px-2 py-0.5 rounded">CRON_SECRET</code> - Secret for Vercel Cron (generate with: openssl rand -base64 32)</li>
                       </ul>
                     </div>
                   </div>

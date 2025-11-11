@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createBooking, getAllBookings, updateBooking, deleteBooking, getBooking, isDateAvailable } from '@/lib/db';
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -62,6 +60,7 @@ export async function POST(request: NextRequest) {
     // Send email notification
     try {
       if (process.env.RESEND_API_KEY && process.env.HOST_EMAIL) {
+        const resend = new Resend(process.env.RESEND_API_KEY);
         await resend.emails.send({
           from: 'Spellbound Haven <noreply@spellboundhaven.com>',
           to: process.env.HOST_EMAIL,

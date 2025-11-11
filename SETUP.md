@@ -28,6 +28,10 @@ NEXT_PUBLIC_BASE_URL=https://yourdomain.com
 
 # Airbnb Calendar iCal URL (optional - can be set in admin dashboard)
 AIRBNB_ICAL_URL=
+
+# Cron Secret (for automatic Airbnb sync)
+# Generate a random string: openssl rand -base64 32
+CRON_SECRET=
 ```
 
 ## Initial Setup
@@ -98,11 +102,24 @@ Access the admin dashboard at `/admin` with your `NEXT_PUBLIC_ADMIN_PASSWORD`.
 
 ### Airbnb Calendar Sync
 
+**Automatic Hourly Sync (Recommended):**
+
+The system automatically syncs your Airbnb calendar every hour using Vercel Cron Jobs.
+
 1. Go to your Airbnb listing
 2. Copy the calendar iCal URL from Settings → Availability
 3. Paste it in the admin dashboard → Settings → Airbnb Calendar Sync
-4. Click "Sync Now" to import booked dates
-5. Set up a cron job or manually sync regularly
+4. Click "Sync Now" for the first sync
+5. **The calendar will auto-sync every hour!** ⏰
+
+**How it works:**
+- Vercel Cron automatically calls `/api/cron/sync-airbnb` every hour
+- New Airbnb bookings are automatically blocked on your website
+- No manual syncing needed!
+- Check the admin dashboard for last sync time
+
+**Manual Sync:**
+You can still manually sync anytime in the admin dashboard if needed.
 
 **Airbnb URL location:**
 - Go to your listing on Airbnb

@@ -392,6 +392,6 @@ export async function getLastAirbnbSync(): Promise<{ last_synced: string; ical_u
     ORDER BY last_synced DESC
     LIMIT 1
   `;
-  return result.rows[0] || null;
+  return (result.rows[0] as { last_synced: string; ical_url: string }) || null;
 }
 

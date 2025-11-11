@@ -12,6 +12,7 @@
 - [ ] Get STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET
 - [ ] Set NEXT_PUBLIC_ADMIN_PASSWORD (change from default!)
 - [ ] Set NEXT_PUBLIC_BASE_URL to your domain
+- [ ] Set CRON_SECRET (generate with: `openssl rand -base64 32`)
 
 ### 2. Initial Pricing Setup
 After deployment, go to `/admin` and set up:

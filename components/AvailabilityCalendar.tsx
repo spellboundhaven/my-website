@@ -5,6 +5,8 @@ import Calendar from 'react-calendar'
 import 'react-calendar/dist/Calendar.css'
 import { DollarSign, Calendar as CalendarIcon, Users, Clock } from 'lucide-react'
 
+type CalendarValue = Date | null | [Date | null, Date | null]
+
 interface AvailabilityDate {
   date: string
   available: boolean
@@ -118,7 +120,11 @@ export default function AvailabilityCalendar() {
     return ''
   }
 
-  const handleDateClick = (date: Date) => {
+  const handleDateClick = (value: CalendarValue) => {
+    // Handle the case where value is null, an array (date range), or a single date
+    if (!value || Array.isArray(value)) return
+    
+    const date = value as Date
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     
