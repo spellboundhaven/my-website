@@ -754,10 +754,10 @@ export default function AdminDashboard() {
                     <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-2xl">⏰</span>
-                        <h3 className="font-semibold text-green-800">Automatic Hourly Sync Enabled</h3>
+                        <h3 className="font-semibold text-green-800">Automatic Daily Sync Enabled</h3>
                       </div>
                       <p className="text-sm text-green-700">
-                        Your Airbnb calendar syncs automatically every hour via Vercel Cron.
+                        Your Airbnb calendar syncs automatically once per day at midnight (00:00 UTC) via Vercel Cron.
                         New bookings from Airbnb will be blocked on your website automatically!
                       </p>
                     </div>
@@ -794,7 +794,7 @@ export default function AdminDashboard() {
                             🕐 {new Date(lastSync.last_synced).toLocaleString()}
                           </div>
                           <div className="text-xs text-blue-600 mt-2">
-                            Next automatic sync: {new Date(new Date(lastSync.last_synced).getTime() + 3600000).toLocaleString()}
+                            Next automatic sync: Tomorrow at midnight (00:00 UTC)
                           </div>
                         </div>
                       </div>

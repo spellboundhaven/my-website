@@ -5,7 +5,7 @@ import { createDateBlock, getLastAirbnbSync, updateAirbnbSync, getAllDateBlocks 
 export const dynamic = 'force-dynamic';
 
 // This API route will be triggered by Vercel Cron
-// Configure in vercel.json to run hourly
+// Configure in vercel.json to run daily at midnight (00:00 UTC)
 export async function GET(request: NextRequest) {
   try {
     // Verify the request is from Vercel Cron
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    console.log('[CRON] Starting Airbnb calendar sync...');
+    console.log('[CRON] Starting daily Airbnb calendar sync...');
 
     // Get the last saved iCal URL
     const lastSync = await getLastAirbnbSync();

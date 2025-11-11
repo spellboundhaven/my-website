@@ -102,18 +102,18 @@ Access the admin dashboard at `/admin` with your `NEXT_PUBLIC_ADMIN_PASSWORD`.
 
 ### Airbnb Calendar Sync
 
-**Automatic Hourly Sync (Recommended):**
+**Automatic Daily Sync (Recommended):**
 
-The system automatically syncs your Airbnb calendar every hour using Vercel Cron Jobs.
+The system automatically syncs your Airbnb calendar once per day at midnight (00:00 UTC) using Vercel Cron Jobs.
 
 1. Go to your Airbnb listing
 2. Copy the calendar iCal URL from Settings → Availability
 3. Paste it in the admin dashboard → Settings → Airbnb Calendar Sync
 4. Click "Sync Now" for the first sync
-5. **The calendar will auto-sync every hour!** ⏰
+5. **The calendar will auto-sync daily at midnight!** ⏰
 
 **How it works:**
-- Vercel Cron automatically calls `/api/cron/sync-airbnb` every hour
+- Vercel Cron automatically calls `/api/cron/sync-airbnb` once per day at midnight UTC
 - New Airbnb bookings are automatically blocked on your website
 - No manual syncing needed!
 - Check the admin dashboard for last sync time
