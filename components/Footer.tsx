@@ -1,0 +1,173 @@
+'use client'
+
+import { Facebook, Instagram, Twitter, Mail, Phone, MapPin } from 'lucide-react'
+import { propertyData } from '@/data/property'
+
+export default function Footer() {
+  const currentYear = new Date().getFullYear()
+
+  const quickLinks = [
+    { name: 'Home', href: '#home' },
+    { name: 'Overview', href: '#overview' },
+    { name: 'Gallery', href: '#gallery' },
+    { name: 'Amenities', href: '#amenities' },
+    { name: 'Availability', href: '#availability' },
+    { name: 'Reviews', href: '#reviews' },
+    { name: 'Contact', href: '#contact' },
+  ]
+
+  const policies = [
+    { name: 'Cancellation Policy', href: '#' },
+    { name: 'House Rules', href: '#' },
+    { name: 'Privacy Policy', href: '#' },
+    { name: 'Terms of Service', href: '#' },
+  ]
+
+  return (
+    <footer className="bg-gray-900 text-white">
+      <div className="container-max">
+        {/* Main Footer Content */}
+        <div className="py-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {/* Brand Section */}
+            <div className="lg:col-span-1">
+              <h3 className="text-2xl font-bold font-serif mb-4">
+                Spellbound Haven
+              </h3>
+              <p className="text-gray-300 mb-6">
+                Your gateway to paradise. Experience luxury, comfort, and unforgettable memories at our Disney-area vacation rental.
+              </p>
+              
+              {/* Social Media */}
+              <div className="flex space-x-4">
+                <a
+                  href="#"
+                  className="bg-gray-800 hover:bg-primary-600 p-2 rounded-lg transition-colors duration-200"
+                  aria-label="Facebook"
+                >
+                  <Facebook className="w-5 h-5" />
+                </a>
+                <a
+                  href="#"
+                  className="bg-gray-800 hover:bg-primary-600 p-2 rounded-lg transition-colors duration-200"
+                  aria-label="Instagram"
+                >
+                  <Instagram className="w-5 h-5" />
+                </a>
+                <a
+                  href="#"
+                  className="bg-gray-800 hover:bg-primary-600 p-2 rounded-lg transition-colors duration-200"
+                  aria-label="Twitter"
+                >
+                  <Twitter className="w-5 h-5" />
+                </a>
+              </div>
+            </div>
+
+            {/* Quick Links */}
+            <div>
+              <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
+              <ul className="space-y-2">
+                {quickLinks.map((link) => (
+                  <li key={link.name}>
+                    <a
+                      href={link.href}
+                      className="text-gray-300 hover:text-white transition-colors duration-200"
+                    >
+                      {link.name}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Policies */}
+            <div>
+              <h4 className="text-lg font-semibold mb-4">Policies</h4>
+              <ul className="space-y-2">
+                {policies.map((policy) => (
+                  <li key={policy.name}>
+                    <a
+                      href={policy.href}
+                      className="text-gray-300 hover:text-white transition-colors duration-200"
+                    >
+                      {policy.name}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Contact Info */}
+            <div>
+              <h4 className="text-lg font-semibold mb-4">Contact Info</h4>
+              <div className="space-y-3">
+                <div className="flex items-center space-x-3">
+                  <Phone className="w-5 h-5 text-primary-400 flex-shrink-0" />
+                  <a
+                    href={`tel:${propertyData.contact.phone}`}
+                    className="text-gray-300 hover:text-white transition-colors duration-200"
+                  >
+                    {propertyData.contact.phone}
+                  </a>
+                </div>
+                
+                <div className="flex items-center space-x-3">
+                  <Mail className="w-5 h-5 text-primary-400 flex-shrink-0" />
+                  <a
+                    href={`mailto:${propertyData.contact.email}`}
+                    className="text-gray-300 hover:text-white transition-colors duration-200"
+                  >
+                    {propertyData.contact.email}
+                  </a>
+                </div>
+                
+                <div className="flex items-start space-x-3">
+                  <MapPin className="w-5 h-5 text-primary-400 flex-shrink-0 mt-1" />
+                  <span className="text-gray-300">
+                    {propertyData.contact.address}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Newsletter Signup */}
+        <div className="border-t border-gray-800 py-8">
+          <div className="text-center">
+            <h4 className="text-xl font-semibold mb-4">Stay Updated</h4>
+            <p className="text-gray-300 mb-6">
+              Subscribe to our newsletter for special offers and vacation tips
+            </p>
+            <div className="max-w-md mx-auto flex gap-4">
+              <input
+                type="email"
+                placeholder="Enter your email"
+                className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              />
+              <button className="bg-primary-600 hover:bg-primary-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors duration-200">
+                Subscribe
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Bar */}
+        <div className="border-t border-gray-800 py-6">
+          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+            <div className="text-gray-400 text-sm">
+              © {currentYear} Spellbound Haven. All rights reserved.
+            </div>
+            
+            <div className="flex items-center space-x-6 text-sm text-gray-400">
+              <span>⭐ Rated 5.0/5 by guests</span>
+              <span>🏆 Luxury Vacation Rental</span>
+              <span>🏰 Near Disney World</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+  )
+}
