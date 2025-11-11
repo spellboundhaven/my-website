@@ -62,12 +62,12 @@ export const propertyData = {
     ],
     images: [
       {
-        src: "/images/rooms/livingroom/3.jpg",
+        src: "/images/rooms/livingroom/4.jpg",
         alt: "Spacious living room",
-        caption: "Large family gathering space"
+        caption: "Cozy living room"
       },
       {
-        src: "/images/amenities/20.jpg",
+        src: "/images/amenities/21.jpg",
         alt: "Marvel arcade game room",
         caption: "Marvel arcade game room"
       },     
@@ -594,7 +594,7 @@ export const propertyData = {
     phone: "+1 (555) 123-4567",
     email: "spellboundhaven.disney@gmail.com",
     address: "Windsor Island Resort, Orlando, FL",
-    hours: "Available 24/7 for bookings and Disney vacation planning"
+    hours: "Available 24/7 for bookings"
   }
 }
 

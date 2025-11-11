@@ -35,7 +35,7 @@ export default function Footer() {
                 Spellbound Haven
               </h3>
               <p className="text-gray-300 mb-6">
-                Your gateway to paradise. Experience luxury, comfort, and unforgettable memories at our Disney-area vacation rental.
+                Your gateway to paradise. Experience luxury, comfort, and unforgettable memories at our Disney themed family villa.
               </p>
               
               {/* Social Media */}
