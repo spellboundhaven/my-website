@@ -133,7 +133,7 @@ export default function AvailabilityCalendar() {
     }
     
     if (isDateAvailable(date)) {
-      return 'bg-green-50 text-green-700'
+      return 'bg-white text-gray-900'
     }
     
     return ''
@@ -201,9 +201,9 @@ export default function AvailabilityCalendar() {
           background-color: #f3f4f6 !important;
         }
         
-        /* Available dates: Light green */
-        :global(.react-calendar__tile.bg-green-50) {
-          background-color: #f0fdf4 !important;
+        /* Available dates: White */
+        :global(.react-calendar__tile.bg-white) {
+          background-color: #ffffff !important;
         }
         
         /* Checkout date: Left half light grey (still occupied), right half white (available) */
@@ -251,7 +251,7 @@ export default function AvailabilityCalendar() {
             {/* Legend */}
             <div className="flex flex-wrap gap-4 text-sm">
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-green-50 border border-green-200 rounded"></div>
+                <div className="w-4 h-4 bg-white border border-gray-300 rounded"></div>
                 <span>Available</span>
               </div>
               <div className="flex items-center gap-2">
