@@ -312,19 +312,21 @@ export async function getAvailabilityForRange(startDate: string, endDate: string
   const availability: AvailabilityDate[] = [];
   
   // Get all bookings in range
+  // Using >= for check_out_date to catch bookings ending on the first day of range
   const bookings = await sql`
     SELECT check_in_date, check_out_date FROM bookings
-    WHERE status IN ('confirmed', 'pending')
+    WHERE status IN ('confirmed', 'pending', 'inquiry')
     AND check_in_date < ${endDate}
-    AND check_out_date > ${startDate}
+    AND check_out_date >= ${startDate}
   `;
   
   // Get all blocks in range
-  // Note: end_date is exclusive (checkout date)
+  // Note: We need >= to catch blocks that end exactly on the first day of the range
+  // The per-date check (dateStr < blockEnd) will handle excluding checkout dates
   const blocks = await sql`
     SELECT start_date, end_date, reason FROM date_blocks
     WHERE start_date < ${endDate}
-    AND end_date > ${startDate}
+    AND end_date >= ${startDate}
   `;
   
   // Get all pricing rules
