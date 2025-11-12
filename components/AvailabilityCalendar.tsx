@@ -207,15 +207,15 @@ export default function AvailabilityCalendar() {
   return (
     <section id="availability" className="section-padding bg-white">
       <style jsx>{`
-        /* Checkout date: Left half light red (still occupied), right half white (available) */
+        /* Checkout date: Left half light grey (still occupied), right half white (available) */
         :global(.checkout-date) {
-          background: linear-gradient(to bottom right, #fee2e2 50%, #ffffff 50%) !important;
+          background: linear-gradient(to bottom right, #f3f4f6 50%, #ffffff 50%) !important;
           position: relative;
         }
         
-        /* Checkin date: Left half white (available), right half light red (occupied) */
+        /* Checkin date: Left half white (available), right half light grey (occupied) */
         :global(.checkin-date) {
-          background: linear-gradient(to bottom right, #ffffff 50%, #fee2e2 50%) !important;
+          background: linear-gradient(to bottom right, #ffffff 50%, #f3f4f6 50%) !important;
           position: relative;
         }
       `}</style>
@@ -266,11 +266,11 @@ export default function AvailabilityCalendar() {
                 <span>Booked</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 border border-gray-300 rounded" style={{background: 'linear-gradient(to bottom right, #fee2e2 50%, #ffffff 50%)'}}></div>
+                <div className="w-4 h-4 border border-gray-300 rounded" style={{background: 'linear-gradient(to bottom right, #f3f4f6 50%, #ffffff 50%)'}}></div>
                 <span>Check-out Day</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 border border-gray-300 rounded" style={{background: 'linear-gradient(to bottom right, #ffffff 50%, #fee2e2 50%)'}}></div>
+                <div className="w-4 h-4 border border-gray-300 rounded" style={{background: 'linear-gradient(to bottom right, #ffffff 50%, #f3f4f6 50%)'}}></div>
                 <span>Check-in Day</span>
               </div>
               <div className="flex items-center gap-2">
