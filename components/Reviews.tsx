@@ -38,11 +38,8 @@ export default function Reviews() {
             <div className="text-4xl font-bold text-gray-900 mb-2">
               {averageRating.toFixed(1)}
             </div>
-            <div className="text-lg text-gray-600 mb-4">
-              Based on {reviews.length} guest reviews
-            </div>
             <div className="text-gray-500">
-              "Perfect for Disney family vacations"
+              "Perfect for large families and multigenerational vacations near Disney Orlando!"
             </div>
           </div>
         </div>
