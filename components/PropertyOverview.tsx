@@ -21,7 +21,7 @@ export default function PropertyOverview() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
           <div className="bg-white p-6 rounded-lg shadow-sm text-center">
             <Users className="w-8 h-8 text-primary-600 mx-auto mb-3" />
-            <div className="text-2xl font-bold text-gray-900 mb-1">22</div>
+            <div className="text-2xl font-bold text-gray-900 mb-1">20</div>
             <div className="text-sm text-gray-600">Guests</div>
           </div>
           <div className="bg-white p-6 rounded-lg shadow-sm text-center">

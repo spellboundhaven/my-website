@@ -65,7 +65,7 @@ export default function Hero() {
             <p className="text-sm font-medium">Near Disney World</p>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold mb-1">22</div>
+            <div className="text-2xl font-bold mb-1">20</div>
             <p className="text-sm font-medium">Sleeps Up To</p>
           </div>
         </div>

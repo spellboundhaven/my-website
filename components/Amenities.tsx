@@ -71,43 +71,6 @@ export default function Amenities() {
               ))
           }
         </div>
-
-        {/* Additional Information */}
-        <div className="mt-16 bg-white rounded-lg shadow-sm p-8">
-          <div className="text-center">
-            <h3 className="text-2xl font-bold text-gray-900 mb-6 font-serif">
-              Additional Information
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="text-center">
-                <div className="text-3xl mb-3">🕐</div>
-                <h4 className="font-semibold text-gray-900 mb-2">Check-in/Check-out</h4>
-                <p className="text-gray-600 text-sm">
-                  Check-in: 4:00 PM<br />
-                  Check-out: 11:00 AM
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl mb-3">🚫</div>
-                <h4 className="font-semibold text-gray-900 mb-2">House Rules</h4>
-                <p className="text-gray-600 text-sm">
-                  No smoking indoors<br />
-                  No pets allowed<br />
-                  No parties or events
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl mb-3">📞</div>
-                <h4 className="font-semibold text-gray-900 mb-2">24/7 Support</h4>
-                <p className="text-gray-600 text-sm">
-                  On-site concierge<br />
-                  Emergency contact<br />
-                  Maintenance support
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </section>
   )
