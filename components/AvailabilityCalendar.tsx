@@ -22,7 +22,8 @@ export default function AvailabilityCalendar() {
   const [formData, setFormData] = useState({
     checkIn: '',
     checkOut: '',
-    guests: '2',
+    adults: '2',
+    children: '0',
     name: '',
     email: '',
     phone: '',
@@ -151,6 +152,8 @@ export default function AvailabilityCalendar() {
       return
     }
     
+    const totalGuests = parseInt(formData.adults) + parseInt(formData.children)
+    
     setLoading(true)
     
     try {
@@ -166,9 +169,9 @@ export default function AvailabilityCalendar() {
           guest_name: formData.name,
           guest_email: formData.email,
           guest_phone: formData.phone,
-          guests_count: parseInt(formData.guests),
+          guests_count: totalGuests,
           total_price: 0, // Will be calculated manually by host
-          notes: formData.notes
+          notes: `Adults: ${formData.adults}, Children: ${formData.children}${formData.notes ? '\n' + formData.notes : ''}`
         })
       })
 
@@ -180,7 +183,8 @@ export default function AvailabilityCalendar() {
         setFormData({
           checkIn: '',
           checkOut: '',
-          guests: '2',
+          adults: '2',
+          children: '0',
           name: '',
           email: '',
           phone: '',
@@ -268,14 +272,6 @@ export default function AvailabilityCalendar() {
                 <span>Booked</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 border border-gray-300 rounded" style={{background: 'linear-gradient(to bottom right, #f3f4f6 50%, #ffffff 50%)'}}></div>
-                <span>Check-out Day</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 border border-gray-300 rounded" style={{background: 'linear-gradient(to bottom right, #ffffff 50%, #f3f4f6 50%)'}}></div>
-                <span>Check-in Day</span>
-              </div>
-              <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-blue-50 border border-blue-200 rounded"></div>
                 <span>Past Dates</span>
               </div>
@@ -317,20 +313,36 @@ export default function AvailabilityCalendar() {
                 </div>
               </div>
 
-              {/* Guests */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Number of Guests *
-                </label>
-                <select
-                  value={formData.guests}
-                  onChange={(e) => setFormData({ ...formData, guests: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                >
-                  {Array.from({ length: 20 }, (_, i) => i + 1).map(num => (
-                    <option key={num} value={num}>{num} {num === 1 ? 'Guest' : 'Guests'}</option>
-                  ))}
-                </select>
+              {/* Adults and Children */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Number of Adults *
+                  </label>
+                  <select
+                    value={formData.adults}
+                    onChange={(e) => setFormData({ ...formData, adults: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  >
+                    {Array.from({ length: 20 }, (_, i) => i + 1).map(num => (
+                      <option key={num} value={num}>{num} {num === 1 ? 'Adult' : 'Adults'}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Number of Children
+                  </label>
+                  <select
+                    value={formData.children}
+                    onChange={(e) => setFormData({ ...formData, children: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  >
+                    {Array.from({ length: 11 }, (_, i) => i).map(num => (
+                      <option key={num} value={num}>{num} {num === 1 ? 'Child' : 'Children'}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               {/* Name */}
