@@ -12,13 +12,7 @@ POSTGRES_URL=
 # Email (Resend)
 # Get this from Resend: https://resend.com/api-keys
 RESEND_API_KEY=
-HOST_EMAIL=your-email@example.com
-
-# Stripe Payments
-# Get these from Stripe Dashboard: https://dashboard.stripe.com/apikeys
-STRIPE_SECRET_KEY=sk_test_...
-STRIPE_WEBHOOK_SECRET=whsec_...
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
+HOST_EMAIL=your-email@example.com  # Email where booking inquiries will be sent
 
 # Admin Dashboard
 NEXT_PUBLIC_ADMIN_PASSWORD=your-secure-password
@@ -53,22 +47,7 @@ npm run dev
 # Visit any page to trigger database initialization
 ```
 
-### 3. Set Up Stripe Webhook
-
-1. Go to [Stripe Dashboard → Webhooks](https://dashboard.stripe.com/webhooks)
-2. Click "Add endpoint"
-3. Enter your webhook URL: `https://yourdomain.com/api/stripe/webhook`
-4. Select event: `checkout.session.completed`
-5. Copy the signing secret and add it to `STRIPE_WEBHOOK_SECRET`
-
-For local development, use [Stripe CLI](https://stripe.com/docs/stripe-cli):
-
-```bash
-stripe login
-stripe listen --forward-to localhost:3000/api/stripe/webhook
-```
-
-### 4. Configure Resend Email
+### 3. Configure Resend Email
 
 1. Go to [Resend Dashboard](https://resend.com)
 2. Add and verify your domain (e.g., `spellboundhaven.com`)
@@ -91,14 +70,12 @@ Access the admin dashboard at `/admin` with your `NEXT_PUBLIC_ADMIN_PASSWORD`.
 ### Booking Flow
 
 1. **Guest selects dates** on the availability calendar
-2. **Guest chooses payment method:**
-   - Credit Card (Stripe) - Immediate payment
-   - Zelle - Manual payment with instructions sent via email
-3. **Guest fills out contact form**
-4. **Payment processing:**
-   - **Stripe:** Redirects to Stripe checkout, payment confirmed automatically
-   - **Zelle:** Booking created as "pending", admin manually confirms after receiving payment
-5. **Confirmation emails sent** to both guest and host
+2. **Guest views pricing** for selected dates
+3. **Guest fills out inquiry form** with contact information and optional message
+4. **Inquiry email sent** to host (you) with all guest details
+5. **Host responds** directly to guest via email to confirm availability and discuss payment
+6. **Payment handled** manually (Zelle, Venmo, bank transfer, etc.) outside the website
+7. **Host marks booking** as confirmed in the admin dashboard
 
 ### Airbnb Calendar Sync
 
@@ -137,10 +114,9 @@ https://www.airbnb.com/calendar/ical/974522329669113361.ics?s=...
 
 - `GET /api/availability?startDate=...&endDate=...` - Get availability for date range
 - `GET /api/pricing?startDate=...&endDate=...` - Calculate pricing for date range
-- `POST /api/bookings` - Create a new booking
-- `POST /api/stripe/checkout` - Create Stripe checkout session
-- `POST /api/stripe/webhook` - Handle Stripe payment confirmations
-- `POST /api/airbnb-sync` - Sync Airbnb calendar
+- `POST /api/bookings` - Submit a booking inquiry (sends email to host)
+- `POST /api/airbnb-sync` - Manually sync Airbnb calendar
+- `GET /api/cron/sync-airbnb` - Automatic Airbnb sync (called by Vercel Cron)
 - `GET/POST /api/admin` - Admin operations (requires auth)
 
 ## Database Schema
@@ -153,12 +129,11 @@ https://www.airbnb.com/calendar/ical/974522329669113361.ics?s=...
 - `guest_email` - Guest email
 - `guest_phone` - Guest phone
 - `guests_count` - Number of guests
-- `total_price` - Total booking price
-- `status` - pending | confirmed | cancelled | completed
-- `payment_method` - stripe | zelle
+- `total_price` - Estimated total price
+- `status` - inquiry | confirmed | cancelled | completed
+- `payment_method` - manual | airbnb
 - `payment_status` - pending | paid | refunded
-- `stripe_session_id` - Stripe checkout session ID
-- `notes` - Special requests
+- `notes` - Guest message or special requests
 - `source` - website | airbnb | manual
 - `created_at` - Timestamp
 
@@ -206,13 +181,11 @@ https://www.airbnb.com/calendar/ical/974522329669113361.ics?s=...
 
 ## Testing
 
-### Test Stripe Payments (Development)
+### Test Booking Inquiries
 
-Use Stripe test card numbers:
-- Success: `4242 4242 4242 4242`
-- Decline: `4000 0000 0000 0002`
-- Expiry: Any future date (e.g., `12/34`)
-- CVC: Any 3 digits (e.g., `123`)
+1. Select dates on your calendar
+2. Fill out the inquiry form with your email
+3. Submit and verify you receive the inquiry email
 
 ### Test Airbnb Sync
 
@@ -222,7 +195,7 @@ Create a test booking in your Airbnb calendar, then sync in the admin dashboard 
 
 For questions or issues, contact the development team or refer to:
 - [Next.js Documentation](https://nextjs.org/docs)
-- [Stripe Documentation](https://stripe.com/docs)
 - [Resend Documentation](https://resend.com/docs)
 - [Neon Documentation](https://neon.tech/docs)
+- [Vercel Cron Documentation](https://vercel.com/docs/cron-jobs)
 

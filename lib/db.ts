@@ -9,10 +9,9 @@ export interface Booking {
   guest_phone: string;
   guests_count: number;
   total_price: number;
-  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
-  payment_method?: 'stripe' | 'zelle';
+  status: 'inquiry' | 'pending' | 'confirmed' | 'cancelled' | 'completed';
+  payment_method?: 'manual' | 'airbnb';
   payment_status?: 'pending' | 'paid' | 'refunded';
-  stripe_session_id?: string;
   notes?: string;
   source?: 'website' | 'airbnb' | 'manual';
   created_at?: string;
@@ -115,7 +114,7 @@ export async function createBooking(booking: Booking): Promise<Booking> {
     INSERT INTO bookings (
       check_in_date, check_out_date, guest_name, guest_email, guest_phone,
       guests_count, total_price, status, payment_method, payment_status,
-      stripe_session_id, notes, source, created_at
+      notes, source, created_at
     )
     VALUES (
       ${booking.check_in_date},
@@ -128,7 +127,6 @@ export async function createBooking(booking: Booking): Promise<Booking> {
       ${booking.status},
       ${booking.payment_method || null},
       ${booking.payment_status || 'pending'},
-      ${booking.stripe_session_id || null},
       ${booking.notes || null},
       ${booking.source || 'website'},
       ${booking.created_at || new Date().toISOString()}
@@ -141,13 +139,6 @@ export async function createBooking(booking: Booking): Promise<Booking> {
 export async function getBooking(id: number): Promise<Booking | undefined> {
   const result = await sql`
     SELECT * FROM bookings WHERE id = ${id}
-  `;
-  return result.rows[0] as Booking | undefined;
-}
-
-export async function getBookingByStripeSession(sessionId: string): Promise<Booking | undefined> {
-  const result = await sql`
-    SELECT * FROM bookings WHERE stripe_session_id = ${sessionId}
   `;
   return result.rows[0] as Booking | undefined;
 }

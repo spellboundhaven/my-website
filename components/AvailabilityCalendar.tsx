@@ -23,7 +23,6 @@ export default function AvailabilityCalendar() {
   const [availability, setAvailability] = useState<Record<string, AvailabilityDate>>({})
   const [loading, setLoading] = useState(false)
   const [totalPrice, setTotalPrice] = useState(0)
-  const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'zelle'>('stripe')
   const [showBookingForm, setShowBookingForm] = useState(false)
 
   // Fetch availability for the current month
@@ -151,68 +150,39 @@ export default function AvailabilityCalendar() {
     setLoading(true)
     
     try {
-      if (paymentMethod === 'stripe') {
-        // Create Stripe checkout session
-        const response = await fetch('/api/stripe/checkout', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            check_in_date: formatDate(checkIn),
-            check_out_date: formatDate(checkOut),
-            guest_name: formData.name,
-            guest_email: formData.email,
-            guest_phone: formData.phone,
-            guests_count: guests,
-            total_price: totalPrice,
-            notes: formData.notes
-          })
+      // Submit booking inquiry
+      const response = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          check_in_date: formatDate(checkIn),
+          check_out_date: formatDate(checkOut),
+          guest_name: formData.name,
+          guest_email: formData.email,
+          guest_phone: formData.phone,
+          guests_count: guests,
+          total_price: totalPrice,
+          notes: formData.notes
         })
+      })
 
-        const data = await response.json()
-        
-        if (data.success && data.url) {
-          // Redirect to Stripe checkout
-          window.location.href = data.url
-        } else {
-          alert('Failed to create checkout session. Please try again.')
-        }
+      const data = await response.json()
+      
+      if (data.success) {
+        setShowBookingForm(false)
+        alert(`Thank you for your inquiry! We've received your booking request and will contact you shortly at ${formData.email} to confirm availability and discuss payment details.`)
+        // Reset form
+        setCheckIn(null)
+        setCheckOut(null)
+        setGuests(2)
       } else {
-        // Zelle payment - create pending booking
-        const response = await fetch('/api/bookings', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            check_in_date: formatDate(checkIn),
-            check_out_date: formatDate(checkOut),
-            guest_name: formData.name,
-            guest_email: formData.email,
-            guest_phone: formData.phone,
-            guests_count: guests,
-            total_price: totalPrice,
-            payment_method: 'zelle',
-            notes: formData.notes
-          })
-        })
-
-        const data = await response.json()
-        
-        if (data.success) {
-          setShowBookingForm(false)
-          alert(`Booking request submitted! Please send $${totalPrice} via Zelle to complete your reservation. You will receive an email with payment instructions.`)
-          // Reset form
-          setCheckIn(null)
-          setCheckOut(null)
-        } else {
-          alert('Failed to create booking. Please try again.')
-        }
+        alert(data.error || 'Failed to submit inquiry. Please try again.')
       }
     } catch (error) {
-      console.error('Error submitting booking:', error)
-      alert('An error occurred. Please try again.')
+      console.error('Error submitting inquiry:', error)
+      alert('An error occurred. Please try again or contact us directly.')
     } finally {
       setLoading(false)
     }
@@ -337,43 +307,7 @@ export default function AvailabilityCalendar() {
               </div>
             )}
 
-            {/* Payment Method Selection */}
-            {checkIn && checkOut && !showBookingForm && (
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Payment Method
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={() => setPaymentMethod('stripe')}
-                    className={`p-3 border-2 rounded-lg font-medium transition-colors ${
-                      paymentMethod === 'stripe'
-                        ? 'border-primary-600 bg-primary-50 text-primary-700'
-                        : 'border-gray-300 hover:border-gray-400'
-                    }`}
-                  >
-                    💳 Credit Card
-                  </button>
-                  <button
-                    onClick={() => setPaymentMethod('zelle')}
-                    className={`p-3 border-2 rounded-lg font-medium transition-colors ${
-                      paymentMethod === 'zelle'
-                        ? 'border-primary-600 bg-primary-50 text-primary-700'
-                        : 'border-gray-300 hover:border-gray-400'
-                    }`}
-                  >
-                    💸 Zelle
-                  </button>
-                </div>
-                {paymentMethod === 'zelle' && (
-                  <p className="text-xs text-gray-600 mt-2">
-                    You'll receive payment instructions after booking
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* Book Now Button */}
+            {/* Request to Book Button */}
             {!showBookingForm && (
               <button
                 onClick={() => setShowBookingForm(true)}
@@ -384,17 +318,16 @@ export default function AvailabilityCalendar() {
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}
               >
-                {checkIn && checkOut ? 'Continue to Booking' : 'Select Dates to Book'}
+                {checkIn && checkOut ? 'Request to Book' : 'Select Dates to Inquire'}
               </button>
             )}
 
-            {/* Booking Form */}
+            {/* Booking Inquiry Form */}
             {showBookingForm && (
               <BookingForm
                 onSubmit={handleBookNow}
                 onCancel={() => setShowBookingForm(false)}
                 loading={loading}
-                paymentMethod={paymentMethod}
               />
             )}
 
@@ -440,17 +373,15 @@ export default function AvailabilityCalendar() {
   )
 }
 
-// Booking Form Component
+// Booking Inquiry Form Component
 function BookingForm({
   onSubmit,
   onCancel,
-  loading,
-  paymentMethod
+  loading
 }: {
   onSubmit: (data: any) => void
   onCancel: () => void
   loading: boolean
-  paymentMethod: 'stripe' | 'zelle'
 }) {
   const [formData, setFormData] = useState({
     name: '',
@@ -510,25 +441,23 @@ function BookingForm({
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Special Requests (Optional)
+          Message / Special Requests (Optional)
         </label>
         <textarea
           value={formData.notes}
           onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           rows={3}
-          placeholder="Any special requests or questions?"
+          placeholder="Any special requests, questions, or additional information..."
         />
       </div>
 
-      {paymentMethod === 'zelle' && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-          <p className="text-sm text-yellow-800">
-            <strong>Zelle Payment Instructions:</strong><br />
-            After submitting, you'll receive an email with Zelle payment details. Your reservation will be confirmed once payment is received.
-          </p>
-        </div>
-      )}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+        <p className="text-sm text-blue-800">
+          📧 <strong>What happens next?</strong><br />
+          We'll receive your inquiry and contact you within 24 hours to confirm availability and discuss payment options.
+        </p>
+      </div>
 
       <div className="flex gap-3 pt-2">
         <button
@@ -544,7 +473,7 @@ function BookingForm({
           disabled={loading}
           className="flex-1 py-2 px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-semibold transition-colors disabled:bg-gray-400"
         >
-          {loading ? 'Processing...' : paymentMethod === 'stripe' ? 'Pay with Card' : 'Submit Booking'}
+          {loading ? 'Sending...' : 'Send Inquiry'}
         </button>
       </div>
     </form>

@@ -13,12 +13,11 @@ export async function POST(request: NextRequest) {
       guest_phone,
       guests_count,
       total_price,
-      payment_method,
       notes
     } = body;
 
     // Validate required fields
-    if (!check_in_date || !check_out_date || !guest_name || !guest_email || !guest_phone || !guests_count || !total_price) {
+    if (!check_in_date || !check_out_date || !guest_name || !guest_email || !guests_count) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -41,7 +40,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Create booking
+    // Create booking inquiry
     const booking = await createBooking({
       check_in_date,
       check_out_date,
@@ -49,9 +48,9 @@ export async function POST(request: NextRequest) {
       guest_email,
       guest_phone,
       guests_count,
-      total_price,
-      status: 'pending',
-      payment_method,
+      total_price: total_price || 0,
+      status: 'inquiry',
+      payment_method: 'manual',
       payment_status: 'pending',
       notes,
       source: 'website'
@@ -64,28 +63,35 @@ export async function POST(request: NextRequest) {
         await resend.emails.send({
           from: 'Spellbound Haven <noreply@spellboundhaven.com>',
           to: process.env.HOST_EMAIL,
-          subject: `New Booking Request - ${guest_name}`,
+          subject: `New Booking Inquiry - ${guest_name}`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-              <h1 style="color: #4f46e5;">New Booking Request</h1>
+              <h1 style="color: #4f46e5;">🏰 New Booking Inquiry</h1>
+              <p style="font-size: 16px; color: #6b7280;">You have a new booking inquiry from your website!</p>
+              
               <div style="background-color: #f3f4f6; border-radius: 8px; padding: 20px; margin: 20px 0;">
-                <h2>Guest Information</h2>
+                <h2 style="color: #1f2937; margin-top: 0;">👤 Guest Information</h2>
                 <p><strong>Name:</strong> ${guest_name}</p>
-                <p><strong>Email:</strong> ${guest_email}</p>
-                <p><strong>Phone:</strong> ${guest_phone}</p>
-                <p><strong>Guests:</strong> ${guests_count}</p>
+                <p><strong>Email:</strong> <a href="mailto:${guest_email}">${guest_email}</a></p>
+                <p><strong>Phone:</strong> ${guest_phone || 'Not provided'}</p>
+                <p><strong>Number of Guests:</strong> ${guests_count}</p>
               </div>
+              
               <div style="background-color: #eef2ff; border-radius: 8px; padding: 20px; margin: 20px 0;">
-                <h2>Booking Details</h2>
+                <h2 style="color: #1f2937; margin-top: 0;">📅 Requested Dates</h2>
                 <p><strong>Check-in:</strong> ${check_in_date}</p>
                 <p><strong>Check-out:</strong> ${check_out_date}</p>
-                <p><strong>Total:</strong> $${total_price}</p>
-                <p><strong>Payment Method:</strong> ${payment_method || 'Not specified'}</p>
+                ${total_price ? `<p><strong>Estimated Total:</strong> $${total_price}</p>` : ''}
               </div>
+              
               ${notes ? `<div style="background-color: #fffbeb; border-radius: 8px; padding: 20px; margin: 20px 0;">
-                <h2>Notes</h2>
+                <h2 style="color: #1f2937; margin-top: 0;">📝 Guest Message</h2>
                 <p>${notes}</p>
               </div>` : ''}
+              
+              <div style="background-color: #f0fdf4; border-radius: 8px; padding: 20px; margin: 20px 0; border-left: 4px solid #22c55e;">
+                <p style="margin: 0;"><strong>Next Steps:</strong> Reply to ${guest_email} to confirm availability and discuss payment details.</p>
+              </div>
             </div>
           `
         });

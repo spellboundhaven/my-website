@@ -7,9 +7,7 @@
 - [ ] Get POSTGRES_URL from Neon console
 - [ ] Create Resend account and verify domain
 - [ ] Get RESEND_API_KEY from Resend
-- [ ] Set HOST_EMAIL for notifications
-- [ ] Create Stripe account
-- [ ] Get STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET
+- [ ] Set HOST_EMAIL for notifications (where booking inquiries will be sent)
 - [ ] Set NEXT_PUBLIC_ADMIN_PASSWORD (change from default!)
 - [ ] Set NEXT_PUBLIC_BASE_URL to your domain
 - [ ] Set CRON_SECRET (generate with: `openssl rand -base64 32`)
@@ -45,15 +43,7 @@ git push -u origin main
 - [ ] Add all environment variables
 - [ ] Deploy
 
-### 3. Configure Stripe Webhook
-After deployment:
-- [ ] Go to Stripe Dashboard → Webhooks
-- [ ] Add endpoint: `https://yourdomain.com/api/stripe/webhook`
-- [ ] Select event: `checkout.session.completed`
-- [ ] Copy webhook secret to Vercel env vars
-- [ ] Redeploy if needed
-
-### 4. Domain Setup (Squarespace)
+### 3. Domain Setup (Squarespace)
 
 #### In Vercel:
 - [ ] Go to Project → Settings → Domains
@@ -66,7 +56,7 @@ After deployment:
 - [ ] Add CNAME record: Host: `www`, Value: `cname.vercel-dns.com`
 - [ ] Wait for DNS propagation (5 minutes - 48 hours)
 
-### 5. Resend Email Setup
+### 4. Resend Email Setup
 - [ ] Verify your domain in Resend
 - [ ] Update API routes if needed (change `from` email addresses)
 - [ ] Send test booking to verify emails work
@@ -81,22 +71,16 @@ After deployment:
 
 ### 2. Test Booking Flow
 
-#### Stripe Payment:
-- [ ] Select dates
-- [ ] Choose "Credit Card" payment
-- [ ] Fill out booking form
-- [ ] Use test card: 4242 4242 4242 4242
-- [ ] Verify redirect to success page
-- [ ] Check admin dashboard for booking
-- [ ] Verify confirmation emails received
-
-#### Zelle Payment:
-- [ ] Select dates
-- [ ] Choose "Zelle" payment
-- [ ] Fill out booking form
-- [ ] Verify booking created as "pending"
-- [ ] Check email for Zelle instructions
-- [ ] Manually confirm in admin dashboard
+#### Booking Inquiry:
+- [ ] Select dates on the calendar
+- [ ] Verify pricing displays correctly
+- [ ] Click "Request to Book"
+- [ ] Fill out inquiry form with your email
+- [ ] Submit the form
+- [ ] Verify success message appears
+- [ ] Check HOST_EMAIL inbox for inquiry notification
+- [ ] Verify inquiry shows in admin dashboard as "inquiry" status
+- [ ] Test replying to guest email
 
 ### 3. Test Admin Dashboard
 - [ ] Login to `/admin`
@@ -116,25 +100,25 @@ After deployment:
 ## Security Checklist
 
 - [ ] Change NEXT_PUBLIC_ADMIN_PASSWORD from default
-- [ ] Verify Stripe is in live mode (not test mode)
 - [ ] Check that sensitive env vars are not in code
 - [ ] Test that admin dashboard requires password
-- [ ] Verify email addresses are correct
-- [ ] Check that Stripe webhook secret is correct
+- [ ] Verify email addresses are correct (HOST_EMAIL)
+- [ ] Verify CRON_SECRET is set and secure
 
 ## Monitoring
 
 ### Set Up Alerts
-- [ ] Monitor Stripe dashboard for payments
-- [ ] Check email inbox for booking notifications
-- [ ] Regularly check admin dashboard
+- [ ] Check email inbox daily for booking inquiries
+- [ ] Regularly check admin dashboard for new inquiries
 - [ ] Monitor Vercel analytics for errors
+- [ ] Respond to inquiries within 24 hours
 
 ### Regular Maintenance
-- [ ] Sync Airbnb calendar weekly (or set up automation)
-- [ ] Review bookings and update statuses
+- [ ] Airbnb calendar syncs automatically daily at midnight
+- [ ] Review bookings and update statuses (inquiry → confirmed → completed)
 - [ ] Update pricing rules seasonally
-- [ ] Respond to booking inquiries promptly
+- [ ] Respond to booking inquiries promptly via email
+- [ ] Mark confirmed bookings in admin dashboard
 
 ## Troubleshooting
 
@@ -142,13 +126,15 @@ After deployment:
 - Verify RESEND_API_KEY is correct
 - Check that domain is verified in Resend
 - Update `from` addresses to match verified domain
+- Check HOST_EMAIL is set correctly
 - Check Vercel logs for errors
 
-### Stripe Payments Failing
-- Verify STRIPE_SECRET_KEY is correct
-- Check webhook endpoint is accessible
-- Verify STRIPE_WEBHOOK_SECRET matches Stripe dashboard
-- Test with Stripe test cards first
+### Booking Inquiries Not Received
+- Verify HOST_EMAIL environment variable is set
+- Check spam/junk folder
+- Test with your own email first
+- Check Vercel function logs for errors
+- Verify RESEND_API_KEY is valid
 
 ### Database Connection Issues
 - Verify POSTGRES_URL is correct
@@ -164,20 +150,21 @@ After deployment:
 ## Success Criteria
 
 ✅ Booking system deployed and accessible
-✅ Stripe payments working
-✅ Email notifications sending
+✅ Booking inquiry form working
+✅ Email notifications sending to HOST_EMAIL
 ✅ Admin dashboard functional
-✅ Airbnb calendar syncing
+✅ Airbnb calendar syncing automatically daily
 ✅ Domain connected and SSL active
 ✅ All environment variables set
 ✅ Initial pricing rules created
+✅ Can respond to inquiries via email
 
 ## Support Resources
 
 - Vercel Support: https://vercel.com/support
-- Stripe Support: https://support.stripe.com
 - Resend Support: https://resend.com/support
 - Neon Support: https://neon.tech/docs
+- Vercel Cron Jobs: https://vercel.com/docs/cron-jobs
 - Your Airbnb listing: https://www.airbnb.com/rooms/974522329669113361
 
 ---
