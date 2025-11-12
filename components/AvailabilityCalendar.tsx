@@ -207,15 +207,15 @@ export default function AvailabilityCalendar() {
   return (
     <section id="availability" className="section-padding bg-white">
       <style jsx>{`
-        /* Checkout date: Left half grey (still occupied), right half white (available) */
+        /* Checkout date: Left half light red (still occupied), right half white (available) */
         :global(.checkout-date) {
-          background: linear-gradient(to bottom right, #d1d5db 50%, #ffffff 50%) !important;
+          background: linear-gradient(to bottom right, #fee2e2 50%, #ffffff 50%) !important;
           position: relative;
         }
         
-        /* Checkin date: Left half white (available), right half grey (occupied) */
+        /* Checkin date: Left half white (available), right half light red (occupied) */
         :global(.checkin-date) {
-          background: linear-gradient(to bottom right, #ffffff 50%, #d1d5db 50%) !important;
+          background: linear-gradient(to bottom right, #ffffff 50%, #fee2e2 50%) !important;
           position: relative;
         }
       `}</style>
@@ -266,11 +266,11 @@ export default function AvailabilityCalendar() {
                 <span>Booked</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 border border-gray-300 rounded" style={{background: 'linear-gradient(to bottom right, #d1d5db 50%, #ffffff 50%)'}}></div>
+                <div className="w-4 h-4 border border-gray-300 rounded" style={{background: 'linear-gradient(to bottom right, #fee2e2 50%, #ffffff 50%)'}}></div>
                 <span>Check-out Day</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 border border-gray-300 rounded" style={{background: 'linear-gradient(to bottom right, #ffffff 50%, #d1d5db 50%)'}}></div>
+                <div className="w-4 h-4 border border-gray-300 rounded" style={{background: 'linear-gradient(to bottom right, #ffffff 50%, #fee2e2 50%)'}}></div>
                 <span>Check-in Day</span>
               </div>
               <div className="flex items-center gap-2">
@@ -405,7 +405,7 @@ export default function AvailabilityCalendar() {
             </div>
           </div>
           <p className="text-center text-sm text-gray-600 mt-6">
-            *Prices shown are base rates per night. Actual total will include taxes, cleaning fees, and other applicable charges. We'll provide a personalized quote when you inquire.
+            *Prices shown are for reference only. Actual price will be based on seasonality.
           </p>
         </div>
       </div>
