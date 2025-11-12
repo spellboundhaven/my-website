@@ -88,7 +88,10 @@ export default function AvailabilityCalendar() {
     
     // Checkout date: Today is available (for new bookings), but yesterday was blocked
     // Guest checks out in morning, so morning is still occupied (left), afternoon is available (right)
-    return availability[dateStr]?.available && !availability[prevDayStr]?.available
+    const todayAvailable = availability[dateStr]?.available ?? true
+    const yesterdayAvailable = availability[prevDayStr]?.available ?? true
+    
+    return todayAvailable && !yesterdayAvailable
   }
 
   const isCheckinDate = (date: Date) => {
@@ -99,7 +102,10 @@ export default function AvailabilityCalendar() {
     
     // Checkin date: Today is blocked, but yesterday was available
     // Guest checks in afternoon, so morning is available (left), evening is occupied (right)
-    return !availability[dateStr]?.available && availability[prevDayStr]?.available
+    const todayAvailable = availability[dateStr]?.available ?? true
+    const yesterdayAvailable = availability[prevDayStr]?.available ?? true
+    
+    return !todayAvailable && yesterdayAvailable
   }
 
   const tileClassName = ({ date }: { date: Date }) => {
