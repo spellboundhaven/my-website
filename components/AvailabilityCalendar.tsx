@@ -3,9 +3,7 @@
 import { useState, useEffect } from 'react'
 import Calendar from 'react-calendar'
 import 'react-calendar/dist/Calendar.css'
-import { DollarSign, Calendar as CalendarIcon, Users, Clock } from 'lucide-react'
-
-type CalendarValue = Date | null | [Date | null, Date | null]
+import { DollarSign } from 'lucide-react'
 
 interface AvailabilityDate {
   date: string
@@ -16,15 +14,20 @@ interface AvailabilityDate {
 }
 
 export default function AvailabilityCalendar() {
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null)
-  const [checkIn, setCheckIn] = useState<Date | null>(null)
-  const [checkOut, setCheckOut] = useState<Date | null>(null)
-  const [guests, setGuests] = useState(2)
   const [availability, setAvailability] = useState<Record<string, AvailabilityDate>>({})
   const [loading, setLoading] = useState(false)
-  const [totalPrice, setTotalPrice] = useState(0)
-  const [showBookingForm, setShowBookingForm] = useState(false)
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date())
+
+  // Inquiry form state
+  const [formData, setFormData] = useState({
+    checkIn: '',
+    checkOut: '',
+    guests: '2',
+    name: '',
+    email: '',
+    phone: '',
+    notes: ''
+  })
 
   // Fetch availability for the current month
   useEffect(() => {
@@ -67,11 +70,6 @@ export default function AvailabilityCalendar() {
     return date.toISOString().split('T')[0]
   }
 
-  const getPriceForDate = (date: Date) => {
-    const dateStr = formatDate(date)
-    return availability[dateStr]?.price || 450
-  }
-
   const isDateAvailable = (date: Date) => {
     const dateStr = formatDate(date)
     return availability[dateStr]?.available ?? true
@@ -99,7 +97,7 @@ export default function AvailabilityCalendar() {
     prevDay.setDate(prevDay.getDate() - 1)
     const prevDayStr = formatDate(prevDay)
     
-    // Check-in date: Today is blocked (guest is here), but yesterday was available
+    // Checkin date: Today is blocked, but yesterday was available
     // Guest checks in afternoon, so morning is available (left), evening is occupied (right)
     return !availability[dateStr]?.available && availability[prevDayStr]?.available
   }
@@ -113,15 +111,15 @@ export default function AvailabilityCalendar() {
     }
     
     // Check for checkin date first (first blocked day after available period)
-    // Shows: left green (morning available), right red (evening occupied)
+    // Shows: left white (morning available), right grey (evening occupied)
     if (isCheckinDate(date)) {
       return 'checkin-date text-gray-700'
     }
     
     // Check for checkout date (first available day after blocked period)  
-    // Shows: left red (morning occupied), right green (afternoon available)
+    // Shows: left grey (morning occupied), right white (afternoon available)
     if (isCheckoutDate(date)) {
-      return 'checkout-date text-gray-700 hover:bg-green-100'
+      return 'checkout-date text-gray-700'
     }
     
     if (isDateBooked(date)) {
@@ -129,40 +127,20 @@ export default function AvailabilityCalendar() {
     }
     
     if (isDateAvailable(date)) {
-      return 'bg-green-50 text-green-700 hover:bg-green-100'
+      return 'bg-green-50 text-green-700'
     }
     
     return ''
   }
 
-  const handleDateClick = (value: CalendarValue) => {
-    // Handle the case where value is null, an array (date range), or a single date
-    if (!value || Array.isArray(value)) return
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
     
-    const date = value as Date
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    
-    if (date < today || isDateBooked(date)) {
+    if (!formData.checkIn || !formData.checkOut || !formData.name || !formData.email || !formData.phone) {
+      alert('Please fill in all required fields')
       return
     }
-
-    if (!checkIn || (checkIn && checkOut)) {
-      setCheckIn(date)
-      setCheckOut(null)
-    } else if (checkIn && !checkOut) {
-      if (date > checkIn) {
-        setCheckOut(date)
-      } else {
-        setCheckIn(date)
-        setCheckOut(null)
-      }
-    }
-  }
-
-  const handleBookNow = async (formData: any) => {
-    if (!checkIn || !checkOut) return
-
+    
     setLoading(true)
     
     try {
@@ -173,28 +151,33 @@ export default function AvailabilityCalendar() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          check_in_date: formatDate(checkIn),
-          check_out_date: formatDate(checkOut),
+          check_in_date: formData.checkIn,
+          check_out_date: formData.checkOut,
           guest_name: formData.name,
           guest_email: formData.email,
           guest_phone: formData.phone,
-          guests_count: guests,
+          guests_count: parseInt(formData.guests),
           total_price: 0, // Will be calculated manually by host
           notes: formData.notes
         })
       })
 
       const data = await response.json()
-      
+
       if (data.success) {
-        setShowBookingForm(false)
-        alert(`Thank you for your inquiry! We've received your booking request and will contact you shortly at ${formData.email} to confirm availability and discuss payment details.`)
+        alert('Your inquiry has been sent! We\'ll contact you within 24 hours to confirm availability and provide a personalized quote.')
         // Reset form
-        setCheckIn(null)
-        setCheckOut(null)
-        setGuests(2)
+        setFormData({
+          checkIn: '',
+          checkOut: '',
+          guests: '2',
+          name: '',
+          email: '',
+          phone: '',
+          notes: ''
+        })
       } else {
-        alert(data.error || 'Failed to submit inquiry. Please try again.')
+        throw new Error(data.error || 'Failed to submit inquiry')
       }
     } catch (error) {
       console.error('Error submitting inquiry:', error)
@@ -225,27 +208,21 @@ export default function AvailabilityCalendar() {
             Availability & Pricing
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Check availability and book your perfect stay at Spellbound Haven
+            Check availability and send us an inquiry to book your perfect stay
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Calendar */}
+          {/* Calendar - View Only */}
           <div className="bg-gray-50 rounded-lg p-8">
             <h3 className="text-2xl font-bold text-gray-900 mb-6 font-serif">
-              Select Your Dates
+              View Availability
             </h3>
             
             <div className="mb-6">
               <Calendar
-                onChange={handleDateClick}
-                value={selectedDate}
+                value={currentMonth}
                 tileClassName={tileClassName}
-                tileDisabled={({ date }) => {
-                  const today = new Date()
-                  today.setHours(0, 0, 0, 0)
-                  return date < today || isDateBooked(date)
-                }}
                 onActiveStartDateChange={({ activeStartDate }) => {
                   if (activeStartDate) {
                     setCurrentMonth(activeStartDate)
@@ -280,105 +257,131 @@ export default function AvailabilityCalendar() {
             </div>
           </div>
 
-          {/* Booking Form */}
+          {/* Booking Inquiry Form */}
           <div className="bg-white border border-gray-200 rounded-lg p-8">
             <h3 className="text-2xl font-bold text-gray-900 mb-6 font-serif">
-              Booking Details
+              Send Us a Message
             </h3>
 
-            {/* Selected Dates */}
-            <div className="space-y-4 mb-6">
-              <div className="flex items-center gap-3">
-                <CalendarIcon className="w-5 h-5 text-primary-600" />
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Dates */}
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <div className="font-medium text-gray-900">Check-in</div>
-                  <div className="text-gray-600">
-                    {checkIn ? checkIn.toLocaleDateString() : 'Select check-in date'}
-                  </div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Check-in Date *
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={formData.checkIn}
+                    onChange={(e) => setFormData({ ...formData, checkIn: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Check-out Date *
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={formData.checkOut}
+                    onChange={(e) => setFormData({ ...formData, checkOut: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  />
                 </div>
               </div>
-              
-              <div className="flex items-center gap-3">
-                <CalendarIcon className="w-5 h-5 text-primary-600" />
-                <div>
-                  <div className="font-medium text-gray-900">Check-out</div>
-                  <div className="text-gray-600">
-                    {checkOut ? checkOut.toLocaleDateString() : 'Select check-out date'}
-                  </div>
-                </div>
-              </div>
-            </div>
 
-            {/* Guests */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Number of Guests
-              </label>
-              <div className="flex items-center gap-3">
-                <Users className="w-5 h-5 text-primary-600" />
+              {/* Guests */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Number of Guests *
+                </label>
                 <select
-                  value={guests}
-                  onChange={(e) => setGuests(Number(e.target.value))}
-                  className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  value={formData.guests}
+                  onChange={(e) => setFormData({ ...formData, guests: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 >
-                  {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
+                  {Array.from({ length: 20 }, (_, i) => i + 1).map(num => (
                     <option key={num} value={num}>{num} {num === 1 ? 'Guest' : 'Guests'}</option>
                   ))}
                 </select>
               </div>
-            </div>
 
-            {/* Selected Dates Summary */}
-            {checkIn && checkOut && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                <h4 className="font-semibold text-blue-900 mb-2">Selected Dates</h4>
-                <div className="text-sm text-blue-800">
-                  <div className="flex justify-between mb-1">
-                    <span>Nights:</span>
-                    <span className="font-medium">{Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24))}</span>
-                  </div>
-                  <p className="text-xs text-blue-700 mt-2">
-                    💰 We'll send you a personalized quote including all taxes and fees
-                  </p>
-                </div>
+              {/* Name */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  placeholder="John Doe"
+                />
               </div>
-            )}
 
-            {/* Request to Book Button */}
-            {!showBookingForm && (
+              {/* Email */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email *
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  placeholder="john@example.com"
+                />
+              </div>
+
+              {/* Phone */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone *
+                </label>
+                <input
+                  type="tel"
+                  required
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  placeholder="(555) 123-4567"
+                />
+              </div>
+
+              {/* Notes */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Message / Special Requests (Optional)
+                </label>
+                <textarea
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  rows={3}
+                  placeholder="Any special requests, questions, or additional information..."
+                />
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="text-sm text-blue-800">
+                  📧 <strong>What happens next?</strong><br />
+                  We'll receive your inquiry and contact you within 24 hours to confirm availability and provide a personalized quote.
+                </p>
+              </div>
+
               <button
-                onClick={() => setShowBookingForm(true)}
-                disabled={!checkIn || !checkOut}
-                className={`w-full py-3 px-6 rounded-lg font-semibold transition-colors duration-200 ${
-                  checkIn && checkOut
-                    ? 'bg-primary-600 hover:bg-primary-700 text-white'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                }`}
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 px-6 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-semibold transition-colors disabled:bg-gray-400"
               >
-                {checkIn && checkOut ? 'Request to Book' : 'Select Dates to Inquire'}
+                {loading ? 'Sending...' : 'Send Inquiry'}
               </button>
-            )}
-
-            {/* Booking Inquiry Form */}
-            {showBookingForm && (
-              <BookingForm
-                onSubmit={handleBookNow}
-                onCancel={() => setShowBookingForm(false)}
-                loading={loading}
-              />
-            )}
-
-            {/* Additional Info */}
-            <div className="mt-6 text-sm text-gray-600">
-              <div className="flex items-center gap-2 mb-2">
-                <Clock className="w-4 h-4" />
-                <span>Minimum 3-night stay required</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <DollarSign className="w-4 h-4" />
-                <span>Prices include all taxes and fees</span>
-              </div>
-            </div>
+            </form>
           </div>
         </div>
 
@@ -410,112 +413,5 @@ export default function AvailabilityCalendar() {
         </div>
       </div>
     </section>
-  )
-}
-
-// Booking Inquiry Form Component
-function BookingForm({
-  onSubmit,
-  onCancel,
-  loading
-}: {
-  onSubmit: (data: any) => void
-  onCancel: () => void
-  loading: boolean
-}) {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    notes: ''
-  })
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onSubmit(formData)
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Full Name *
-        </label>
-        <input
-          type="text"
-          required
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-          placeholder="John Doe"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Email *
-        </label>
-        <input
-          type="email"
-          required
-          value={formData.email}
-          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-          placeholder="john@example.com"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Phone *
-        </label>
-        <input
-          type="tel"
-          required
-          value={formData.phone}
-          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-          placeholder="(555) 123-4567"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Message / Special Requests (Optional)
-        </label>
-        <textarea
-          value={formData.notes}
-          onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-          rows={3}
-          placeholder="Any special requests, questions, or additional information..."
-        />
-      </div>
-
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-        <p className="text-sm text-blue-800">
-          📧 <strong>What happens next?</strong><br />
-          We'll receive your inquiry and contact you within 24 hours to confirm availability and discuss payment options.
-        </p>
-      </div>
-
-      <div className="flex gap-3 pt-2">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="flex-1 py-2 px-4 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-          disabled={loading}
-        >
-          Back
-        </button>
-        <button
-          type="submit"
-          disabled={loading}
-          className="flex-1 py-2 px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-semibold transition-colors disabled:bg-gray-400"
-        >
-          {loading ? 'Sending...' : 'Send Inquiry'}
-        </button>
-      </div>
-    </form>
   )
 }

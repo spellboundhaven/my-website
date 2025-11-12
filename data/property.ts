@@ -52,11 +52,10 @@ export const propertyData = {
       "Sleeps up to 20 guests",
       "9 miles to Disney World",
       "Custom-built kids-themed bedrooms",
-      "Private pool and spa",
+      "Private heated pool with hot tub",
       "Marvel arcade game room",
       "Windsor Island Resort amenities",
-      "Private heated pool with hot tub",
-      "High-speed WiFi (400mbps+)",
+      "High-speed WiFi (900mbps)",
       "Smart TVs in every bedroom",
       "Free parking with resort pass for up to 5 vehicles"
     ],
