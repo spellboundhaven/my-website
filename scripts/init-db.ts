@@ -1,4 +1,9 @@
+import { config } from 'dotenv';
+import { resolve } from 'path';
 import { initDatabase } from '../lib/db';
+
+// Load .env.local
+config({ path: resolve(process.cwd(), '.env.local') });
 
 async function setupDatabase() {
   try {
