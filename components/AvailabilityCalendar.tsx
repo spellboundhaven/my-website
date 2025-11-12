@@ -82,6 +82,27 @@ export default function AvailabilityCalendar() {
     return availability[dateStr]?.available === false
   }
 
+  const isCheckoutDate = (date: Date) => {
+    const dateStr = formatDate(date)
+    const prevDay = new Date(date)
+    prevDay.setDate(prevDay.getDate() - 1)
+    const prevDayStr = formatDate(prevDay)
+    
+    // Checkout date: Today is available (for new bookings), but yesterday was blocked
+    // Guest checks out in morning, so morning is still occupied (left), afternoon is available (right)
+    return availability[dateStr]?.available && !availability[prevDayStr]?.available
+  }
+
+  const isCheckinDate = (date: Date) => {
+    const dateStr = formatDate(date)
+    const prevDay = new Date(date)
+    prevDay.setDate(prevDay.getDate() - 1)
+    const prevDayStr = formatDate(prevDay)
+    
+    // Check-in date: Today is blocked (guest is here), but yesterday was available
+    // Guest checks in afternoon, so morning is available (left), evening is occupied (right)
+    return !availability[dateStr]?.available && availability[prevDayStr]?.available
+  }
 
   const tileClassName = ({ date }: { date: Date }) => {
     const today = new Date()
@@ -89,6 +110,18 @@ export default function AvailabilityCalendar() {
     
     if (date < today) {
       return 'text-gray-400 cursor-not-allowed'
+    }
+    
+    // Check for checkin date first (first blocked day after available period)
+    // Shows: left green (morning available), right red (evening occupied)
+    if (isCheckinDate(date)) {
+      return 'checkin-date text-gray-700'
+    }
+    
+    // Check for checkout date (first available day after blocked period)  
+    // Shows: left red (morning occupied), right green (afternoon available)
+    if (isCheckoutDate(date)) {
+      return 'checkout-date text-gray-700 hover:bg-green-100'
     }
     
     if (isDateBooked(date)) {
@@ -173,6 +206,19 @@ export default function AvailabilityCalendar() {
 
   return (
     <section id="availability" className="section-padding bg-white">
+      <style jsx>{`
+        /* Checkout date: Left half blocked (red), right half available (green) */
+        :global(.checkout-date) {
+          background: linear-gradient(to bottom right, #fecaca 50%, #d1fae5 50%) !important;
+          position: relative;
+        }
+        
+        /* Checkin date: Left half available (green), right half blocked (red) */
+        :global(.checkin-date) {
+          background: linear-gradient(to bottom right, #d1fae5 50%, #fecaca 50%) !important;
+          position: relative;
+        }
+      `}</style>
       <div className="container-max">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 font-serif">
@@ -218,6 +264,14 @@ export default function AvailabilityCalendar() {
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-red-100 border border-red-200 rounded"></div>
                 <span>Booked</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 border border-gray-300 rounded" style={{background: 'linear-gradient(to bottom right, #fecaca 50%, #d1fae5 50%)'}}></div>
+                <span>Check-out Day</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 border border-gray-300 rounded" style={{background: 'linear-gradient(to bottom right, #d1fae5 50%, #fecaca 50%)'}}></div>
+                <span>Check-in Day</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-gray-100 border border-gray-200 rounded"></div>
