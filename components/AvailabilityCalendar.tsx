@@ -36,10 +36,12 @@ export default function AvailabilityCalendar() {
     try {
       const year = date.getFullYear()
       const month = date.getMonth()
-      // Get first day of current month
-      const startDate = new Date(year, month, 1).toISOString().split('T')[0]
-      // Get first day of NEXT month (to include entire current month)
-      const endDate = new Date(year, month + 1, 1).toISOString().split('T')[0]
+      // Get first day of current month, then go back 7 days to catch previous month dates shown in calendar
+      const firstDay = new Date(year, month, 1)
+      const startDate = new Date(firstDay.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+      // Get first day of NEXT month, then go forward 7 days to catch next month dates shown in calendar
+      const lastDay = new Date(year, month + 1, 1)
+      const endDate = new Date(lastDay.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
 
       console.log(`Fetching availability for ${startDate} to ${endDate}`)
 

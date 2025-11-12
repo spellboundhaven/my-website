@@ -42,7 +42,7 @@ export default function Reviews() {
               Based on {reviews.length} guest reviews
             </div>
             <div className="text-gray-500">
-              "Exceptional hospitality and breathtaking views"
+              "Perfect for Disney family vacations"
             </div>
           </div>
         </div>
