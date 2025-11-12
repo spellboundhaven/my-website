@@ -141,15 +141,18 @@ export default function AdminDashboard() {
       const data = await response.json()
       
       if (data.success) {
-        alert(`Successfully synced ${data.bookedDates.length} Airbnb bookings!`)
+        alert(`✅ Successfully synced ${data.bookedDates.length} Airbnb bookings!`)
         fetchAdminData()
         fetchLastSync()
       } else {
-        alert('Failed to sync Airbnb calendar')
+        // Show the actual error details from the API
+        const errorMsg = data.details || data.error || 'Failed to sync Airbnb calendar'
+        alert(`❌ Sync Failed:\n\n${errorMsg}\n\nPlease check:\n• Your iCal URL is correct\n• The URL is accessible\n• You have internet connection`)
+        console.error('Sync error details:', data)
       }
     } catch (error) {
       console.error('Error syncing Airbnb:', error)
-      alert('An error occurred while syncing')
+      alert(`❌ Network Error:\n\n${error instanceof Error ? error.message : 'An error occurred while syncing'}\n\nPlease check your internet connection and try again.`)
     } finally {
       setLoading(false)
     }
