@@ -51,33 +51,25 @@ export default function Reviews() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
           {reviews.map((review) => (
             <div key={review.id} className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow duration-200">
-              <div className="flex items-center mb-4">
-                {review.avatar && (
-                  <Image
-                    src={review.avatar}
-                    alt={review.name}
-                    width={48}
-                    height={48}
-                    className="rounded-full mr-4"
-                  />
+              <div className="mb-4">
+                <div className="font-semibold text-gray-900 mb-1">{review.name}</div>
+                {review.location && (
+                  <div className="text-sm text-gray-500 mb-2">{review.location}</div>
                 )}
-                <div>
-                  <div className="font-semibold text-gray-900">{review.name}</div>
-                  <div className="flex items-center">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`w-4 h-4 ${
-                          i < review.rating
-                            ? 'text-yellow-400 fill-current'
-                            : 'text-gray-300'
-                        }`}
-                      />
-                    ))}
-                    <span className="ml-2 text-sm text-gray-500">
-                      {new Date(review.date).toLocaleDateString()}
-                    </span>
-                  </div>
+                <div className="flex items-center">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`w-4 h-4 ${
+                        i < review.rating
+                          ? 'text-yellow-400 fill-current'
+                          : 'text-gray-300'
+                      }`}
+                    />
+                  ))}
+                  <span className="ml-2 text-sm text-gray-500">
+                    {review.date}
+                  </span>
                 </div>
               </div>
               
