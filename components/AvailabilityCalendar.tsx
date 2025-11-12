@@ -207,15 +207,15 @@ export default function AvailabilityCalendar() {
   return (
     <section id="availability" className="section-padding bg-white">
       <style jsx>{`
-        /* Checkout date: Left half blocked (red), right half available (green) */
+        /* Checkout date: Left half grey (still occupied), right half white (available) */
         :global(.checkout-date) {
-          background: linear-gradient(to bottom right, #fecaca 50%, #d1fae5 50%) !important;
+          background: linear-gradient(to bottom right, #d1d5db 50%, #ffffff 50%) !important;
           position: relative;
         }
         
-        /* Checkin date: Left half available (green), right half blocked (red) */
+        /* Checkin date: Left half white (available), right half grey (occupied) */
         :global(.checkin-date) {
-          background: linear-gradient(to bottom right, #d1fae5 50%, #fecaca 50%) !important;
+          background: linear-gradient(to bottom right, #ffffff 50%, #d1d5db 50%) !important;
           position: relative;
         }
       `}</style>
@@ -266,11 +266,11 @@ export default function AvailabilityCalendar() {
                 <span>Booked</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 border border-gray-300 rounded" style={{background: 'linear-gradient(to bottom right, #fecaca 50%, #d1fae5 50%)'}}></div>
+                <div className="w-4 h-4 border border-gray-300 rounded" style={{background: 'linear-gradient(to bottom right, #d1d5db 50%, #ffffff 50%)'}}></div>
                 <span>Check-out Day</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 border border-gray-300 rounded" style={{background: 'linear-gradient(to bottom right, #d1fae5 50%, #fecaca 50%)'}}></div>
+                <div className="w-4 h-4 border border-gray-300 rounded" style={{background: 'linear-gradient(to bottom right, #ffffff 50%, #d1d5db 50%)'}}></div>
                 <span>Check-in Day</span>
               </div>
               <div className="flex items-center gap-2">
