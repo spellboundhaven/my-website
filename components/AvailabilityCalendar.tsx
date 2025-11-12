@@ -196,6 +196,16 @@ export default function AvailabilityCalendar() {
   return (
     <section id="availability" className="section-padding bg-white">
       <style jsx>{`
+        /* Booked dates: Full grey block */
+        :global(.react-calendar__tile.bg-gray-100) {
+          background-color: #f3f4f6 !important;
+        }
+        
+        /* Available dates: Light green */
+        :global(.react-calendar__tile.bg-green-50) {
+          background-color: #f0fdf4 !important;
+        }
+        
         /* Checkout date: Left half light grey (still occupied), right half white (available) */
         :global(.checkout-date) {
           background: linear-gradient(to bottom right, #f3f4f6 50%, #ffffff 50%) !important;
