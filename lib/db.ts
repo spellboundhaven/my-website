@@ -320,10 +320,11 @@ export async function getAvailabilityForRange(startDate: string, endDate: string
   `;
   
   // Get all blocks in range
+  // Note: end_date is exclusive (checkout date)
   const blocks = await sql`
     SELECT start_date, end_date, reason FROM date_blocks
     WHERE start_date < ${endDate}
-    AND end_date >= ${startDate}
+    AND end_date > ${startDate}
   `;
   
   // Get all pricing rules
@@ -344,10 +345,11 @@ export async function getAvailabilityForRange(startDate: string, endDate: string
     });
     
     // Check if date is blocked
+    // Note: end_date is exclusive (checkout date), so we use < instead of <=
     const block = blocks.rows.find((bl: any) => {
       const blockStart = new Date(bl.start_date).toISOString().split('T')[0];
       const blockEnd = new Date(bl.end_date).toISOString().split('T')[0];
-      return dateStr >= blockStart && dateStr <= blockEnd;
+      return dateStr >= blockStart && dateStr < blockEnd;
     });
     
     // Get price for date
