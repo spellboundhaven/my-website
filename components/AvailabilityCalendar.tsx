@@ -129,7 +129,7 @@ export default function AvailabilityCalendar() {
     }
     
     if (isDateBooked(date)) {
-      return 'bg-red-100 text-red-600 cursor-not-allowed'
+      return 'bg-gray-100 text-gray-600 cursor-not-allowed'
     }
     
     if (isDateAvailable(date)) {
@@ -245,7 +245,7 @@ export default function AvailabilityCalendar() {
                 <span>Available</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-red-100 border border-red-200 rounded"></div>
+                <div className="w-4 h-4 bg-gray-100 border border-gray-200 rounded"></div>
                 <span>Booked</span>
               </div>
               <div className="flex items-center gap-2">
