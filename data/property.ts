@@ -46,10 +46,10 @@ export const propertyData = {
   },
 
   overview: {
-    summary: "Designed to accommodate a maximum of 22 guests, Spellbound Haven ensures comfort and convenience for every member of your party. Located just 9 miles from Disney World, this property features custom-built kids-themed bedrooms, a Marvel arcade game room, private pool and spa, and access to Windsor Island Resort amenities.",
+    summary: "Designed to accommodate a maximum of 20 guests, Spellbound Haven ensures comfort and convenience for every member of your party. Located just 9 miles from Disney World, this property features custom-built kids-themed bedrooms, a Marvel arcade game room, private pool and spa, and access to Windsor Island Resort amenities.",
     highlights: [
       "10 Bedrooms, 8 Bathrooms",
-      "Sleeps up to 22 guests",
+      "Sleeps up to 20 guests",
       "9 miles to Disney World",
       "Custom-built kids-themed bedrooms",
       "Private pool and spa",

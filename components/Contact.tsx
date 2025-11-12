@@ -82,14 +82,25 @@ export default function Contact() {
               </div>
             </div>
 
-            {/* Map Placeholder */}
-            <div className="bg-gray-100 rounded-lg h-64 flex items-center justify-center">
-              <div className="text-center">
-                <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600">Interactive map coming soon</p>
-                <p className="text-sm text-gray-500 mt-2">
-                  {propertyData.contact.address}
-                </p>
+            {/* Location Info */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+              <div className="flex items-start gap-3">
+                <MapPin className="w-6 h-6 text-blue-600 mt-1 flex-shrink-0" />
+                <div>
+                  <h4 className="font-semibold text-blue-900 mb-2">Location</h4>
+                  <p className="text-blue-800 mb-2">{propertyData.contact.address}</p>
+                  <p className="text-sm text-blue-700">
+                    Just 9 miles from Disney World - approximately 15 minutes by car
+                  </p>
+                  <a 
+                    href="https://www.google.com/maps/search/?api=1&query=Windsor+Island+Resort+Orlando+FL"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block mt-3 text-primary-600 hover:text-primary-700 font-medium text-sm"
+                  >
+                    View on Google Maps →
+                  </a>
+                </div>
               </div>
             </div>
           </div>

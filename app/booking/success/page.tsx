@@ -93,7 +93,7 @@ function BookingSuccessContent() {
             <li>• Check-in time: 4:00 PM</li>
             <li>• Check-out time: 10:00 AM</li>
             <li>• Minimum 3-night stay required</li>
-            <li>• Maximum 22 guests</li>
+            <li>• Maximum 20 guests</li>
           </ul>
         </div>
 
