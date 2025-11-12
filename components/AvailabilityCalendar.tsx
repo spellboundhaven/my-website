@@ -113,7 +113,7 @@ export default function AvailabilityCalendar() {
     today.setHours(0, 0, 0, 0)
     
     if (date < today) {
-      return 'text-gray-400 cursor-not-allowed'
+      return 'bg-gray-100 text-gray-400 cursor-not-allowed'
     }
     
     // Check for checkin date first (first blocked day after available period)
