@@ -24,11 +24,12 @@ export default function AvailabilityCalendar() {
   const [loading, setLoading] = useState(false)
   const [totalPrice, setTotalPrice] = useState(0)
   const [showBookingForm, setShowBookingForm] = useState(false)
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date())
 
   // Fetch availability for the current month
   useEffect(() => {
-    fetchAvailability(new Date())
-  }, [])
+    fetchAvailability(currentMonth)
+  }, [currentMonth])
 
   const fetchAvailability = async (date: Date) => {
     setLoading(true)
@@ -216,6 +217,11 @@ export default function AvailabilityCalendar() {
                   const today = new Date()
                   today.setHours(0, 0, 0, 0)
                   return date < today || isDateBooked(date)
+                }}
+                onActiveStartDateChange={({ activeStartDate }) => {
+                  if (activeStartDate) {
+                    setCurrentMonth(activeStartDate)
+                  }
                 }}
                 className="w-full"
               />
