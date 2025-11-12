@@ -111,21 +111,25 @@ export default function AvailabilityCalendar() {
   const tileClassName = ({ date }: { date: Date }) => {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
+    const compareDate = new Date(date)
+    compareDate.setHours(0, 0, 0, 0)
     
-    if (date < today) {
-      return 'bg-gray-100 text-gray-400 cursor-not-allowed'
+    const isToday = compareDate.getTime() === today.getTime()
+    
+    if (compareDate < today) {
+      return 'bg-blue-50 text-gray-400 cursor-not-allowed'
     }
     
     // Check for checkin date first (first blocked day after available period)
     // Shows: left white (morning available), right grey (evening occupied)
     if (isCheckinDate(date)) {
-      return 'checkin-date text-gray-700'
+      return isToday ? 'checkin-date text-blue-600 font-semibold' : 'checkin-date text-gray-700'
     }
     
     // Check for checkout date (first available day after blocked period)  
     // Shows: left grey (morning occupied), right white (afternoon available)
     if (isCheckoutDate(date)) {
-      return 'checkout-date text-gray-700'
+      return isToday ? 'checkout-date text-blue-600 font-semibold' : 'checkout-date text-gray-700'
     }
     
     if (isDateBooked(date)) {
@@ -133,7 +137,7 @@ export default function AvailabilityCalendar() {
     }
     
     if (isDateAvailable(date)) {
-      return 'bg-white text-gray-900'
+      return isToday ? 'bg-white text-blue-600 font-semibold' : 'bg-white text-gray-900'
     }
     
     return ''
@@ -199,6 +203,11 @@ export default function AvailabilityCalendar() {
         /* Booked dates: Full grey block */
         :global(.react-calendar__tile.bg-gray-100) {
           background-color: #f3f4f6 !important;
+        }
+        
+        /* Past dates: Light blue */
+        :global(.react-calendar__tile.bg-blue-50) {
+          background-color: #eff6ff !important;
         }
         
         /* Available dates: White */
@@ -267,7 +276,7 @@ export default function AvailabilityCalendar() {
                 <span>Check-in Day</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-gray-100 border border-gray-200 rounded"></div>
+                <div className="w-4 h-4 bg-blue-50 border border-blue-200 rounded"></div>
                 <span>Past Dates</span>
               </div>
             </div>
