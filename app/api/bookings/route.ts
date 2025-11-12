@@ -81,7 +81,6 @@ export async function POST(request: NextRequest) {
                 <h2 style="color: #1f2937; margin-top: 0;">📅 Requested Dates</h2>
                 <p><strong>Check-in:</strong> ${check_in_date}</p>
                 <p><strong>Check-out:</strong> ${check_out_date}</p>
-                ${total_price ? `<p><strong>Estimated Total:</strong> $${total_price}</p>` : ''}
               </div>
               
               ${notes ? `<div style="background-color: #fffbeb; border-radius: 8px; padding: 20px; margin: 20px 0;">
@@ -90,7 +89,7 @@ export async function POST(request: NextRequest) {
               </div>` : ''}
               
               <div style="background-color: #f0fdf4; border-radius: 8px; padding: 20px; margin: 20px 0; border-left: 4px solid #22c55e;">
-                <p style="margin: 0;"><strong>Next Steps:</strong> Reply to ${guest_email} to confirm availability and discuss payment details.</p>
+                <p style="margin: 0;"><strong>Next Steps:</strong> Reply to ${guest_email} to confirm availability and provide a personalized quote including taxes, cleaning fees, and any other applicable charges.</p>
               </div>
             </div>
           `

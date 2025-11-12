@@ -36,13 +36,18 @@ export default function AvailabilityCalendar() {
     try {
       const year = date.getFullYear()
       const month = date.getMonth()
+      // Get first day of current month
       const startDate = new Date(year, month, 1).toISOString().split('T')[0]
-      const endDate = new Date(year, month + 1, 0).toISOString().split('T')[0]
+      // Get first day of NEXT month (to include entire current month)
+      const endDate = new Date(year, month + 1, 1).toISOString().split('T')[0]
+
+      console.log(`Fetching availability for ${startDate} to ${endDate}`)
 
       const response = await fetch(`/api/availability?startDate=${startDate}&endDate=${endDate}`)
       const data = await response.json()
 
       if (data.success) {
+        console.log(`Loaded ${data.availability.length} days for ${startDate}`)
         const availabilityMap: Record<string, AvailabilityDate> = {}
         data.availability.forEach((item: AvailabilityDate) => {
           availabilityMap[item.date] = item
@@ -75,31 +80,6 @@ export default function AvailabilityCalendar() {
     return availability[dateStr]?.available === false
   }
 
-  const calculateTotalPrice = async () => {
-    if (!checkIn || !checkOut) return 0
-    
-    try {
-      const response = await fetch(
-        `/api/pricing?startDate=${formatDate(checkIn)}&endDate=${formatDate(checkOut)}`
-      )
-      const data = await response.json()
-      
-      if (data.success) {
-        setTotalPrice(data.totalPrice)
-        return data.totalPrice
-      }
-    } catch (error) {
-      console.error('Error calculating price:', error)
-    }
-    
-    return 0
-  }
-
-  useEffect(() => {
-    if (checkIn && checkOut) {
-      calculateTotalPrice()
-    }
-  }, [checkIn, checkOut])
 
   const tileClassName = ({ date }: { date: Date }) => {
     const today = new Date()
@@ -164,7 +144,7 @@ export default function AvailabilityCalendar() {
           guest_email: formData.email,
           guest_phone: formData.phone,
           guests_count: guests,
-          total_price: totalPrice,
+          total_price: 0, // Will be calculated manually by host
           notes: formData.notes
         })
       })
@@ -292,23 +272,18 @@ export default function AvailabilityCalendar() {
               </div>
             </div>
 
-            {/* Pricing Summary */}
+            {/* Selected Dates Summary */}
             {checkIn && checkOut && (
-              <div className="bg-gray-50 rounded-lg p-4 mb-6">
-                <h4 className="font-semibold text-gray-900 mb-3">Pricing Summary</h4>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span>Nightly Rate</span>
-                    <span>${getPriceForDate(checkIn)}/night</span>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <h4 className="font-semibold text-blue-900 mb-2">Selected Dates</h4>
+                <div className="text-sm text-blue-800">
+                  <div className="flex justify-between mb-1">
+                    <span>Nights:</span>
+                    <span className="font-medium">{Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24))}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Nights</span>
-                    <span>{Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24))}</span>
-                  </div>
-                  <div className="flex justify-between font-semibold border-t pt-2">
-                    <span>Total</span>
-                    <span>${totalPrice || 0}</span>
-                  </div>
+                  <p className="text-xs text-blue-700 mt-2">
+                    💰 We'll send you a personalized quote including all taxes and fees
+                  </p>
                 </div>
               </div>
             )}
@@ -363,16 +338,19 @@ export default function AvailabilityCalendar() {
               <div className="text-sm text-gray-500">Per night</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-primary-600 mb-2">$500</div>
+              <div className="text-3xl font-bold text-primary-600 mb-2">$600</div>
               <div className="text-gray-600 mb-1">Peak Season</div>
               <div className="text-sm text-gray-500">Per night</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-primary-600 mb-2">$600</div>
+              <div className="text-3xl font-bold text-primary-600 mb-2">$1,000</div>
               <div className="text-gray-600 mb-1">Holiday Rate</div>
               <div className="text-sm text-gray-500">Per night</div>
             </div>
           </div>
+          <p className="text-center text-sm text-gray-600 mt-6">
+            *Prices shown are base rates per night. Actual total will include taxes, cleaning fees, and other applicable charges. We'll provide a personalized quote when you inquire.
+          </p>
         </div>
       </div>
     </section>
