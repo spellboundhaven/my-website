@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { Menu, X } from 'lucide-react'
 
 export default function Navigation() {
@@ -22,9 +23,18 @@ export default function Navigation() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <h1 className="text-2xl font-bold text-primary-600 font-serif">
-              Spellbound Haven
-            </h1>
+            <a href="#home" className="flex items-center gap-3">
+              <Image
+                src="/icon.png"
+                alt="Spellbound Haven Logo"
+                width={40}
+                height={40}
+                className="w-10 h-10"
+              />
+              <h1 className="text-2xl font-bold text-primary-600 font-serif">
+                Spellbound Haven
+              </h1>
+            </a>
           </div>
 
           {/* Desktop Navigation */}

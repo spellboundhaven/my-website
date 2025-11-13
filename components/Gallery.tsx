@@ -66,15 +66,25 @@ export default function Gallery() {
       <div className="container-max">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 font-serif">
-            Gallery & Floor Plans
+            Gallery & Floor Plan
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Explore every corner of Spellbound Haven through our detailed gallery and floor plans
+            Explore every corner of Spellbound Haven through our detailed gallery and floor plan
           </p>
         </div>
 
         {/* Floor Navigation */}
         <div className="flex flex-wrap justify-center gap-4 mb-8">
+          <button
+            onClick={() => handleFloorSelection('floorplan')}
+            className={`px-6 py-3 rounded-lg font-medium transition-colors duration-200 ${
+              selectedFloor === 'floorplan'
+                ? 'bg-primary-600 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            Floor Plan
+          </button>
           <button
             onClick={() => handleFloorSelection('all')}
             className={`px-6 py-3 rounded-lg font-medium transition-colors duration-200 ${
@@ -117,27 +127,55 @@ export default function Gallery() {
           </button>
         </div>
 
-        {/* Room Navigation */}
-        <div className="flex flex-wrap justify-center gap-4 mb-12">
-          {filteredRooms.map((room, index) => {
-            return (
-              <button
-                key={index}
-                onClick={() => setSelectedRoom(index)}
-                className={`px-6 py-3 rounded-lg font-medium transition-colors duration-200 ${
-                  selectedRoom === index
-                    ? 'bg-primary-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                {room.name.replace('First Floor - ', '').replace('Second Floor - ', '')}
-              </button>
-            )
-          })}
-        </div>
+        {/* Room Navigation - Only show if not floor plan */}
+        {selectedFloor !== 'floorplan' && (
+          <div className="flex flex-wrap justify-center gap-4 mb-12">
+            {filteredRooms.map((room, index) => {
+              return (
+                <button
+                  key={index}
+                  onClick={() => setSelectedRoom(index)}
+                  className={`px-6 py-3 rounded-lg font-medium transition-colors duration-200 ${
+                    selectedRoom === index
+                      ? 'bg-primary-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {room.name.replace('First Floor - ', '').replace('Second Floor - ', '')}
+                </button>
+              )
+            })}
+          </div>
+        )}
 
-        {/* Selected Room Display */}
-        <div className="mb-12">
+        {/* Floor Plan Display */}
+        {selectedFloor === 'floorplan' ? (
+          <div className="mb-12">
+            <div className="max-w-4xl mx-auto">
+              <div className="bg-white rounded-lg shadow-lg p-6">
+                <div className="text-center mb-6">
+                  <h3 className="text-3xl font-bold text-gray-900 mb-4 font-serif">
+                    Property Floor Plan
+                  </h3>
+                  <p className="text-lg text-gray-600">
+                    Complete layout showing all 10 bedrooms, 8 bathrooms, and common areas
+                  </p>
+                </div>
+                <div className="rounded-lg overflow-hidden">
+                  <Image
+                    src="/images/floorplan/floorplan.jpg"
+                    alt="Spellbound Haven Floor Plan"
+                    width={1811}
+                    height={1898}
+                    className="w-full h-auto"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* Selected Room Display */
+          <div className="mb-12">
           <div className="text-center mb-8">
             <h3 className="text-3xl font-bold text-gray-900 mb-4 font-serif">
               {filteredRooms[selectedRoom]?.name}
@@ -175,31 +213,7 @@ export default function Gallery() {
             ))}
           </div>
         </div>
-
-        {/* Floor Plan Section */}
-        <div className="bg-gray-50 rounded-lg p-8">
-          <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center font-serif">
-            Property Floor Plan
-          </h3>
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="rounded-lg overflow-hidden">
-                <Image
-                  src="/images/floorplan/floorplan.jpg"
-                  alt="Spellbound Haven Floor Plan"
-                  width={1811}
-                  height={1898}
-                  className="w-full h-auto"
-                />
-              </div>
-              <div className="mt-4 text-center">
-                <p className="text-gray-600 text-sm">
-                  Complete layout showing all 10 bedrooms, 8 bathrooms, and common areas
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Image Modal */}
