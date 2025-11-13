@@ -10,6 +10,22 @@ export const metadata: Metadata = {
 
 const blogPosts = [
   {
+    id: 'top-10-things-windsor-island-resort',
+    title: 'Top 10 Things to Do at Windsor Island Resort Orlando',
+    excerpt: 'Discover the best amenities and activities at Windsor Island Resort. From lazy rivers to mini golf, learn how to make the most of your vacation rental stay.',
+    date: 'January 12, 2025',
+    readTime: '7 min read',
+    category: 'Resort Guide',
+  },
+  {
+    id: 'save-money-disney-vacation',
+    title: 'How to Save Money on Your Disney Family Vacation',
+    excerpt: 'Expert tips to save thousands on your Disney vacation. Learn how vacation rentals, meal planning, and smart ticket strategies cut costs for large families.',
+    date: 'January 11, 2025',
+    readTime: '9 min read',
+    category: 'Budget Tips',
+  },
+  {
     id: 'disney-family-vacation-guide',
     title: 'Ultimate Guide to Planning a Disney Family Vacation',
     excerpt: 'Everything you need to know about planning the perfect Disney family vacation, from choosing accommodation to navigating the parks with multiple generations.',

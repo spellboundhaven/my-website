@@ -1,6 +1,6 @@
 'use client'
 
-import { Facebook, Instagram, Home, Mail, MessageCircle, MapPin } from 'lucide-react'
+import { Facebook, Instagram, Home, Mail, MessageCircle, MapPin, BookOpen } from 'lucide-react'
 import { propertyData } from '@/data/property'
 
 export default function Footer() {
@@ -13,7 +13,6 @@ export default function Footer() {
     { name: 'Amenities', href: '#amenities' },
     { name: 'Availability', href: '#availability' },
     { name: 'Reviews', href: '#reviews' },
-    { name: 'Blog', href: '/blog' },
     { name: 'Contact', href: '#contact' },
   ]
 
@@ -35,17 +34,9 @@ export default function Footer() {
               <h3 className="text-2xl font-bold font-serif mb-4">
                 Spellbound Haven
               </h3>
-              <p className="text-gray-300 mb-4">
+              <p className="text-gray-300 mb-6">
                 Your gateway to paradise. Experience luxury, comfort, and unforgettable memories at our Disney themed family villa.
               </p>
-              
-              {/* Location */}
-              <div className="flex items-start space-x-3 mb-6">
-                <MapPin className="w-5 h-5 text-primary-400 flex-shrink-0 mt-1" />
-                <span className="text-gray-300">
-                  {propertyData.contact.address}
-                </span>
-              </div>
               
               {/* Social Media */}
               <div className="flex space-x-4">
@@ -75,6 +66,13 @@ export default function Footer() {
                   aria-label="Airbnb"
                 >
                   <Home className="w-5 h-5" />
+                </a>
+                <a
+                  href="/blog"
+                  className="bg-gray-800 hover:bg-primary-600 p-2 rounded-lg transition-colors duration-200"
+                  aria-label="Blog"
+                >
+                  <BookOpen className="w-5 h-5" />
                 </a>
               </div>
             </div>
@@ -170,10 +168,9 @@ export default function Footer() {
               © {currentYear} Spellbound Haven. All rights reserved.
             </div>
             
-            <div className="flex items-center space-x-6 text-sm text-gray-400">
-              <span>⭐ Rated 5.0/5 by guests</span>
-              <span>🏆 Luxury Vacation Rental</span>
-              <span>🏰 Near Disney World</span>
+            <div className="flex items-center space-x-2 text-sm text-gray-400">
+              <MapPin className="w-4 h-4 text-primary-400 flex-shrink-0" />
+              <span>{propertyData.contact.address}</span>
             </div>
           </div>
         </div>
