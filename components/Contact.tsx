@@ -20,31 +20,25 @@ export default function Contact() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="text-center bg-gray-50 rounded-lg p-8">
               <div className="text-5xl mb-4">📧</div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Email</h3>
-              <p className="text-gray-600 text-sm mb-4">
-                Detailed responses within 24 hours
-              </p>
+              <h3 className="text-xl font-semibold text-gray-900 mb-6">Email</h3>
               <a 
                 href={`mailto:${propertyData.contact.email}`} 
-                className="text-primary-600 hover:text-primary-700 font-medium break-all"
+                className="text-primary-600 hover:text-primary-700 font-medium"
               >
-                {propertyData.contact.email}
+                Email Us
               </a>
             </div>
             
             <div className="text-center bg-gray-50 rounded-lg p-8">
               <div className="text-5xl mb-4">💬</div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Facebook Messenger</h3>
-              <p className="text-gray-600 text-sm mb-4">
-                Quick responses for urgent inquiries
-              </p>
+              <h3 className="text-xl font-semibold text-gray-900 mb-6">Facebook Messenger</h3>
               <a 
                 href="https://m.me/spellboundhaven.disney"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary-600 hover:text-primary-700 font-medium"
               >
-                Message us
+                Message Us
               </a>
             </div>
           </div>
