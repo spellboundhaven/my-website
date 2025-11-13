@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import StructuredData from '@/components/StructuredData'
 
 export const metadata: Metadata = {
   title: 'Spellbound Haven | Windsor Island Resort Vacation Rental Near Disney World | Orlando Family Villa',
@@ -35,6 +36,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <StructuredData />
+      </head>
       <body className="antialiased">
         {children}
       </body>

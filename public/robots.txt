@@ -1,0 +1,11 @@
+# Allow all search engines to crawl the site
+User-agent: *
+Allow: /
+
+# Disallow admin pages (if any)
+Disallow: /admin
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://spellboundhaven.com/sitemap.xml
+

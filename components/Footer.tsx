@@ -13,6 +13,7 @@ export default function Footer() {
     { name: 'Amenities', href: '#amenities' },
     { name: 'Availability', href: '#availability' },
     { name: 'Reviews', href: '#reviews' },
+    { name: 'Blog', href: '/blog' },
     { name: 'Contact', href: '#contact' },
   ]
 
