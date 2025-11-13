@@ -16,8 +16,8 @@ export default function Contact() {
         </div>
 
         {/* Contact Options */}
-        <div className="max-w-4xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="max-w-3xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="text-center bg-gray-50 rounded-lg p-8">
               <div className="text-5xl mb-4">📧</div>
               <h3 className="text-xl font-semibold text-gray-900 mb-3">Email</h3>
@@ -29,20 +29,6 @@ export default function Contact() {
                 className="text-primary-600 hover:text-primary-700 font-medium break-all"
               >
                 {propertyData.contact.email}
-              </a>
-            </div>
-            
-            <div className="text-center bg-gray-50 rounded-lg p-8">
-              <div className="text-5xl mb-4">📞</div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Phone</h3>
-              <p className="text-gray-600 text-sm mb-4">
-                Speak directly with our team
-              </p>
-              <a 
-                href={`tel:${propertyData.contact.phone}`} 
-                className="text-primary-600 hover:text-primary-700 font-medium"
-              >
-                {propertyData.contact.phone}
               </a>
             </div>
             

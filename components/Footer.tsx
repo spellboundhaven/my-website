@@ -1,6 +1,6 @@
 'use client'
 
-import { Facebook, Instagram, Home, Mail, Phone, MapPin } from 'lucide-react'
+import { Facebook, Instagram, Home, Mail, MessageCircle, MapPin } from 'lucide-react'
 import { propertyData } from '@/data/property'
 
 export default function Footer() {
@@ -17,10 +17,10 @@ export default function Footer() {
   ]
 
   const policies = [
-    { name: 'Cancellation Policy', href: '#' },
-    { name: 'House Rules', href: '#' },
-    { name: 'Privacy Policy', href: '#' },
-    { name: 'Terms of Service', href: '#' },
+    { name: 'House Rules', href: '/policies#house-rules' },
+    { name: 'Cancellation Policy', href: '/policies#cancellation-policy' },
+    { name: 'Damage & Security', href: '/policies#damage-security' },
+    { name: 'Parking', href: '/policies#parking' },
   ]
 
   return (
@@ -109,22 +109,24 @@ export default function Footer() {
               <h4 className="text-lg font-semibold mb-4">Contact Info</h4>
               <div className="space-y-3">
                 <div className="flex items-center space-x-3">
-                  <Phone className="w-5 h-5 text-primary-400 flex-shrink-0" />
-                  <a
-                    href={`tel:${propertyData.contact.phone}`}
-                    className="text-gray-300 hover:text-white transition-colors duration-200"
-                  >
-                    {propertyData.contact.phone}
-                  </a>
-                </div>
-                
-                <div className="flex items-center space-x-3">
                   <Mail className="w-5 h-5 text-primary-400 flex-shrink-0" />
                   <a
                     href={`mailto:${propertyData.contact.email}`}
                     className="text-gray-300 hover:text-white transition-colors duration-200"
                   >
                     {propertyData.contact.email}
+                  </a>
+                </div>
+                
+                <div className="flex items-center space-x-3">
+                  <MessageCircle className="w-5 h-5 text-primary-400 flex-shrink-0" />
+                  <a
+                    href="https://m.me/spellboundhaven.disney"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-300 hover:text-white transition-colors duration-200"
+                  >
+                    Facebook Messenger
                   </a>
                 </div>
                 
