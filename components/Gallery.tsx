@@ -13,19 +13,18 @@ export default function Gallery() {
 
   const rooms = propertyData.rooms
   
-  // Group rooms by floor
-  const outdoorAreas = rooms.filter(room => room.name.includes('Outdoor') || room.name.includes('Pool'))
-  const firstFloorRooms = rooms.filter(room => room.name.includes('First Floor') && !room.name.includes('Outdoor') && !room.name.includes('Pool'))
-  const secondFloorRooms = rooms.filter(room => room.name.includes('Second Floor'))
-  const resortAmenities = rooms.filter(room => room.name.includes('Windsor Island Resort'))
+  // Group rooms by floor (excluding resort amenities - now in its own section)
+  const roomsWithoutResort = rooms.filter(room => !room.name.includes('Windsor Island Resort'))
+  const outdoorAreas = roomsWithoutResort.filter(room => room.name.includes('Outdoor') || room.name.includes('Pool'))
+  const firstFloorRooms = roomsWithoutResort.filter(room => room.name.includes('First Floor') && !room.name.includes('Outdoor') && !room.name.includes('Pool'))
+  const secondFloorRooms = roomsWithoutResort.filter(room => room.name.includes('Second Floor'))
   
   const getFilteredRooms = () => {
     switch(selectedFloor) {
       case 'first': return firstFloorRooms
       case 'second': return secondFloorRooms
       case 'outdoor': return outdoorAreas
-      case 'resort': return resortAmenities
-      default: return rooms
+      default: return roomsWithoutResort
     }
   }
   
@@ -115,16 +114,6 @@ export default function Gallery() {
             }`}
           >
             Second Floor
-          </button>
-          <button
-            onClick={() => handleFloorSelection('resort')}
-            className={`px-6 py-3 rounded-lg font-medium transition-colors duration-200 ${
-              selectedFloor === 'resort'
-                ? 'bg-primary-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            Resort Amenities
           </button>
         </div>
 

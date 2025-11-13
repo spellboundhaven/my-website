@@ -1,79 +1,103 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { propertyData } from '@/data/property'
 
 export default function Amenities() {
-  const [activeTab, setActiveTab] = useState('house')
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+
+  // Find the Windsor Island Resort room
+  const resortRoom = propertyData.rooms.find(room => room.name.includes('Windsor Island Resort'))
+  const images = resortRoom?.images || []
+
+  const nextImage = () => {
+    setCurrentImageIndex((prev) => (prev + 1) % images.length)
+  }
+
+  const prevImage = () => {
+    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length)
+  }
 
   return (
     <section id="amenities" className="section-padding bg-gray-50">
       <div className="container-max">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 font-serif">
-            Amenities
+            Windsor Island Resort Amenities
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Discover all the luxurious amenities that make Spellbound Haven the perfect large family vacation destination
+            {resortRoom?.description}
           </p>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex justify-center mb-12">
-          <div className="bg-white rounded-lg p-2 shadow-sm">
-            <button
-              onClick={() => setActiveTab('house')}
-              className={`px-8 py-3 rounded-md font-medium transition-colors duration-200 ${
-                activeTab === 'house'
-                  ? 'bg-primary-600 text-white'
-                  : 'text-gray-700 hover:text-primary-600'
-              }`}
-            >
-              House Amenities
-            </button>
-            <button
-              onClick={() => setActiveTab('resort')}
-              className={`px-8 py-3 rounded-md font-medium transition-colors duration-200 ${
-                activeTab === 'resort'
-                  ? 'bg-primary-600 text-white'
-                  : 'text-gray-700 hover:text-primary-600'
-              }`}
-            >
-              Resort Amenities
-            </button>
-          </div>
-        </div>
+        {/* Carousel */}
+        <div className="max-w-5xl mx-auto">
+          <div className="relative bg-white rounded-lg shadow-lg overflow-hidden">
+            {/* Image Container */}
+            <div className="relative aspect-video w-full">
+              {images.length > 0 && (
+                <Image
+                  src={images[currentImageIndex].src}
+                  alt={images[currentImageIndex].alt}
+                  fill
+                  className="object-cover"
+                  priority={currentImageIndex === 0}
+                />
+              )}
+              
+              {/* Navigation Buttons */}
+              <button
+                onClick={prevImage}
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10 bg-white/90 hover:bg-white rounded-full p-3 transition-all duration-200 shadow-lg hover:scale-110"
+                aria-label="Previous image"
+              >
+                <ChevronLeft className="w-6 h-6 text-gray-800" />
+              </button>
+              
+              <button
+                onClick={nextImage}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 z-10 bg-white/90 hover:bg-white rounded-full p-3 transition-all duration-200 shadow-lg hover:scale-110"
+                aria-label="Next image"
+              >
+                <ChevronRight className="w-6 h-6 text-gray-800" />
+              </button>
+            </div>
 
-        {/* Amenities Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {activeTab === 'house' 
-            ? propertyData.houseAmenities.map((amenity, index) => (
-                <div key={index} className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow duration-200">
-                  <div className="text-4xl mb-4 text-center">{amenity.icon}</div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3 text-center">
-                    {amenity.name}
-                  </h3>
-                  <p className="text-gray-600 text-center">
-                    {amenity.description}
-                  </p>
-                </div>
-              ))
-            : propertyData.resortAmenities.map((amenity, index) => (
-                <div key={index} className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow duration-200">
-                  <div className="text-4xl mb-4 text-center">{amenity.icon}</div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3 text-center">
-                    {amenity.name}
-                  </h3>
-                  <p className="text-gray-600 text-center">
-                    {amenity.description}
-                  </p>
-                </div>
-              ))
-          }
+            {/* Image Info */}
+            <div className="bg-white px-6 py-4 text-center">
+              <p className="text-lg font-medium text-gray-900 mb-1">
+                {images[currentImageIndex]?.alt}
+              </p>
+              <p className="text-sm text-gray-600">
+                {currentImageIndex + 1} of {images.length}
+              </p>
+            </div>
+          </div>
+
+          {/* Thumbnail Dots */}
+          <div className="flex justify-center gap-2 mt-6">
+            {images.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentImageIndex(index)}
+                className={`w-3 h-3 rounded-full transition-all duration-200 ${
+                  index === currentImageIndex
+                    ? 'bg-primary-600 w-8'
+                    : 'bg-gray-300 hover:bg-gray-400'
+                }`}
+                aria-label={`Go to image ${index + 1}`}
+              />
+            ))}
+          </div>
+
+          {/* Keyboard Instructions */}
+          <p className="text-center text-sm text-gray-500 mt-6">
+            Use arrow buttons or swipe to navigate through resort amenities
+          </p>
         </div>
       </div>
     </section>
   )
 }
-
-
