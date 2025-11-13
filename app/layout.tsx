@@ -2,14 +2,29 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Spellbound Haven - Luxury Vacation Rental',
-  description: 'Experience the magic of Spellbound Haven, a luxurious vacation rental offering breathtaking views, premium amenities, and unforgettable memories.',
-  keywords: 'vacation rental, luxury accommodation, holiday home, resort, Spellbound Haven',
+  title: 'Spellbound Haven | Windsor Island Resort Vacation Rental Near Disney World | Orlando Family Villa',
+  description: 'Luxury 10-bedroom Disney vacation rental at Windsor Island Resort, Orlando. Perfect for family gatherings & multigenerational trips. Sleeps 20. Private pool, themed bedrooms, 9 miles from Disney World.',
+  keywords: 'Windsor Island Resort, Disney family vacation, Disney family gathering, Orlando vacation rental, Disney area vacation home, multigenerational Disney trip, large family vacation rental Orlando, Windsor Island vacation home, Disney World vacation rental, themed bedrooms Orlando, private pool vacation rental, Orlando family reunion house',
   authors: [{ name: 'Spellbound Haven' }],
   openGraph: {
-    title: 'Spellbound Haven - Luxury Vacation Rental',
-    description: 'Experience the magic of Spellbound Haven, a luxurious vacation rental offering breathtaking views, premium amenities, and unforgettable memories.',
+    title: 'Spellbound Haven | Windsor Island Resort Disney Vacation Rental',
+    description: 'Luxury 10-bedroom villa at Windsor Island Resort, Orlando. Perfect for Disney family gatherings. Sleeps 20, private pool, themed bedrooms, 9 miles from Disney.',
     type: 'website',
+    locale: 'en_US',
+    siteName: 'Spellbound Haven',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Spellbound Haven | Windsor Island Resort Disney Vacation Rental',
+    description: 'Luxury 10-bedroom villa perfect for Disney family gatherings at Windsor Island Resort, Orlando',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+    },
   },
 }
 

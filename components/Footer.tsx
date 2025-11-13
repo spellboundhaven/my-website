@@ -34,9 +34,17 @@ export default function Footer() {
               <h3 className="text-2xl font-bold font-serif mb-4">
                 Spellbound Haven
               </h3>
-              <p className="text-gray-300 mb-6">
+              <p className="text-gray-300 mb-4">
                 Your gateway to paradise. Experience luxury, comfort, and unforgettable memories at our Disney themed family villa.
               </p>
+              
+              {/* Location */}
+              <div className="flex items-start space-x-3 mb-6">
+                <MapPin className="w-5 h-5 text-primary-400 flex-shrink-0 mt-1" />
+                <span className="text-gray-300">
+                  {propertyData.contact.address}
+                </span>
+              </div>
               
               {/* Social Media */}
               <div className="flex space-x-4">
@@ -128,13 +136,6 @@ export default function Footer() {
                   >
                     Facebook Messenger
                   </a>
-                </div>
-                
-                <div className="flex items-start space-x-3">
-                  <MapPin className="w-5 h-5 text-primary-400 flex-shrink-0 mt-1" />
-                  <span className="text-gray-300">
-                    {propertyData.contact.address}
-                  </span>
                 </div>
               </div>
             </div>
