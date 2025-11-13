@@ -50,18 +50,18 @@ export default function Amenities() {
               {/* Navigation Buttons */}
               <button
                 onClick={prevImage}
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10 bg-white/90 hover:bg-white rounded-full p-3 transition-all duration-200 shadow-lg hover:scale-110"
+                className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 z-10 bg-white/90 hover:bg-white rounded-full p-2 sm:p-3 transition-all duration-200 shadow-lg hover:scale-110"
                 aria-label="Previous image"
               >
-                <ChevronLeft className="w-6 h-6 text-gray-800" />
+                <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 text-gray-800" />
               </button>
               
               <button
                 onClick={nextImage}
-                className="absolute right-4 top-1/2 transform -translate-y-1/2 z-10 bg-white/90 hover:bg-white rounded-full p-3 transition-all duration-200 shadow-lg hover:scale-110"
+                className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 z-10 bg-white/90 hover:bg-white rounded-full p-2 sm:p-3 transition-all duration-200 shadow-lg hover:scale-110"
                 aria-label="Next image"
               >
-                <ChevronRight className="w-6 h-6 text-gray-800" />
+                <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-gray-800" />
               </button>
             </div>
 

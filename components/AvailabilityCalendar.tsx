@@ -241,10 +241,10 @@ export default function AvailabilityCalendar() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           {/* Calendar - View Only */}
-          <div className="bg-gray-50 rounded-lg p-8">
-            <h3 className="text-2xl font-bold text-gray-900 mb-6 font-serif">
+          <div className="bg-gray-50 rounded-lg p-4 sm:p-6 lg:p-8">
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6 font-serif">
               View Availability
             </h3>
             
@@ -279,14 +279,14 @@ export default function AvailabilityCalendar() {
           </div>
 
           {/* Booking Inquiry Form */}
-          <div className="bg-white border border-gray-200 rounded-lg p-8">
-            <h3 className="text-2xl font-bold text-gray-900 mb-6 font-serif">
+          <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6 lg:p-8">
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6 font-serif">
               Send Us a Message
             </h3>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Dates */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Check-in Date *
@@ -296,7 +296,7 @@ export default function AvailabilityCalendar() {
                     required
                     value={formData.checkIn}
                     onChange={(e) => setFormData({ ...formData, checkIn: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-base"
                   />
                 </div>
                 <div>
@@ -308,13 +308,13 @@ export default function AvailabilityCalendar() {
                     required
                     value={formData.checkOut}
                     onChange={(e) => setFormData({ ...formData, checkOut: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-base"
                   />
                 </div>
               </div>
 
               {/* Adults and Children */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Number of Adults *
@@ -322,7 +322,7 @@ export default function AvailabilityCalendar() {
                   <select
                     value={formData.adults}
                     onChange={(e) => setFormData({ ...formData, adults: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-base"
                   >
                     {Array.from({ length: 20 }, (_, i) => i + 1).map(num => (
                       <option key={num} value={num}>{num} {num === 1 ? 'Adult' : 'Adults'}</option>
@@ -336,7 +336,7 @@ export default function AvailabilityCalendar() {
                   <select
                     value={formData.children}
                     onChange={(e) => setFormData({ ...formData, children: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-base"
                   >
                     {Array.from({ length: 11 }, (_, i) => i).map(num => (
                       <option key={num} value={num}>{num} {num === 1 ? 'Child' : 'Children'}</option>
@@ -355,7 +355,7 @@ export default function AvailabilityCalendar() {
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-base"
                   placeholder="John Doe"
                 />
               </div>
@@ -370,7 +370,7 @@ export default function AvailabilityCalendar() {
                   required
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-base"
                   placeholder="john@example.com"
                 />
               </div>
@@ -385,7 +385,7 @@ export default function AvailabilityCalendar() {
                   required
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-base"
                   placeholder="(555) 123-4567"
                 />
               </div>
@@ -398,7 +398,7 @@ export default function AvailabilityCalendar() {
                 <textarea
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-base"
                   rows={3}
                   placeholder="Any special requests, questions, or additional information..."
                 />
