@@ -165,7 +165,7 @@ export default function Footer() {
         <div className="border-t border-gray-800 py-6 px-4">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 text-center md:text-left">
             <div className="text-gray-400 text-sm">
-              © {currentYear} Spellbound Haven. All rights reserved.
+              © {currentYear} Spellbound Haven LLC. All rights reserved.
             </div>
             
             <div className="flex items-center justify-center space-x-2 text-sm text-gray-400">

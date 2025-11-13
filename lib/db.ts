@@ -1,5 +1,18 @@
 import { sql } from '@vercel/postgres';
 
+// Helper function to convert dates to EST timezone
+function toESTDate(date: Date | string): string {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  // Convert to EST (UTC-5) and format as YYYY-MM-DD
+  const estDate = new Date(d.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+  return estDate.toISOString().split('T')[0];
+}
+
+// Get current date in EST
+function getCurrentESTDate(): string {
+  return toESTDate(new Date());
+}
+
 export interface Booking {
   id?: number;
   check_in_date: string;
@@ -151,7 +164,7 @@ export async function getAllBookings(): Promise<Booking[]> {
 }
 
 export async function getUpcomingBookings(): Promise<Booking[]> {
-  const today = new Date().toISOString().split('T')[0];
+  const today = getCurrentESTDate();
   const result = await sql`
     SELECT * FROM bookings 
     WHERE check_in_date >= ${today} 
@@ -333,11 +346,11 @@ export async function getAvailabilityForRange(startDate: string, endDate: string
   const rules = await getAllPricingRules();
   
   // Generate availability for each date
-  const start = new Date(startDate);
-  const end = new Date(endDate);
+  const start = new Date(startDate + 'T00:00:00');
+  const end = new Date(endDate + 'T00:00:00');
   
   for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-    const dateStr = d.toISOString().split('T')[0];
+    const dateStr = toESTDate(d);
     
     // Check if date is booked
     const isBooked = bookings.rows.some((b: any) => {

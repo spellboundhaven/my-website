@@ -234,10 +234,10 @@ export default function AvailabilityCalendar() {
       <div className="container-max">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 font-serif">
-            Availability & Pricing
+            Check Availability
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Check availability and send us an inquiry to book your perfect stay
+            View our calendar and send us an inquiry to book your perfect stay
           </p>
         </div>
 
@@ -420,33 +420,6 @@ export default function AvailabilityCalendar() {
               </button>
             </form>
           </div>
-        </div>
-
-        {/* Pricing Information */}
-        <div className="mt-16 bg-gray-50 rounded-lg p-8">
-          <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center font-serif">
-            Pricing Information
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-primary-600 mb-2">$450</div>
-              <div className="text-gray-600 mb-1">Standard Rate</div>
-              <div className="text-sm text-gray-500">Per night</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-primary-600 mb-2">$600</div>
-              <div className="text-gray-600 mb-1">Peak Season</div>
-              <div className="text-sm text-gray-500">Per night</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-primary-600 mb-2">$1,000</div>
-              <div className="text-gray-600 mb-1">Holiday Rate</div>
-              <div className="text-sm text-gray-500">Per night</div>
-            </div>
-          </div>
-          <p className="text-center text-sm text-gray-600 mt-6">
-            *Prices are for reference only. Final rates may vary based on seasonality.
-          </p>
         </div>
       </div>
     </section>
