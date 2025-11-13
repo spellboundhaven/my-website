@@ -1,6 +1,5 @@
 'use client'
 
-import { Phone, Mail } from 'lucide-react'
 import { propertyData } from '@/data/property'
 
 export default function Contact() {
@@ -48,48 +47,20 @@ export default function Contact() {
             </div>
             
             <div className="text-center bg-gray-50 rounded-lg p-8">
-              <div className="text-5xl mb-4">📱</div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">WhatsApp</h3>
+              <div className="text-5xl mb-4">💬</div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">Facebook Messenger</h3>
               <p className="text-gray-600 text-sm mb-4">
                 Quick responses for urgent inquiries
               </p>
               <a 
-                href={`https://wa.me/${propertyData.contact.phone.replace(/\D/g, '')}`}
+                href="https://m.me/spellboundhaven.disney"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary-600 hover:text-primary-700 font-medium"
               >
-                Chat with us
+                Message us
               </a>
             </div>
-          </div>
-
-          {/* Additional Info */}
-          <div className="mt-12 text-center bg-blue-50 border border-blue-200 rounded-lg p-6">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <Phone className="w-5 h-5 text-blue-600" />
-              <span className="font-semibold text-blue-900">Availability</span>
-            </div>
-            <p className="text-blue-800">{propertyData.contact.hours}</p>
-          </div>
-
-          <div className="mt-6 text-center bg-blue-50 border border-blue-200 rounded-lg p-6">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <Mail className="w-5 h-5 text-blue-600" />
-              <span className="font-semibold text-blue-900">Location</span>
-            </div>
-            <p className="text-blue-800 mb-2">{propertyData.contact.address}</p>
-            <p className="text-sm text-blue-700 mb-3">
-              Just 9 miles from Disney World - approximately 15 minutes by car
-            </p>
-            <a 
-              href="https://www.google.com/maps/search/?api=1&query=Windsor+Island+Resort+Orlando+FL"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block text-primary-600 hover:text-primary-700 font-medium text-sm"
-            >
-              View on Google Maps →
-            </a>
           </div>
         </div>
       </div>

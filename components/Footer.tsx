@@ -1,6 +1,6 @@
 'use client'
 
-import { Facebook, Instagram, Twitter, Mail, Phone, MapPin } from 'lucide-react'
+import { Facebook, Instagram, Home, Mail, Phone, MapPin } from 'lucide-react'
 import { propertyData } from '@/data/property'
 
 export default function Footer() {
@@ -41,25 +41,31 @@ export default function Footer() {
               {/* Social Media */}
               <div className="flex space-x-4">
                 <a
-                  href="#"
+                  href="https://www.facebook.com/spellboundhaven.disney"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="bg-gray-800 hover:bg-primary-600 p-2 rounded-lg transition-colors duration-200"
                   aria-label="Facebook"
                 >
                   <Facebook className="w-5 h-5" />
                 </a>
                 <a
-                  href="#"
+                  href="https://www.instagram.com/spellboundhaven"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="bg-gray-800 hover:bg-primary-600 p-2 rounded-lg transition-colors duration-200"
                   aria-label="Instagram"
                 >
                   <Instagram className="w-5 h-5" />
                 </a>
                 <a
-                  href="#"
+                  href="https://airbnb.com/h/spellbound-haven"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="bg-gray-800 hover:bg-primary-600 p-2 rounded-lg transition-colors duration-200"
-                  aria-label="Twitter"
+                  aria-label="Airbnb"
                 >
-                  <Twitter className="w-5 h-5" />
+                  <Home className="w-5 h-5" />
                 </a>
               </div>
             </div>

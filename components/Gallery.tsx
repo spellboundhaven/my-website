@@ -76,16 +76,6 @@ export default function Gallery() {
         {/* Floor Navigation */}
         <div className="flex flex-wrap justify-center gap-4 mb-8">
           <button
-            onClick={() => handleFloorSelection('floorplan')}
-            className={`px-6 py-3 rounded-lg font-medium transition-colors duration-200 ${
-              selectedFloor === 'floorplan'
-                ? 'bg-primary-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            Floor Plan
-          </button>
-          <button
             onClick={() => handleFloorSelection('all')}
             className={`px-6 py-3 rounded-lg font-medium transition-colors duration-200 ${
               selectedFloor === 'all'
@@ -124,6 +114,16 @@ export default function Gallery() {
             }`}
           >
             Second Floor
+          </button>
+          <button
+            onClick={() => handleFloorSelection('floorplan')}
+            className={`px-6 py-3 rounded-lg font-medium transition-colors duration-200 ${
+              selectedFloor === 'floorplan'
+                ? 'bg-primary-600 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            Floor Plan
           </button>
         </div>
 
