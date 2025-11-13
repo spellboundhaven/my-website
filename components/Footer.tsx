@@ -19,7 +19,7 @@ export default function Footer() {
   const policies = [
     { name: 'House Rules', href: '/policies#house-rules' },
     { name: 'Cancellation Policy', href: '/policies#cancellation-policy' },
-    { name: 'Damage & Security', href: '/policies#damage-security' },
+    { name: 'Security Deposit', href: '/policies#damage-security' },
     { name: 'Parking', href: '/policies#parking' },
   ]
 

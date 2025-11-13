@@ -103,10 +103,10 @@ export default function PoliciesPage() {
 
             <hr className="border-gray-200" />
 
-            {/* Damage and Security Deposit */}
+            {/* Security Deposit */}
             <section id="damage-security">
               <h2 className="text-3xl font-bold text-gray-900 mb-6 font-serif">
-                Damage & Security Deposit
+                Security Deposit
               </h2>
               <ul className="space-y-4 text-gray-700">
                 <li className="flex gap-3">

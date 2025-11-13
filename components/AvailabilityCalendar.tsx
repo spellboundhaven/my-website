@@ -445,7 +445,7 @@ export default function AvailabilityCalendar() {
             </div>
           </div>
           <p className="text-center text-sm text-gray-600 mt-6">
-            *Prices shown are for reference only. Actual price will be based on seasonality.
+            *Prices are for reference only. Final rates may vary based on seasonality.
           </p>
         </div>
       </div>
