@@ -38,13 +38,43 @@ export default function Amenities() {
             {/* Image Container */}
             <div className="relative aspect-video w-full">
               {images.length > 0 && (
-                <Image
-                  src={images[currentImageIndex].src}
-                  alt={images[currentImageIndex].alt}
-                  fill
-                  className="object-cover"
-                  priority={currentImageIndex === 0}
-                />
+                <>
+                  {/* Current Image */}
+                  <Image
+                    src={images[currentImageIndex].src}
+                    alt={images[currentImageIndex].alt}
+                    fill
+                    className="object-cover"
+                    priority={currentImageIndex === 0}
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+                  />
+                  
+                  {/* Preload Next Image */}
+                  {images.length > 1 && (
+                    <div className="hidden">
+                      <Image
+                        src={images[(currentImageIndex + 1) % images.length].src}
+                        alt="Preload next"
+                        width={1200}
+                        height={675}
+                        priority
+                      />
+                    </div>
+                  )}
+                  
+                  {/* Preload Previous Image */}
+                  {images.length > 1 && (
+                    <div className="hidden">
+                      <Image
+                        src={images[(currentImageIndex - 1 + images.length) % images.length].src}
+                        alt="Preload previous"
+                        width={1200}
+                        height={675}
+                        priority
+                      />
+                    </div>
+                  )}
+                </>
               )}
               
               {/* Navigation Buttons */}
