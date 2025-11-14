@@ -899,7 +899,8 @@ export default function AdminDashboard() {
                     <form
                       onSubmit={async (e) => {
                         e.preventDefault();
-                        const formData = new FormData(e.currentTarget);
+                        const form = e.currentTarget;
+                        const formData = new FormData(form);
                         
                         const accommodationCost = parseFloat(formData.get('accommodation_cost') as string) || 0;
                         const cleaningFee = parseFloat(formData.get('cleaning_fee') as string) || 0;
@@ -941,7 +942,7 @@ export default function AdminDashboard() {
                           
                           if (result.success) {
                             alert('Invoice created successfully!');
-                            e.currentTarget.reset();
+                            form.reset();
                             fetchAdminData();
                           } else {
                             const errorMsg = result.details || result.error || 'Unknown error';
