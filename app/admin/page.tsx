@@ -237,6 +237,38 @@ export default function AdminDashboard() {
     }
   }
 
+  const handleDeleteBooking = async (id: number) => {
+    setLoading(true)
+    try {
+      const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123'
+      const response = await fetch('/api/admin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${adminPassword}`
+        },
+        body: JSON.stringify({
+          action: 'deleteBooking',
+          data: { id }
+        })
+      })
+
+      const data = await response.json()
+      
+      if (data.success) {
+        alert('Inquiry deleted!')
+        fetchAdminData()
+      } else {
+        alert('Failed to delete inquiry')
+      }
+    } catch (error) {
+      console.error('Error deleting inquiry:', error)
+      alert('Failed to delete inquiry')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handleDeleteBlock = async (id: number) => {
     if (!confirm('Delete this date block?')) return
 
@@ -544,8 +576,8 @@ export default function AdminDashboard() {
                             <td className="px-4 py-3 text-sm">
                               <button
                                 onClick={() => {
-                                  if (confirm(`Delete booking for ${booking.guest_name}?`)) {
-                                    // Delete booking logic
+                                  if (confirm(`Delete inquiry from ${booking.guest_name}?`)) {
+                                    handleDeleteBooking(booking.id);
                                   }
                                 }}
                                 className="text-red-600 hover:text-red-800 font-medium"
