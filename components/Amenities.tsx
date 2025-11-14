@@ -48,17 +48,15 @@ export default function Amenities() {
                     priority={currentImageIndex === 0}
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
                     quality={75}
+                    unoptimized={images[currentImageIndex].src.includes('122.jpeg') || images[currentImageIndex].src.includes('125.jpg')}
                   />
                   
-                  {/* Preload Only Next Image (not previous) - lighter approach */}
+                  {/* Preload Only Next Image using link tag */}
                   {images.length > 1 && (
-                    <Image
-                      src={images[(currentImageIndex + 1) % images.length].src}
-                      alt="Preload next"
-                      width={1}
-                      height={1}
-                      className="hidden"
-                      quality={75}
+                    <link
+                      rel="prefetch"
+                      href={images[(currentImageIndex + 1) % images.length].src}
+                      as="image"
                     />
                   )}
                 </>
