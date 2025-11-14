@@ -1189,8 +1189,8 @@ export default function AdminDashboard() {
                                 <div className="text-sm text-gray-500">{invoice.guest_email}</div>
                               </td>
                               <td className="px-4 py-4 text-sm text-gray-600">
-                                {new Date(invoice.check_in_date).toLocaleDateString()} -<br/>
-                                {new Date(invoice.check_out_date).toLocaleDateString()}
+                                {invoice.check_in_date} -<br/>
+                                {invoice.check_out_date}
                               </td>
                               <td className="px-4 py-4 text-sm font-semibold text-gray-900">
                                 ${Number(invoice.total_amount).toFixed(2)}

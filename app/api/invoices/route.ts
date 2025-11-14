@@ -26,19 +26,28 @@ function verifyAuth(request: NextRequest): boolean {
 
 // Generate invoice HTML template
 function generateInvoiceHTML(invoice: Invoice): string {
-  const checkInDate = new Date(invoice.check_in_date).toLocaleDateString('en-US', {
+  // Parse dates without timezone conversion
+  const parseDate = (dateStr: string) => {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  };
+  
+  const checkInDateObj = parseDate(invoice.check_in_date);
+  const checkOutDateObj = parseDate(invoice.check_out_date);
+  
+  const checkInDate = checkInDateObj.toLocaleDateString('en-US', {
     month: 'long',
     day: 'numeric',
     year: 'numeric'
   });
-  const checkOutDate = new Date(invoice.check_out_date).toLocaleDateString('en-US', {
+  const checkOutDate = checkOutDateObj.toLocaleDateString('en-US', {
     month: 'long',
     day: 'numeric',
     year: 'numeric'
   });
   
   const nights = Math.ceil(
-    (new Date(invoice.check_out_date).getTime() - new Date(invoice.check_in_date).getTime()) / 
+    (checkOutDateObj.getTime() - checkInDateObj.getTime()) / 
     (1000 * 60 * 60 * 24)
   );
 
