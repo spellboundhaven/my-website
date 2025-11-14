@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { CalendarIcon, Users, Ban, Settings, Star } from 'lucide-react'
+import { CalendarIcon, Users, Ban, Settings, Star, FileText } from 'lucide-react'
 
 interface Booking {
   id: number
@@ -37,15 +37,37 @@ interface Review {
   created_at: string
 }
 
+interface Invoice {
+  id: number
+  invoice_number: string
+  booking_id?: number
+  guest_name: string
+  guest_email: string
+  check_in_date: string
+  check_out_date: string
+  accommodation_cost: number
+  cleaning_fee: number
+  tax_amount: number
+  additional_fees: number
+  additional_fees_description?: string
+  total_amount: number
+  payment_method: string
+  status: 'draft' | 'sent' | 'paid' | 'cancelled'
+  notes?: string
+  sent_at?: string
+  created_at: string
+}
+
 export default function AdminDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
   const [authError, setAuthError] = useState('')
-  const [activeTab, setActiveTab] = useState<'bookings' | 'calendar' | 'reviews' | 'settings'>('bookings')
+  const [activeTab, setActiveTab] = useState<'bookings' | 'calendar' | 'reviews' | 'invoices' | 'settings'>('bookings')
   
   const [bookings, setBookings] = useState<Booking[]>([])
   const [dateBlocks, setDateBlocks] = useState<DateBlock[]>([])
   const [reviews, setReviews] = useState<Review[]>([])
+  const [invoices, setInvoices] = useState<Invoice[]>([])
   const [loading, setLoading] = useState(false)
   
   const [airbnbUrl, setAirbnbUrl] = useState('')
@@ -100,6 +122,7 @@ export default function AdminDashboard() {
         setBookings(data.bookings || [])
         setDateBlocks(data.blocks || [])
         setReviews(data.reviews || [])
+        setInvoices(data.invoices || [])
       }
     } catch (error) {
       console.error('Error fetching admin data:', error)
@@ -439,6 +462,17 @@ export default function AdminDashboard() {
                 Reviews ({reviews.length})
               </button>
               <button
+                onClick={() => setActiveTab('invoices')}
+                className={`px-6 py-3 font-medium transition-colors flex items-center gap-2 ${
+                  activeTab === 'invoices'
+                    ? 'border-b-2 border-purple-600 text-purple-600'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <FileText className="w-4 h-4" />
+                Invoices ({invoices.length})
+              </button>
+              <button
                 onClick={() => setActiveTab('settings')}
                 className={`px-6 py-3 font-medium transition-colors flex items-center gap-2 ${
                   activeTab === 'settings'
@@ -746,6 +780,375 @@ export default function AdminDashboard() {
                           <p className="text-gray-700">{review.comment}</p>
                         </div>
                       ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Invoices Tab */}
+            {activeTab === 'invoices' && (
+              <div className="space-y-8">
+                {/* Create Invoice Form */}
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-800 mb-6">Create Invoice</h2>
+                  <div className="bg-gray-50 rounded-lg p-6">
+                    <form
+                      onSubmit={async (e) => {
+                        e.preventDefault();
+                        const formData = new FormData(e.currentTarget);
+                        
+                        const accommodationCost = parseFloat(formData.get('accommodation_cost') as string) || 0;
+                        const cleaningFee = parseFloat(formData.get('cleaning_fee') as string) || 0;
+                        const taxAmount = parseFloat(formData.get('tax_amount') as string) || 0;
+                        const additionalFees = parseFloat(formData.get('additional_fees') as string) || 0;
+                        const totalAmount = accommodationCost + cleaningFee + taxAmount + additionalFees;
+
+                        const invoiceData = {
+                          guest_name: formData.get('guest_name'),
+                          guest_email: formData.get('guest_email'),
+                          check_in_date: formData.get('check_in_date'),
+                          check_out_date: formData.get('check_out_date'),
+                          accommodation_cost: accommodationCost,
+                          cleaning_fee: cleaningFee,
+                          tax_amount: taxAmount,
+                          additional_fees: additionalFees,
+                          additional_fees_description: formData.get('additional_fees_description'),
+                          total_amount: totalAmount,
+                          payment_method: formData.get('payment_method'),
+                          notes: formData.get('notes'),
+                        };
+
+                        try {
+                          setLoading(true);
+                          const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123';
+                          const response = await fetch('/api/invoices', {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                              'Authorization': `Bearer ${adminPassword}`
+                            },
+                            body: JSON.stringify({
+                              action: 'create',
+                              data: invoiceData
+                            })
+                          });
+
+                          const result = await response.json();
+                          
+                          if (result.success) {
+                            alert('Invoice created successfully!');
+                            e.currentTarget.reset();
+                            fetchAdminData();
+                          } else {
+                            alert('Failed to create invoice: ' + (result.error || 'Unknown error'));
+                          }
+                        } catch (error) {
+                          console.error('Error creating invoice:', error);
+                          alert('Error creating invoice. Please try again.');
+                        } finally {
+                          setLoading(false);
+                        }
+                      }}
+                      className="space-y-6"
+                    >
+                      {/* Guest Information */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Guest Name *
+                          </label>
+                          <input
+                            type="text"
+                            name="guest_name"
+                            required
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Guest Email *
+                          </label>
+                          <input
+                            type="email"
+                            name="guest_email"
+                            required
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Stay Dates */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Check-in Date *
+                          </label>
+                          <input
+                            type="date"
+                            name="check_in_date"
+                            required
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Check-out Date *
+                          </label>
+                          <input
+                            type="date"
+                            name="check_out_date"
+                            required
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Costs */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Accommodation Cost * ($)
+                          </label>
+                          <input
+                            type="number"
+                            name="accommodation_cost"
+                            step="0.01"
+                            min="0"
+                            required
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Cleaning Fee ($)
+                          </label>
+                          <input
+                            type="number"
+                            name="cleaning_fee"
+                            step="0.01"
+                            min="0"
+                            defaultValue="0"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Tax Amount ($)
+                          </label>
+                          <input
+                            type="number"
+                            name="tax_amount"
+                            step="0.01"
+                            min="0"
+                            defaultValue="0"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Additional Fees ($)
+                          </label>
+                          <input
+                            type="number"
+                            name="additional_fees"
+                            step="0.01"
+                            min="0"
+                            defaultValue="0"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Additional Fees Description
+                        </label>
+                        <input
+                          type="text"
+                          name="additional_fees_description"
+                          placeholder="e.g., Pool heating, Late checkout"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        />
+                      </div>
+
+                      {/* Payment Method */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Payment Method *
+                        </label>
+                        <select
+                          name="payment_method"
+                          required
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        >
+                          <option value="">Select payment method</option>
+                          <option value="Zelle">Zelle</option>
+                          <option value="Venmo">Venmo</option>
+                          <option value="Cash App">Cash App</option>
+                          <option value="Bank Transfer">Bank Transfer</option>
+                          <option value="Check">Check</option>
+                          <option value="Other">Other</option>
+                        </select>
+                      </div>
+
+                      {/* Notes */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Notes
+                        </label>
+                        <textarea
+                          name="notes"
+                          rows={3}
+                          placeholder="Additional information or payment instructions..."
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        />
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition-colors disabled:bg-gray-400"
+                      >
+                        {loading ? 'Creating...' : 'Create Invoice'}
+                      </button>
+                    </form>
+                  </div>
+                </div>
+
+                {/* Invoice List */}
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-800 mb-6">All Invoices</h2>
+                  <div className="overflow-x-auto">
+                    {invoices.length === 0 ? (
+                      <p className="text-gray-500 text-center py-8">No invoices yet</p>
+                    ) : (
+                      <table className="w-full">
+                        <thead className="bg-gray-100">
+                          <tr>
+                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Invoice #</th>
+                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Guest</th>
+                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Dates</th>
+                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Total</th>
+                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Status</th>
+                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {invoices.map((invoice) => (
+                            <tr key={invoice.id} className="border-b border-gray-200 hover:bg-gray-50">
+                              <td className="px-4 py-4 text-sm text-gray-900 font-mono">
+                                {invoice.invoice_number}
+                              </td>
+                              <td className="px-4 py-4">
+                                <div className="text-sm font-medium text-gray-900">{invoice.guest_name}</div>
+                                <div className="text-sm text-gray-500">{invoice.guest_email}</div>
+                              </td>
+                              <td className="px-4 py-4 text-sm text-gray-600">
+                                {new Date(invoice.check_in_date).toLocaleDateString()} -<br/>
+                                {new Date(invoice.check_out_date).toLocaleDateString()}
+                              </td>
+                              <td className="px-4 py-4 text-sm font-semibold text-gray-900">
+                                ${Number(invoice.total_amount).toFixed(2)}
+                              </td>
+                              <td className="px-4 py-4">
+                                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                  invoice.status === 'paid' ? 'bg-green-100 text-green-800' :
+                                  invoice.status === 'sent' ? 'bg-blue-100 text-blue-800' :
+                                  invoice.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                                  'bg-gray-100 text-gray-800'
+                                }`}>
+                                  {invoice.status.toUpperCase()}
+                                </span>
+                              </td>
+                              <td className="px-4 py-4 text-sm">
+                                <div className="flex gap-2">
+                                  {invoice.status === 'draft' && (
+                                    <button
+                                      onClick={async () => {
+                                        if (!confirm('Send this invoice to spellboundhaven.disney@gmail.com?')) return;
+                                        try {
+                                          setLoading(true);
+                                          const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123';
+                                          const response = await fetch('/api/invoices', {
+                                            method: 'POST',
+                                            headers: {
+                                              'Content-Type': 'application/json',
+                                              'Authorization': `Bearer ${adminPassword}`
+                                            },
+                                            body: JSON.stringify({
+                                              action: 'send',
+                                              id: invoice.id,
+                                              data: { send_to_guest: false }
+                                            })
+                                          });
+
+                                          const result = await response.json();
+                                          
+                                          if (result.success) {
+                                            alert('Invoice sent successfully to your email!');
+                                            fetchAdminData();
+                                          } else {
+                                            alert('Failed to send invoice: ' + (result.error || 'Unknown error'));
+                                          }
+                                        } catch (error) {
+                                          console.error('Error sending invoice:', error);
+                                          alert('Error sending invoice. Please try again.');
+                                        } finally {
+                                          setLoading(false);
+                                        }
+                                      }}
+                                      className="text-blue-600 hover:text-blue-800 font-medium"
+                                    >
+                                      Send
+                                    </button>
+                                  )}
+                                  <button
+                                    onClick={async () => {
+                                      if (!confirm('Delete this invoice?')) return;
+                                      try {
+                                        setLoading(true);
+                                        const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123';
+                                        const response = await fetch('/api/invoices', {
+                                          method: 'POST',
+                                          headers: {
+                                            'Content-Type': 'application/json',
+                                            'Authorization': `Bearer ${adminPassword}`
+                                          },
+                                          body: JSON.stringify({
+                                            action: 'delete',
+                                            id: invoice.id
+                                          })
+                                        });
+
+                                        const result = await response.json();
+                                        
+                                        if (result.success) {
+                                          alert('Invoice deleted successfully!');
+                                          fetchAdminData();
+                                        } else {
+                                          alert('Failed to delete invoice: ' + (result.error || 'Unknown error'));
+                                        }
+                                      } catch (error) {
+                                        console.error('Error deleting invoice:', error);
+                                        alert('Error deleting invoice. Please try again.');
+                                      } finally {
+                                        setLoading(false);
+                                      }
+                                    }}
+                                    className="text-red-600 hover:text-red-800 font-medium"
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     )}
                   </div>
                 </div>

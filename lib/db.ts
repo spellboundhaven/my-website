@@ -54,6 +54,27 @@ export interface Review {
   created_at?: string;
 }
 
+export interface Invoice {
+  id?: number;
+  invoice_number: string;
+  booking_id?: number;
+  guest_name: string;
+  guest_email: string;
+  check_in_date: string;
+  check_out_date: string;
+  accommodation_cost: number;
+  cleaning_fee: number;
+  tax_amount: number;
+  additional_fees: number;
+  additional_fees_description?: string;
+  total_amount: number;
+  payment_method: string;
+  status: 'draft' | 'sent' | 'paid' | 'cancelled';
+  notes?: string;
+  sent_at?: string;
+  created_at?: string;
+}
+
 // Initialize database tables
 export async function initDatabase() {
   try {
@@ -108,6 +129,30 @@ export async function initDatabase() {
         date TEXT NOT NULL,
         location TEXT,
         comment TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    // Create invoices table
+    await sql`
+      CREATE TABLE IF NOT EXISTS invoices (
+        id SERIAL PRIMARY KEY,
+        invoice_number TEXT UNIQUE NOT NULL,
+        booking_id INTEGER REFERENCES bookings(id),
+        guest_name TEXT NOT NULL,
+        guest_email TEXT NOT NULL,
+        check_in_date DATE NOT NULL,
+        check_out_date DATE NOT NULL,
+        accommodation_cost DECIMAL(10, 2) NOT NULL,
+        cleaning_fee DECIMAL(10, 2) DEFAULT 0,
+        tax_amount DECIMAL(10, 2) DEFAULT 0,
+        additional_fees DECIMAL(10, 2) DEFAULT 0,
+        additional_fees_description TEXT,
+        total_amount DECIMAL(10, 2) NOT NULL,
+        payment_method TEXT NOT NULL,
+        status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'sent', 'paid', 'cancelled')),
+        notes TEXT,
+        sent_at TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `;
@@ -403,5 +448,92 @@ export async function deleteReview(id: number): Promise<boolean> {
     DELETE FROM reviews WHERE id = ${id}
   `;
   return result.rowCount ? result.rowCount > 0 : false;
+}
+
+// Invoice functions
+export async function createInvoice(invoice: Omit<Invoice, 'id' | 'created_at'>): Promise<Invoice> {
+  const result = await sql`
+    INSERT INTO invoices (
+      invoice_number, booking_id, guest_name, guest_email,
+      check_in_date, check_out_date, accommodation_cost,
+      cleaning_fee, tax_amount, additional_fees, additional_fees_description,
+      total_amount, payment_method, status, notes, sent_at
+    )
+    VALUES (
+      ${invoice.invoice_number}, ${invoice.booking_id || null}, ${invoice.guest_name}, ${invoice.guest_email},
+      ${invoice.check_in_date}, ${invoice.check_out_date}, ${invoice.accommodation_cost},
+      ${invoice.cleaning_fee}, ${invoice.tax_amount}, ${invoice.additional_fees}, ${invoice.additional_fees_description || null},
+      ${invoice.total_amount}, ${invoice.payment_method}, ${invoice.status}, ${invoice.notes || null}, ${invoice.sent_at || null}
+    )
+    RETURNING *
+  `;
+  return result.rows[0] as Invoice;
+}
+
+export async function getAllInvoices(): Promise<Invoice[]> {
+  const result = await sql`
+    SELECT * FROM invoices
+    ORDER BY created_at DESC
+  `;
+  return result.rows as Invoice[];
+}
+
+export async function getInvoice(id: number): Promise<Invoice | null> {
+  const result = await sql`
+    SELECT * FROM invoices WHERE id = ${id}
+  `;
+  return result.rows[0] as Invoice || null;
+}
+
+export async function updateInvoice(id: number, updates: Partial<Invoice>): Promise<Invoice> {
+  const invoice = await getInvoice(id);
+  if (!invoice) throw new Error('Invoice not found');
+
+  const result = await sql`
+    UPDATE invoices
+    SET
+      guest_name = ${updates.guest_name ?? invoice.guest_name},
+      guest_email = ${updates.guest_email ?? invoice.guest_email},
+      check_in_date = ${updates.check_in_date ?? invoice.check_in_date},
+      check_out_date = ${updates.check_out_date ?? invoice.check_out_date},
+      accommodation_cost = ${updates.accommodation_cost ?? invoice.accommodation_cost},
+      cleaning_fee = ${updates.cleaning_fee ?? invoice.cleaning_fee},
+      tax_amount = ${updates.tax_amount ?? invoice.tax_amount},
+      additional_fees = ${updates.additional_fees ?? invoice.additional_fees},
+      additional_fees_description = ${updates.additional_fees_description ?? invoice.additional_fees_description},
+      total_amount = ${updates.total_amount ?? invoice.total_amount},
+      payment_method = ${updates.payment_method ?? invoice.payment_method},
+      status = ${updates.status ?? invoice.status},
+      notes = ${updates.notes ?? invoice.notes},
+      sent_at = ${updates.sent_at ?? invoice.sent_at}
+    WHERE id = ${id}
+    RETURNING *
+  `;
+  return result.rows[0] as Invoice;
+}
+
+export async function deleteInvoice(id: number): Promise<boolean> {
+  const result = await sql`
+    DELETE FROM invoices WHERE id = ${id}
+  `;
+  return result.rowCount ? result.rowCount > 0 : false;
+}
+
+export async function generateInvoiceNumber(): Promise<string> {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  
+  // Get count of invoices this month
+  const result = await sql`
+    SELECT COUNT(*) as count
+    FROM invoices
+    WHERE invoice_number LIKE ${`INV-${year}${month}%`}
+  `;
+  
+  const count = parseInt(result.rows[0].count || '0') + 1;
+  const sequence = String(count).padStart(4, '0');
+  
+  return `INV-${year}${month}-${sequence}`;
 }
 

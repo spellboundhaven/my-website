@@ -9,7 +9,8 @@ import {
   getAllReviews,
   createReview,
   updateReview,
-  deleteReview
+  deleteReview,
+  getAllInvoices
 } from '@/lib/db';
 
 function verifyAuth(request: NextRequest): boolean {
@@ -50,18 +51,25 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: true, reviews });
     }
 
+    if (resource === 'invoices') {
+      const invoices = await getAllInvoices();
+      return NextResponse.json({ success: true, invoices });
+    }
+
     // Return all data for dashboard
-    const [bookings, blocks, reviews] = await Promise.all([
+    const [bookings, blocks, reviews, invoices] = await Promise.all([
       getAllBookings(),
       getAllDateBlocks(),
-      getAllReviews()
+      getAllReviews(),
+      getAllInvoices()
     ]);
 
     return NextResponse.json({
       success: true,
       bookings,
       blocks,
-      reviews
+      reviews,
+      invoices
     });
   } catch (error) {
     console.error('Error fetching admin data:', error);
