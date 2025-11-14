@@ -86,7 +86,7 @@ export default function AdminDashboard() {
   const [dateBlocks, setDateBlocks] = useState<DateBlock[]>([])
   const [reviews, setReviews] = useState<Review[]>([])
   const [invoices, setInvoices] = useState<Invoice[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   
   const [airbnbUrl, setAirbnbUrl] = useState('')
   const [lastSync, setLastSync] = useState<{ last_synced: string; ical_url: string } | null>(null)
