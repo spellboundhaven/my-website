@@ -542,8 +542,10 @@ export default function AdminDashboard() {
               <div>
                 <h2 className="text-2xl font-bold text-gray-800 mb-6">All Inquiries</h2>
                 <div className="overflow-x-auto">
-                  {bookings.length === 0 ? (
-                    <p className="text-gray-500 text-center py-8">No bookings yet</p>
+                  {loading ? (
+                    <p className="text-gray-500 text-center py-8">Loading inquiries...</p>
+                  ) : bookings.length === 0 ? (
+                    <p className="text-gray-500 text-center py-8">No inquiries yet</p>
                   ) : (
                     <table className="w-full">
                       <thead className="bg-gray-100">
@@ -749,7 +751,9 @@ export default function AdminDashboard() {
                   </form>
 
                   <div className="space-y-3">
-                    {dateBlocks.length === 0 ? (
+                    {loading ? (
+                      <p className="text-gray-500 text-center py-8">Loading date blocks...</p>
+                    ) : dateBlocks.length === 0 ? (
                       <p className="text-gray-500 text-center py-8">No date blocks</p>
                     ) : (
                       dateBlocks.map((block) => (
@@ -855,7 +859,9 @@ export default function AdminDashboard() {
                   </form>
 
                   <div className="space-y-3">
-                    {reviews.length === 0 ? (
+                    {loading ? (
+                      <p className="text-gray-500 text-center py-8">Loading reviews...</p>
+                    ) : reviews.length === 0 ? (
                       <p className="text-gray-500 text-center py-8">No reviews yet</p>
                     ) : (
                       reviews.map((review) => (
@@ -1228,7 +1234,9 @@ export default function AdminDashboard() {
                 <div>
                   <h2 className="text-2xl font-bold text-gray-800 mb-6">All Invoices</h2>
                   <div className="overflow-x-auto">
-                    {invoices.length === 0 ? (
+                    {loading ? (
+                      <p className="text-gray-500 text-center py-8">Loading invoices...</p>
+                    ) : invoices.length === 0 ? (
                       <p className="text-gray-500 text-center py-8">No invoices yet</p>
                     ) : (
                       <table className="w-full">
