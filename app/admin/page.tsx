@@ -1272,16 +1272,20 @@ export default function AdminDashboard() {
                                         container.style.position = 'absolute';
                                         container.style.left = '-9999px';
                                         container.style.width = '800px';
+                                        container.style.padding = '20px 0';
                                         container.innerHTML = html;
                                         document.body.appendChild(container);
+                                        
+                                        // Wait for content to render
+                                        await new Promise(resolve => setTimeout(resolve, 100));
                                         
                                         // Convert to canvas with lower scale for smaller file size
                                         const canvas = await html2canvas(container, {
                                           scale: 1.5,
                                           useCORS: true,
                                           logging: false,
-                                          windowHeight: container.scrollHeight,
-                                          height: container.scrollHeight
+                                          windowHeight: container.scrollHeight + 100,
+                                          height: container.scrollHeight + 100
                                         });
                                         
                                         // Remove temporary container
@@ -1294,27 +1298,30 @@ export default function AdminDashboard() {
                                           format: 'a4'
                                         });
                                         
-                                        const imgWidth = 210; // A4 width in mm
+                                        const margin = 10; // 10mm margin on all sides
+                                        const pageWidth = 210; // A4 width in mm
                                         const pageHeight = 297; // A4 height in mm
+                                        const imgWidth = pageWidth - (margin * 2); // Width with margins
                                         const imgHeight = (canvas.height * imgWidth) / canvas.width;
                                         
                                         // Use JPEG for better compression
                                         const imgData = canvas.toDataURL('image/jpeg', 0.85);
                                         
                                         // If content is taller than one page, split into multiple pages
+                                        const availableHeight = pageHeight - (margin * 2);
                                         let heightLeft = imgHeight;
-                                        let position = 0;
+                                        let position = margin; // Start with top margin
                                         
                                         // First page
-                                        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-                                        heightLeft -= pageHeight;
+                                        pdf.addImage(imgData, 'JPEG', margin, position, imgWidth, imgHeight);
+                                        heightLeft -= availableHeight;
                                         
                                         // Add more pages if needed
                                         while (heightLeft > 0) {
-                                          position = heightLeft - imgHeight;
+                                          position = margin - (imgHeight - heightLeft);
                                           pdf.addPage();
-                                          pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-                                          heightLeft -= pageHeight;
+                                          pdf.addImage(imgData, 'JPEG', margin, position, imgWidth, imgHeight);
+                                          heightLeft -= availableHeight;
                                         }
                                         
                                         pdf.save(`Invoice-${invoice.invoice_number}.pdf`);
