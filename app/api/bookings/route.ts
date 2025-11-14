@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
       if (process.env.RESEND_API_KEY && process.env.HOST_EMAIL) {
         const resend = new Resend(process.env.RESEND_API_KEY);
         await resend.emails.send({
-          from: 'Spellbound Haven <onboarding@resend.dev>',
+          from: 'Spellbound Haven <noreply@spellboundhaven.com>',
           to: process.env.HOST_EMAIL,
           subject: `New Booking Inquiry - ${guest_name}`,
           html: `
