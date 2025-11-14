@@ -503,9 +503,6 @@ export default function AdminDashboard() {
                           <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Check-in / Check-out</th>
                           <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Contact</th>
                           <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Guests</th>
-                          <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Total</th>
-                          <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Payment</th>
-                          <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Status</th>
                           <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Actions</th>
                         </tr>
                       </thead>
@@ -527,39 +524,6 @@ export default function AdminDashboard() {
                               <div className="text-xs">{booking.guest_phone}</div>
                             </td>
                             <td className="px-4 py-3 text-sm text-gray-600">{booking.guests_count}</td>
-                            <td className="px-4 py-3 text-sm font-semibold text-gray-900">${booking.total_price}</td>
-                            <td className="px-4 py-3 text-sm">
-                              <div className="space-y-1">
-                                <div className="text-gray-600">{booking.payment_method || 'N/A'}</div>
-                                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                                  booking.payment_status === 'paid'
-                                    ? 'bg-green-100 text-green-800'
-                                    : 'bg-yellow-100 text-yellow-800'
-                                }`}>
-                                  {booking.payment_status || 'pending'}
-                                </span>
-                              </div>
-                            </td>
-                            <td className="px-4 py-3">
-                              <select
-                                value={booking.status}
-                                onChange={(e) => handleUpdateBookingStatus(booking.id, e.target.value)}
-                                className={`text-xs px-2 py-1 rounded font-medium border ${
-                                  booking.status === 'confirmed'
-                                    ? 'bg-green-100 text-green-800 border-green-300'
-                                    : booking.status === 'pending'
-                                    ? 'bg-yellow-100 text-yellow-800 border-yellow-300'
-                                    : booking.status === 'cancelled'
-                                    ? 'bg-red-100 text-red-800 border-red-300'
-                                    : 'bg-blue-100 text-blue-800 border-blue-300'
-                                }`}
-                              >
-                                <option value="pending">Pending</option>
-                                <option value="confirmed">Confirmed</option>
-                                <option value="cancelled">Cancelled</option>
-                                <option value="completed">Completed</option>
-                              </select>
-                            </td>
                             <td className="px-4 py-3 text-sm">
                               <button
                                 onClick={() => {
