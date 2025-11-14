@@ -16,29 +16,40 @@ function verifyAuth(request: NextRequest): boolean {
 
 function generateInvoiceHTML(invoice: any): string {
   // Parse dates without timezone conversion
-  const parseDate = (dateStr: string) => {
-    const [year, month, day] = dateStr.split('-').map(Number);
-    return new Date(year, month - 1, day);
+  const parseDate = (dateStr: string | Date) => {
+    // Handle both string and Date object inputs
+    if (dateStr instanceof Date) {
+      return dateStr;
+    }
+    // If it's already formatted like "2026-01-17", parse it
+    const dateString = String(dateStr);
+    if (dateString.includes('-')) {
+      const [year, month, day] = dateString.split('-').map(Number);
+      return new Date(year, month - 1, day);
+    }
+    // Fallback to standard Date parsing
+    return new Date(dateString);
   };
   
-  const checkInDateObj = parseDate(invoice.check_in_date);
-  const checkOutDateObj = parseDate(invoice.check_out_date);
-  
-  const checkInDate = checkInDateObj.toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric'
-  });
-  const checkOutDate = checkOutDateObj.toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric'
-  });
-  
-  const nights = Math.ceil(
-    (checkOutDateObj.getTime() - checkInDateObj.getTime()) / 
-    (1000 * 60 * 60 * 24)
-  );
+  try {
+    const checkInDateObj = parseDate(invoice.check_in_date);
+    const checkOutDateObj = parseDate(invoice.check_out_date);
+    
+    const checkInDate = checkInDateObj.toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    });
+    const checkOutDate = checkOutDateObj.toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    });
+    
+    const nights = Math.ceil(
+      (checkOutDateObj.getTime() - checkInDateObj.getTime()) / 
+      (1000 * 60 * 60 * 24)
+    );
 
   return `
     <!DOCTYPE html>
@@ -213,6 +224,11 @@ function generateInvoiceHTML(invoice: any): string {
     </body>
     </html>
   `;
+  } catch (error) {
+    console.error('Error generating invoice HTML:', error);
+    console.error('Invoice data:', JSON.stringify(invoice, null, 2));
+    throw new Error(`Failed to generate invoice HTML: ${error instanceof Error ? error.message : String(error)}`);
+  }
 }
 
 export async function GET(

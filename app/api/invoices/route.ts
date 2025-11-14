@@ -27,29 +27,40 @@ function verifyAuth(request: NextRequest): boolean {
 // Generate invoice HTML template
 function generateInvoiceHTML(invoice: Invoice): string {
   // Parse dates without timezone conversion
-  const parseDate = (dateStr: string) => {
-    const [year, month, day] = dateStr.split('-').map(Number);
-    return new Date(year, month - 1, day);
+  const parseDate = (dateStr: string | Date) => {
+    // Handle both string and Date object inputs
+    if (dateStr instanceof Date) {
+      return dateStr;
+    }
+    // If it's already formatted like "2026-01-17", parse it
+    const dateString = String(dateStr);
+    if (dateString.includes('-')) {
+      const [year, month, day] = dateString.split('-').map(Number);
+      return new Date(year, month - 1, day);
+    }
+    // Fallback to standard Date parsing
+    return new Date(dateString);
   };
   
-  const checkInDateObj = parseDate(invoice.check_in_date);
-  const checkOutDateObj = parseDate(invoice.check_out_date);
-  
-  const checkInDate = checkInDateObj.toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric'
-  });
-  const checkOutDate = checkOutDateObj.toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric'
-  });
-  
-  const nights = Math.ceil(
-    (checkOutDateObj.getTime() - checkInDateObj.getTime()) / 
-    (1000 * 60 * 60 * 24)
-  );
+  try {
+    const checkInDateObj = parseDate(invoice.check_in_date);
+    const checkOutDateObj = parseDate(invoice.check_out_date);
+    
+    const checkInDate = checkInDateObj.toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    });
+    const checkOutDate = checkOutDateObj.toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    });
+    
+    const nights = Math.ceil(
+      (checkOutDateObj.getTime() - checkInDateObj.getTime()) / 
+      (1000 * 60 * 60 * 24)
+    );
 
   return `
     <!DOCTYPE html>
@@ -224,6 +235,11 @@ function generateInvoiceHTML(invoice: Invoice): string {
     </body>
     </html>
   `;
+  } catch (error) {
+    console.error('Error generating invoice HTML:', error);
+    console.error('Invoice data:', JSON.stringify(invoice, null, 2));
+    throw new Error(`Failed to generate invoice HTML: ${error instanceof Error ? error.message : String(error)}`);
+  }
 }
 
 export async function GET(request: NextRequest) {
@@ -300,45 +316,68 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === 'send') {
-      if (!resend) {
+      try {
+        if (!resend) {
+          return NextResponse.json(
+            { error: 'Email service not configured' },
+            { status: 500 }
+          );
+        }
+
+        console.log('Sending invoice:', id);
+
+        // Update invoice status to sent
+        const invoice = await updateInvoice(id, {
+          status: 'sent',
+          sent_at: new Date().toISOString()
+        });
+
+        console.log('Invoice updated, generating HTML...');
+        console.log('Invoice dates:', { 
+          check_in: invoice.check_in_date, 
+          check_out: invoice.check_out_date 
+        });
+
+        // Generate invoice HTML
+        const invoiceHTML = generateInvoiceHTML(invoice);
+
+        console.log('HTML generated, sending email...');
+
+        // Send to host email
+        await resend.emails.send({
+          from: 'noreply@spellboundhaven.com',
+          to: 'spellboundhaven.disney@gmail.com',
+          subject: `Invoice ${invoice.invoice_number} - ${invoice.guest_name}`,
+          html: invoiceHTML
+        });
+
+        console.log('Email sent successfully');
+
+        // Optionally send to guest if requested
+        if (data.send_to_guest) {
+          await resend.emails.send({
+            from: 'noreply@spellboundhaven.com',
+            to: invoice.guest_email,
+            subject: `Your Spellbound Haven Invoice - ${invoice.invoice_number}`,
+            html: invoiceHTML
+          });
+        }
+
+        return NextResponse.json({
+          success: true,
+          invoice,
+          message: 'Invoice sent successfully'
+        });
+      } catch (sendError) {
+        console.error('Error sending invoice:', sendError);
         return NextResponse.json(
-          { error: 'Email service not configured' },
+          { 
+            error: 'Failed to send invoice',
+            details: sendError instanceof Error ? sendError.message : String(sendError)
+          },
           { status: 500 }
         );
       }
-
-      // Update invoice status to sent
-      const invoice = await updateInvoice(id, {
-        status: 'sent',
-        sent_at: new Date().toISOString()
-      });
-
-      // Generate invoice HTML
-      const invoiceHTML = generateInvoiceHTML(invoice);
-
-      // Send to host email
-      await resend.emails.send({
-        from: 'noreply@spellboundhaven.com',
-        to: 'spellboundhaven.disney@gmail.com',
-        subject: `Invoice ${invoice.invoice_number} - ${invoice.guest_name}`,
-        html: invoiceHTML
-      });
-
-      // Optionally send to guest if requested
-      if (data.send_to_guest) {
-        await resend.emails.send({
-          from: 'noreply@spellboundhaven.com',
-          to: invoice.guest_email,
-          subject: `Your Spellbound Haven Invoice - ${invoice.invoice_number}`,
-          html: invoiceHTML
-        });
-      }
-
-      return NextResponse.json({
-        success: true,
-        invoice,
-        message: 'Invoice sent successfully'
-      });
     }
 
     if (action === 'update') {
