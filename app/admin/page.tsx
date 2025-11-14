@@ -1284,6 +1284,72 @@ export default function AdminDashboard() {
                                   )}
                                   <button
                                     onClick={async () => {
+                                      try {
+                                        setLoading(true);
+                                        
+                                        // Dynamically import jspdf and html2canvas
+                                        const { default: jsPDF } = await import('jspdf');
+                                        const { default: html2canvas } = await import('html2canvas');
+                                        
+                                        // Fetch the invoice HTML
+                                        const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123';
+                                        const response = await fetch(`/api/invoices/${invoice.id}/html`, {
+                                          headers: {
+                                            'Authorization': `Bearer ${adminPassword}`
+                                          }
+                                        });
+                                        
+                                        if (!response.ok) {
+                                          throw new Error('Failed to fetch invoice');
+                                        }
+                                        
+                                        const html = await response.text();
+                                        
+                                        // Create a temporary container
+                                        const container = document.createElement('div');
+                                        container.style.position = 'absolute';
+                                        container.style.left = '-9999px';
+                                        container.style.width = '800px';
+                                        container.innerHTML = html;
+                                        document.body.appendChild(container);
+                                        
+                                        // Convert to canvas
+                                        const canvas = await html2canvas(container, {
+                                          scale: 2,
+                                          useCORS: true,
+                                          logging: false
+                                        });
+                                        
+                                        // Remove temporary container
+                                        document.body.removeChild(container);
+                                        
+                                        // Create PDF
+                                        const imgData = canvas.toDataURL('image/png');
+                                        const pdf = new jsPDF({
+                                          orientation: 'portrait',
+                                          unit: 'mm',
+                                          format: 'a4'
+                                        });
+                                        
+                                        const imgWidth = 210; // A4 width in mm
+                                        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                                        
+                                        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+                                        pdf.save(`Invoice-${invoice.invoice_number}.pdf`);
+                                        
+                                      } catch (error) {
+                                        console.error('Error downloading invoice:', error);
+                                        alert('Error downloading invoice. Please try again.');
+                                      } finally {
+                                        setLoading(false);
+                                      }
+                                    }}
+                                    className="text-green-600 hover:text-green-800 font-medium"
+                                  >
+                                    Download
+                                  </button>
+                                  <button
+                                    onClick={async () => {
                                       if (!confirm('Delete this invoice?')) return;
                                       try {
                                         setLoading(true);
