@@ -1338,6 +1338,66 @@ export default function AdminDashboard() {
                                     Download
                                   </button>
                                   <button
+                                    onClick={() => {
+                                      const newStatus = prompt(
+                                        `Update payment status for ${invoice.invoice_number}\n\nEnter:\n1 = Unpaid\n2 = Initial Deposit Paid\n3 = All Paid`,
+                                        invoice.payment_status === 'all_paid' ? '3' : 
+                                        invoice.payment_status === 'initial_deposit_paid' ? '2' : '1'
+                                      );
+                                      
+                                      if (!newStatus) return;
+                                      
+                                      const statusMap: { [key: string]: string } = {
+                                        '1': 'unpaid',
+                                        '2': 'initial_deposit_paid',
+                                        '3': 'all_paid'
+                                      };
+                                      
+                                      const paymentStatus = statusMap[newStatus];
+                                      
+                                      if (!paymentStatus) {
+                                        alert('Invalid selection. Please enter 1, 2, or 3.');
+                                        return;
+                                      }
+                                      
+                                      (async () => {
+                                        try {
+                                          setLoading(true);
+                                          const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123';
+                                          const response = await fetch('/api/invoices', {
+                                            method: 'POST',
+                                            headers: {
+                                              'Content-Type': 'application/json',
+                                              'Authorization': `Bearer ${adminPassword}`
+                                            },
+                                            body: JSON.stringify({
+                                              action: 'update',
+                                              id: invoice.id,
+                                              data: { payment_status: paymentStatus }
+                                            })
+                                          });
+
+                                          const result = await response.json();
+                                          
+                                          if (result.success) {
+                                            alert('Payment status updated successfully!');
+                                            fetchAdminData();
+                                          } else {
+                                            alert('Failed to update: ' + (result.error || 'Unknown error'));
+                                          }
+                                        } catch (error) {
+                                          console.error('Error updating invoice:', error);
+                                          alert('Error updating invoice. Please try again.');
+                                        } finally {
+                                          setLoading(false);
+                                        }
+                                      })();
+                                    }}
+                                    className="text-purple-600 hover:text-purple-800 font-medium"
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
                                     onClick={async () => {
                                       if (!confirm('Delete this invoice?')) return;
                                       try {
