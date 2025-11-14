@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { CalendarIcon, Users, DollarSign, Ban, Settings } from 'lucide-react'
+import { CalendarIcon, Users, Ban, Settings } from 'lucide-react'
 
 interface Booking {
   id: number
@@ -27,25 +27,14 @@ interface DateBlock {
   created_at: string
 }
 
-interface PricingRule {
-  id: number
-  start_date: string
-  end_date: string
-  price_per_night: number
-  minimum_stay: number
-  rule_type: string
-  created_at: string
-}
-
 export default function AdminDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
   const [authError, setAuthError] = useState('')
-  const [activeTab, setActiveTab] = useState<'bookings' | 'calendar' | 'pricing' | 'settings'>('bookings')
+  const [activeTab, setActiveTab] = useState<'bookings' | 'calendar' | 'settings'>('bookings')
   
   const [bookings, setBookings] = useState<Booking[]>([])
   const [dateBlocks, setDateBlocks] = useState<DateBlock[]>([])
-  const [pricingRules, setPricingRules] = useState<PricingRule[]>([])
   const [loading, setLoading] = useState(false)
   
   const [airbnbUrl, setAirbnbUrl] = useState('')
@@ -99,7 +88,6 @@ export default function AdminDashboard() {
       if (data.success) {
         setBookings(data.bookings || [])
         setDateBlocks(data.blocks || [])
-        setPricingRules(data.rules || [])
       }
     } catch (error) {
       console.error('Error fetching admin data:', error)
@@ -228,78 +216,6 @@ export default function AdminDashboard() {
     }
   }
 
-  const handleCreatePricing = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const formData = new FormData(e.currentTarget)
-    
-    setLoading(true)
-    try {
-      const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123'
-      const response = await fetch('/api/admin', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${adminPassword}`
-        },
-        body: JSON.stringify({
-          action: 'createPricing',
-          data: {
-            start_date: formData.get('start_date'),
-            end_date: formData.get('end_date'),
-            price_per_night: parseFloat(formData.get('price_per_night') as string),
-            minimum_stay: parseInt(formData.get('minimum_stay') as string),
-            rule_type: formData.get('rule_type')
-          }
-        })
-      })
-
-      const data = await response.json()
-      
-      if (data.success) {
-        alert('Pricing rule created successfully!')
-        fetchAdminData()
-        e.currentTarget.reset()
-      }
-    } catch (error) {
-      console.error('Error creating pricing:', error)
-      alert('Failed to create pricing rule')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleDeletePricing = async (id: number) => {
-    if (!confirm('Delete this pricing rule?')) return
-
-    setLoading(true)
-    try {
-      const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123'
-      const response = await fetch('/api/admin', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${adminPassword}`
-        },
-        body: JSON.stringify({
-          action: 'deletePricing',
-          data: { id }
-        })
-      })
-
-      const data = await response.json()
-      
-      if (data.success) {
-        alert('Pricing rule deleted!')
-        fetchAdminData()
-      }
-    } catch (error) {
-      console.error('Error deleting pricing:', error)
-      alert('Failed to delete pricing rule')
-    } finally {
-      setLoading(false)
-    }
-  }
-
   const handleUpdateBookingStatus = async (id: number, status: string) => {
     setLoading(true)
     try {
@@ -391,7 +307,7 @@ export default function AdminDashboard() {
             <div className="flex justify-between items-center">
               <div>
                 <h1 className="text-3xl font-bold">Spellbound Haven Admin</h1>
-                <p className="text-purple-100 mt-1">Manage bookings, calendar, and pricing</p>
+                <p className="text-purple-100 mt-1">Manage bookings, availability, and inquiries</p>
               </div>
               <button
                 onClick={handleLogout}
@@ -426,17 +342,6 @@ export default function AdminDashboard() {
               >
                 <Ban className="w-4 h-4" />
                 Date Blocks ({dateBlocks.length})
-              </button>
-              <button
-                onClick={() => setActiveTab('pricing')}
-                className={`px-6 py-3 font-medium transition-colors flex items-center gap-2 ${
-                  activeTab === 'pricing'
-                    ? 'border-b-2 border-purple-600 text-purple-600'
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                <DollarSign className="w-4 h-4" />
-                Pricing Rules ({pricingRules.length})
               </button>
               <button
                 onClick={() => setActiveTab('settings')}
@@ -623,131 +528,6 @@ export default function AdminDashboard() {
               </div>
             )}
 
-            {/* Pricing Tab */}
-            {activeTab === 'pricing' && (
-              <div className="space-y-8">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-800 mb-6">Pricing Rules</h2>
-                  <form onSubmit={handleCreatePricing} className="bg-gray-50 rounded-lg p-6 mb-6">
-                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Start Date
-                        </label>
-                        <input
-                          type="date"
-                          name="start_date"
-                          required
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          End Date
-                        </label>
-                        <input
-                          type="date"
-                          name="end_date"
-                          required
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Price/Night
-                        </label>
-                        <input
-                          type="number"
-                          name="price_per_night"
-                          required
-                          placeholder="450"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Min Stay
-                        </label>
-                        <input
-                          type="number"
-                          name="minimum_stay"
-                          required
-                          defaultValue={3}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Type
-                        </label>
-                        <select
-                          name="rule_type"
-                          required
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                        >
-                          <option value="standard">Standard</option>
-                          <option value="peak">Peak</option>
-                          <option value="holiday">Holiday</option>
-                        </select>
-                      </div>
-                    </div>
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="mt-4 px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition disabled:bg-gray-400"
-                    >
-                      Create Pricing Rule
-                    </button>
-                  </form>
-
-                  <div className="space-y-3">
-                    {pricingRules.length === 0 ? (
-                      <p className="text-gray-500 text-center py-8">No pricing rules</p>
-                    ) : (
-                      pricingRules.map((rule) => (
-                        <div key={rule.id} className="bg-white border border-gray-200 rounded-lg p-4 flex justify-between items-center">
-                          <div className="flex-1 grid grid-cols-4 gap-4">
-                            <div>
-                              <div className="text-xs text-gray-500">Date Range</div>
-                              <div className="font-medium text-gray-900 text-sm">
-                                {rule.start_date} to {rule.end_date}
-                              </div>
-                            </div>
-                            <div>
-                              <div className="text-xs text-gray-500">Price/Night</div>
-                              <div className="font-semibold text-purple-600">${rule.price_per_night}</div>
-                            </div>
-                            <div>
-                              <div className="text-xs text-gray-500">Min Stay</div>
-                              <div className="font-medium text-gray-900">{rule.minimum_stay} nights</div>
-                            </div>
-                            <div>
-                              <div className="text-xs text-gray-500">Type</div>
-                              <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                                rule.rule_type === 'holiday'
-                                  ? 'bg-red-100 text-red-800'
-                                  : rule.rule_type === 'peak'
-                                  ? 'bg-orange-100 text-orange-800'
-                                  : 'bg-blue-100 text-blue-800'
-                              }`}>
-                                {rule.rule_type}
-                              </span>
-                            </div>
-                          </div>
-                          <button
-                            onClick={() => handleDeletePricing(rule.id)}
-                            className="ml-4 text-red-600 hover:text-red-800 font-medium text-sm"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-
             {/* Settings Tab */}
             {activeTab === 'settings' && (
               <div className="space-y-8">
@@ -814,8 +594,6 @@ export default function AdminDashboard() {
                         <li><code className="bg-gray-200 px-2 py-0.5 rounded">POSTGRES_URL</code> - Neon database URL</li>
                         <li><code className="bg-gray-200 px-2 py-0.5 rounded">RESEND_API_KEY</code> - Resend API key for emails</li>
                         <li><code className="bg-gray-200 px-2 py-0.5 rounded">HOST_EMAIL</code> - Your email for notifications</li>
-                        <li><code className="bg-gray-200 px-2 py-0.5 rounded">STRIPE_SECRET_KEY</code> - Stripe secret key</li>
-                        <li><code className="bg-gray-200 px-2 py-0.5 rounded">STRIPE_WEBHOOK_SECRET</code> - Stripe webhook secret</li>
                         <li><code className="bg-gray-200 px-2 py-0.5 rounded">NEXT_PUBLIC_ADMIN_PASSWORD</code> - Admin dashboard password</li>
                         <li><code className="bg-gray-200 px-2 py-0.5 rounded">CRON_SECRET</code> - Secret for Vercel Cron (generate with: openssl rand -base64 32)</li>
                       </ul>
