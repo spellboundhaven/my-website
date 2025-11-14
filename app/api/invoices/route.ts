@@ -251,32 +251,43 @@ export async function POST(request: NextRequest) {
     const { action, data, id } = body;
 
     if (action === 'create') {
-      // Generate invoice number
-      const invoiceNumber = await generateInvoiceNumber();
+      try {
+        // Generate invoice number
+        const invoiceNumber = await generateInvoiceNumber();
 
-      const newInvoice = await createInvoice({
-        invoice_number: invoiceNumber,
-        booking_id: data.booking_id,
-        guest_name: data.guest_name,
-        guest_email: data.guest_email,
-        check_in_date: data.check_in_date,
-        check_out_date: data.check_out_date,
-        accommodation_cost: parseFloat(data.accommodation_cost),
-        cleaning_fee: parseFloat(data.cleaning_fee || 0),
-        tax_amount: parseFloat(data.tax_amount || 0),
-        additional_fees: parseFloat(data.additional_fees || 0),
-        additional_fees_description: data.additional_fees_description,
-        total_amount: parseFloat(data.total_amount),
-        payment_method: data.payment_method,
-        status: 'draft',
-        notes: data.notes
-      });
+        const newInvoice = await createInvoice({
+          invoice_number: invoiceNumber,
+          booking_id: data.booking_id || null,
+          guest_name: data.guest_name,
+          guest_email: data.guest_email,
+          check_in_date: data.check_in_date,
+          check_out_date: data.check_out_date,
+          accommodation_cost: parseFloat(data.accommodation_cost),
+          cleaning_fee: parseFloat(data.cleaning_fee || 0),
+          tax_amount: parseFloat(data.tax_amount || 0),
+          additional_fees: parseFloat(data.additional_fees || 0),
+          additional_fees_description: data.additional_fees_description || null,
+          total_amount: parseFloat(data.total_amount),
+          payment_method: data.payment_method,
+          status: 'draft',
+          notes: data.notes || null
+        });
 
-      return NextResponse.json({
-        success: true,
-        invoice: newInvoice,
-        message: 'Invoice created successfully'
-      });
+        return NextResponse.json({
+          success: true,
+          invoice: newInvoice,
+          message: 'Invoice created successfully'
+        });
+      } catch (createError) {
+        console.error('Error creating invoice:', createError);
+        return NextResponse.json(
+          { 
+            error: 'Failed to create invoice',
+            details: createError instanceof Error ? createError.message : String(createError)
+          },
+          { status: 500 }
+        );
+      }
     }
 
     if (action === 'send') {
