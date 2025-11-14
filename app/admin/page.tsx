@@ -6,7 +6,12 @@ import { CalendarIcon, Users, Ban, Settings, Star, FileText } from 'lucide-react
 // Helper function to format dates consistently (EST timezone, YYYY-MM-DD format)
 function formatDateForDisplay(date: string | Date): string {
   if (typeof date === 'string') {
-    return date; // Already in YYYY-MM-DD format
+    // If it's an ISO timestamp string (e.g., "2026-01-17T00:00:00.000Z")
+    if (date.includes('T')) {
+      return date.split('T')[0]; // Extract just the date portion (YYYY-MM-DD)
+    }
+    // If it's already in YYYY-MM-DD format
+    return date;
   }
   // If it's a Date object, extract just the date portion in local timezone
   const year = date.getFullYear();
