@@ -944,11 +944,13 @@ export default function AdminDashboard() {
                             e.currentTarget.reset();
                             fetchAdminData();
                           } else {
-                            alert('Failed to create invoice: ' + (result.error || 'Unknown error'));
+                            const errorMsg = result.details || result.error || 'Unknown error';
+                            alert('Failed to create invoice: ' + errorMsg);
                           }
                         } catch (error) {
                           console.error('Error creating invoice:', error);
-                          alert('Error creating invoice. Please try again.');
+                          const errorMsg = error instanceof Error ? error.message : String(error);
+                          alert('Error creating invoice: ' + errorMsg);
                         } finally {
                           setLoading(false);
                         }
