@@ -9,7 +9,7 @@ export default function Gallery() {
   const [selectedRoom, setSelectedRoom] = useState(0)
   const [selectedImage, setSelectedImage] = useState(0)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [selectedFloor, setSelectedFloor] = useState('all')
+  const [selectedFloor, setSelectedFloor] = useState('outdoor')
 
   const rooms = propertyData.rooms
   
@@ -24,7 +24,7 @@ export default function Gallery() {
       case 'first': return firstFloorRooms
       case 'second': return secondFloorRooms
       case 'outdoor': return outdoorAreas
-      default: return roomsWithoutResort
+      default: return outdoorAreas
     }
   }
   
@@ -75,16 +75,6 @@ export default function Gallery() {
 
         {/* Floor Navigation */}
         <div className="flex flex-wrap justify-center gap-4 mb-8">
-          <button
-            onClick={() => handleFloorSelection('all')}
-            className={`px-6 py-3 rounded-lg font-medium transition-colors duration-200 ${
-              selectedFloor === 'all'
-                ? 'bg-primary-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            All Areas
-          </button>
           <button
             onClick={() => handleFloorSelection('outdoor')}
             className={`px-6 py-3 rounded-lg font-medium transition-colors duration-200 ${
