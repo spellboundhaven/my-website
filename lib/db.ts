@@ -287,6 +287,35 @@ export async function deleteDateBlock(id: number): Promise<boolean> {
   return result.rowCount ? result.rowCount > 0 : false;
 }
 
+export async function deleteAllAirbnbBlocks(): Promise<number> {
+  const result = await sql`
+    DELETE FROM date_blocks WHERE reason LIKE 'Airbnb:%'
+  `;
+  return result.rowCount || 0;
+}
+
+export async function cleanupPastDateBlocks(): Promise<number> {
+  const today = getCurrentESTDate();
+  const result = await sql`
+    DELETE FROM date_blocks WHERE end_date < ${today}
+  `;
+  return result.rowCount || 0;
+}
+
+export async function removeDuplicateDateBlocks(): Promise<number> {
+  // Remove duplicate blocks (same start_date, end_date, reason)
+  // Keep only the one with the smallest ID (oldest)
+  const result = await sql`
+    DELETE FROM date_blocks
+    WHERE id NOT IN (
+      SELECT MIN(id)
+      FROM date_blocks
+      GROUP BY start_date, end_date, reason
+    )
+  `;
+  return result.rowCount || 0;
+}
+
 // Check if a date is available
 export async function isDateAvailable(date: string): Promise<boolean> {
   // Check for bookings

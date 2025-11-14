@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import ical from 'node-ical';
-import { createDateBlock, updateAirbnbSync, getLastAirbnbSync, getAllDateBlocks } from '@/lib/db';
+import { createDateBlock, updateAirbnbSync, getLastAirbnbSync, deleteAllAirbnbBlocks } from '@/lib/db';
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,24 +27,17 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // Get existing Airbnb blocks
-      const existingBlocks = await getAllDateBlocks();
-      const airbnbBlocks = existingBlocks.filter(b => b.reason.startsWith('Airbnb:'));
+      // Clear all existing Airbnb blocks before syncing (clean slate)
+      const deletedCount = await deleteAllAirbnbBlocks();
+      console.log(`Cleared ${deletedCount} old Airbnb blocks`);
 
       // Create new blocks for each booked date range
       for (const booking of bookedDates) {
-        // Check if this date range already exists
-        const exists = airbnbBlocks.some(
-          b => b.start_date === booking.start && b.end_date === booking.end
-        );
-
-        if (!exists) {
-          await createDateBlock({
-            start_date: booking.start,
-            end_date: booking.end,
-            reason: `Airbnb: ${booking.summary}`
-          });
-        }
+        await createDateBlock({
+          start_date: booking.start,
+          end_date: booking.end,
+          reason: `Airbnb: ${booking.summary}`
+        });
       }
 
       // Update sync record

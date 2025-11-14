@@ -584,7 +584,110 @@ export default function AdminDashboard() {
             {activeTab === 'calendar' && (
               <div className="space-y-8">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-800 mb-6">Block Dates</h2>
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-2xl font-bold text-gray-800">Block Dates</h2>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={async () => {
+                          if (!confirm('Remove all duplicate date blocks?')) return;
+                          try {
+                            setLoading(true);
+                            const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123';
+                            const response = await fetch('/api/cleanup-blocks', {
+                              method: 'POST',
+                              headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${adminPassword}`
+                              },
+                              body: JSON.stringify({ action: 'remove-duplicates' })
+                            });
+                            const result = await response.json();
+                            if (result.success) {
+                              alert(result.message);
+                              fetchAdminData();
+                            } else {
+                              alert('Error: ' + result.error);
+                            }
+                          } catch (error) {
+                            console.error('Error:', error);
+                            alert('Failed to remove duplicates');
+                          } finally {
+                            setLoading(false);
+                          }
+                        }}
+                        disabled={loading}
+                        className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-sm rounded-lg font-medium transition disabled:bg-gray-400"
+                      >
+                        Remove Duplicates
+                      </button>
+                      <button
+                        onClick={async () => {
+                          if (!confirm('Clean up all past date blocks?')) return;
+                          try {
+                            setLoading(true);
+                            const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123';
+                            const response = await fetch('/api/cleanup-blocks', {
+                              method: 'POST',
+                              headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${adminPassword}`
+                              },
+                              body: JSON.stringify({ action: 'cleanup-past' })
+                            });
+                            const result = await response.json();
+                            if (result.success) {
+                              alert(result.message);
+                              fetchAdminData();
+                            } else {
+                              alert('Error: ' + result.error);
+                            }
+                          } catch (error) {
+                            console.error('Error:', error);
+                            alert('Failed to cleanup past blocks');
+                          } finally {
+                            setLoading(false);
+                          }
+                        }}
+                        disabled={loading}
+                        className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm rounded-lg font-medium transition disabled:bg-gray-400"
+                      >
+                        Clean Up Past
+                      </button>
+                      <button
+                        onClick={async () => {
+                          if (!confirm('Full cleanup: Remove duplicates AND past blocks?')) return;
+                          try {
+                            setLoading(true);
+                            const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123';
+                            const response = await fetch('/api/cleanup-blocks', {
+                              method: 'POST',
+                              headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${adminPassword}`
+                              },
+                              body: JSON.stringify({ action: 'full-cleanup' })
+                            });
+                            const result = await response.json();
+                            if (result.success) {
+                              alert(result.message);
+                              fetchAdminData();
+                            } else {
+                              alert('Error: ' + result.error);
+                            }
+                          } catch (error) {
+                            console.error('Error:', error);
+                            alert('Failed to run full cleanup');
+                          } finally {
+                            setLoading(false);
+                          }
+                        }}
+                        disabled={loading}
+                        className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg font-medium transition disabled:bg-gray-400"
+                      >
+                        Full Cleanup
+                      </button>
+                    </div>
+                  </div>
                   <form onSubmit={handleCreateBlock} className="bg-gray-50 rounded-lg p-6 mb-6">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
