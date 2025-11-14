@@ -14,7 +14,7 @@ import {
 
 function verifyAuth(request: NextRequest): boolean {
   const authHeader = request.headers.get('authorization');
-  const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+  const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123';
   
   if (!authHeader || authHeader !== `Bearer ${adminPassword}`) {
     return false;

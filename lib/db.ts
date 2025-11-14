@@ -349,7 +349,7 @@ export async function createReview(review: Review): Promise<Review> {
 export async function getAllReviews(): Promise<Review[]> {
   const result = await sql`
     SELECT * FROM reviews
-    ORDER BY created_at DESC
+    ORDER BY id DESC
   `;
   return result.rows as Review[];
 }
