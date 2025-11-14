@@ -3,6 +3,18 @@
 import { useState, useEffect } from 'react'
 import { CalendarIcon, Users, Ban, Settings, Star, FileText } from 'lucide-react'
 
+// Helper function to format dates consistently (EST timezone, YYYY-MM-DD format)
+function formatDateForDisplay(date: string | Date): string {
+  if (typeof date === 'string') {
+    return date; // Already in YYYY-MM-DD format
+  }
+  // If it's a Date object, extract just the date portion in local timezone
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 interface Booking {
   id: number
   check_in_date: string
@@ -516,8 +528,8 @@ export default function AdminDashboard() {
                               )}
                             </td>
                             <td className="px-4 py-3 text-sm text-gray-600">
-                              <div>{booking.check_in_date}</div>
-                              <div className="text-xs text-gray-500">to {booking.check_out_date}</div>
+                              <div>{formatDateForDisplay(booking.check_in_date)}</div>
+                              <div className="text-xs text-gray-500">to {formatDateForDisplay(booking.check_out_date)}</div>
                             </td>
                             <td className="px-4 py-3 text-sm text-gray-600">
                               <div>{booking.guest_email}</div>
@@ -707,7 +719,7 @@ export default function AdminDashboard() {
                         <div key={block.id} className="bg-white border border-gray-200 rounded-lg p-4 flex justify-between items-center">
                           <div>
                             <div className="font-medium text-gray-900">
-                              {block.start_date} to {block.end_date}
+                              {formatDateForDisplay(block.start_date)} to {formatDateForDisplay(block.end_date)}
                             </div>
                             <div className="text-sm text-gray-600">{block.reason}</div>
                           </div>
@@ -1189,8 +1201,8 @@ export default function AdminDashboard() {
                                 <div className="text-sm text-gray-500">{invoice.guest_email}</div>
                               </td>
                               <td className="px-4 py-4 text-sm text-gray-600">
-                                {invoice.check_in_date} -<br/>
-                                {invoice.check_out_date}
+                                {formatDateForDisplay(invoice.check_in_date)} -<br/>
+                                {formatDateForDisplay(invoice.check_out_date)}
                               </td>
                               <td className="px-4 py-4 text-sm font-semibold text-gray-900">
                                 ${Number(invoice.total_amount).toFixed(2)}

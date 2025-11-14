@@ -324,24 +324,14 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        console.log('Sending invoice:', id);
-
         // Update invoice status to sent
         const invoice = await updateInvoice(id, {
           status: 'sent',
           sent_at: new Date().toISOString()
         });
 
-        console.log('Invoice updated, generating HTML...');
-        console.log('Invoice dates:', { 
-          check_in: invoice.check_in_date, 
-          check_out: invoice.check_out_date 
-        });
-
         // Generate invoice HTML
         const invoiceHTML = generateInvoiceHTML(invoice);
-
-        console.log('HTML generated, sending email...');
 
         // Send to host email
         await resend.emails.send({
@@ -350,8 +340,6 @@ export async function POST(request: NextRequest) {
           subject: `Invoice ${invoice.invoice_number} - ${invoice.guest_name}`,
           html: invoiceHTML
         });
-
-        console.log('Email sent successfully');
 
         // Optionally send to guest if requested
         if (data.send_to_guest) {
