@@ -346,6 +346,15 @@ export async function isDateAvailable(date: string): Promise<boolean> {
 export async function getAvailabilityForRange(startDate: string, endDate: string): Promise<AvailabilityDate[]> {
   const availability: AvailabilityDate[] = [];
   
+  // Calculate the booking window limit (12 months from today)
+  // Last available date = today + 12 months - 1 day
+  // Example: Jan 1, 2025 → Dec 31, 2025 (not Jan 1, 2026)
+  const today = new Date();
+  const maxBookingDate = new Date(today);
+  maxBookingDate.setMonth(maxBookingDate.getMonth() + 12);
+  maxBookingDate.setDate(maxBookingDate.getDate() - 1); // Subtract 1 day
+  const maxBookingDateStr = toESTDate(maxBookingDate);
+  
   // Get all bookings in range
   // Using >= for check_out_date to catch bookings ending on the first day of range
   const bookings = await sql`
@@ -371,6 +380,9 @@ export async function getAvailabilityForRange(startDate: string, endDate: string
   for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
     const dateStr = toESTDate(d);
     
+    // Check if date is beyond 12-month booking window
+    const isBeyondBookingWindow = dateStr > maxBookingDateStr;
+    
     // Check if date is booked
     const isBooked = bookings.rows.some((b: any) => {
       const checkIn = new Date(b.check_in_date).toISOString().split('T')[0];
@@ -386,10 +398,18 @@ export async function getAvailabilityForRange(startDate: string, endDate: string
       return dateStr >= blockStart && dateStr < blockEnd;
     });
     
+    // Determine availability and reason
+    let reason: string | undefined;
+    if (isBeyondBookingWindow) {
+      reason = 'Not available yet (beyond 12-month booking window)';
+    } else if (block) {
+      reason = block.reason;
+    }
+    
     availability.push({
       date: dateStr,
-      available: !isBooked && !block,
-      reason: block ? block.reason : undefined
+      available: !isBooked && !block && !isBeyondBookingWindow,
+      reason: reason
     });
   }
   
