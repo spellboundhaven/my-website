@@ -555,17 +555,25 @@ export async function generateInvoiceNumber(): Promise<string> {
   const now = new Date();
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
+  const prefix = `INV-${year}${month}`;
   
-  // Get count of invoices this month
+  // Get the highest sequence number for this month
   const result = await sql`
-    SELECT COUNT(*) as count
+    SELECT invoice_number
     FROM invoices
-    WHERE invoice_number LIKE ${`INV-${year}${month}%`}
+    WHERE invoice_number LIKE ${`${prefix}-%`}
+    ORDER BY invoice_number DESC
+    LIMIT 1
   `;
   
-  const count = parseInt(result.rows[0].count || '0') + 1;
-  const sequence = String(count).padStart(4, '0');
+  let sequence = 1;
+  if (result.rows.length > 0) {
+    const lastInvoice = result.rows[0].invoice_number;
+    const lastSequence = parseInt(lastInvoice.split('-')[2] || '0');
+    sequence = lastSequence + 1;
+  }
   
-  return `INV-${year}${month}-${sequence}`;
+  const sequenceStr = String(sequence).padStart(4, '0');
+  return `${prefix}-${sequenceStr}`;
 }
 
