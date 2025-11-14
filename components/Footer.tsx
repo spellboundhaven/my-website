@@ -121,7 +121,7 @@ export default function Footer() {
                     href={`mailto:${propertyData.contact.email}`}
                     className="text-gray-300 hover:text-white transition-colors duration-200"
                   >
-                    {propertyData.contact.email}
+                    Email Us
                   </a>
                 </div>
                 
@@ -133,7 +133,7 @@ export default function Footer() {
                     rel="noopener noreferrer"
                     className="text-gray-300 hover:text-white transition-colors duration-200"
                   >
-                    Facebook Messenger
+                    Message Us
                   </a>
                 </div>
               </div>
