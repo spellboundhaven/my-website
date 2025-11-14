@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createBooking, getAllBookings, updateBooking, deleteBooking, getBooking, isDateAvailable } from '@/lib/db';
+import { createBooking, getAllBookings, updateBooking, deleteBooking, getBooking } from '@/lib/db';
 import { Resend } from 'resend';
 
 export async function POST(request: NextRequest) {
@@ -24,22 +24,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if dates are available
-    const start = new Date(check_in_date);
-    const end = new Date(check_out_date);
+    // Note: For inquiry-based system, we allow inquiries for any dates
+    // The host will check availability and respond to the guest
     
-    for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
-      const dateStr = d.toISOString().split('T')[0];
-      const available = await isDateAvailable(dateStr);
-      
-      if (!available) {
-        return NextResponse.json(
-          { error: `Date ${dateStr} is not available` },
-          { status: 400 }
-        );
-      }
-    }
-
     // Create booking inquiry
     const booking = await createBooking({
       check_in_date,
