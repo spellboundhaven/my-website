@@ -1275,18 +1275,19 @@ export default function AdminDashboard() {
                                         container.innerHTML = html;
                                         document.body.appendChild(container);
                                         
-                                        // Convert to canvas
+                                        // Convert to canvas with lower scale for smaller file size
                                         const canvas = await html2canvas(container, {
-                                          scale: 2,
+                                          scale: 1.5,
                                           useCORS: true,
-                                          logging: false
+                                          logging: false,
+                                          windowHeight: container.scrollHeight,
+                                          height: container.scrollHeight
                                         });
                                         
                                         // Remove temporary container
                                         document.body.removeChild(container);
                                         
                                         // Create PDF
-                                        const imgData = canvas.toDataURL('image/png');
                                         const pdf = new jsPDF({
                                           orientation: 'portrait',
                                           unit: 'mm',
@@ -1294,9 +1295,28 @@ export default function AdminDashboard() {
                                         });
                                         
                                         const imgWidth = 210; // A4 width in mm
+                                        const pageHeight = 297; // A4 height in mm
                                         const imgHeight = (canvas.height * imgWidth) / canvas.width;
                                         
-                                        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+                                        // Use JPEG for better compression
+                                        const imgData = canvas.toDataURL('image/jpeg', 0.85);
+                                        
+                                        // If content is taller than one page, split into multiple pages
+                                        let heightLeft = imgHeight;
+                                        let position = 0;
+                                        
+                                        // First page
+                                        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+                                        heightLeft -= pageHeight;
+                                        
+                                        // Add more pages if needed
+                                        while (heightLeft > 0) {
+                                          position = heightLeft - imgHeight;
+                                          pdf.addPage();
+                                          pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+                                          heightLeft -= pageHeight;
+                                        }
+                                        
                                         pdf.save(`Invoice-${invoice.invoice_number}.pdf`);
                                         
                                       } catch (error) {
