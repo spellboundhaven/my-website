@@ -144,7 +144,7 @@ function generateInvoiceHTML(invoice: Invoice): string {
           <p><strong>Invoice Number:</strong> ${invoice.invoice_number}</p>
           <p><strong>Date:</strong> ${new Date(invoice.created_at || '').toLocaleDateString()}</p>
           <p><strong>Payment Method:</strong> ${invoice.payment_method}</p>
-          <p><strong>Status:</strong> ${invoice.status.toUpperCase()}</p>
+          <p><strong>Payment Status:</strong> ${invoice.payment_status.replace(/_/g, ' ').toUpperCase()}</p>
         </div>
 
         <div class="section">
@@ -269,6 +269,7 @@ export async function POST(request: NextRequest) {
           additional_fees_description: data.additional_fees_description || null,
           total_amount: parseFloat(data.total_amount),
           payment_method: data.payment_method,
+          payment_status: data.payment_status || 'unpaid',
           status: 'draft',
           notes: data.notes || null
         });

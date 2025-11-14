@@ -52,6 +52,7 @@ interface Invoice {
   additional_fees_description?: string
   total_amount: number
   payment_method: string
+  payment_status: 'unpaid' | 'initial_deposit_paid' | 'all_paid'
   status: 'draft' | 'sent' | 'paid' | 'cancelled'
   notes?: string
   sent_at?: string
@@ -920,6 +921,7 @@ export default function AdminDashboard() {
                           additional_fees_description: formData.get('additional_fees_description'),
                           total_amount: totalAmount,
                           payment_method: formData.get('payment_method'),
+                          payment_status: formData.get('payment_status'),
                           notes: formData.get('notes'),
                         };
 
@@ -1081,24 +1083,40 @@ export default function AdminDashboard() {
                         />
                       </div>
 
-                      {/* Payment Method */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Payment Method *
-                        </label>
-                        <select
-                          name="payment_method"
-                          required
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        >
-                          <option value="">Select payment method</option>
-                          <option value="Zelle">Zelle</option>
-                          <option value="Venmo">Venmo</option>
-                          <option value="Cash App">Cash App</option>
-                          <option value="Bank Transfer">Bank Transfer</option>
-                          <option value="Check">Check</option>
-                          <option value="Other">Other</option>
-                        </select>
+                      {/* Payment Method & Payment Status */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Payment Method *
+                          </label>
+                          <select
+                            name="payment_method"
+                            required
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          >
+                            <option value="">Select payment method</option>
+                            <option value="Zelle">Zelle</option>
+                            <option value="Venmo">Venmo</option>
+                            <option value="Cash App">Cash App</option>
+                            <option value="Bank Transfer">Bank Transfer</option>
+                            <option value="Check">Check</option>
+                            <option value="Other">Other</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Payment Status *
+                          </label>
+                          <select
+                            name="payment_status"
+                            required
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          >
+                            <option value="unpaid">Unpaid</option>
+                            <option value="initial_deposit_paid">Initial Deposit Paid</option>
+                            <option value="all_paid">All Paid</option>
+                          </select>
+                        </div>
                       </div>
 
                       {/* Notes */}
@@ -1139,7 +1157,7 @@ export default function AdminDashboard() {
                             <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Guest</th>
                             <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Dates</th>
                             <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Total</th>
-                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Status</th>
+                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Payment Status</th>
                             <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Actions</th>
                           </tr>
                         </thead>
@@ -1162,12 +1180,11 @@ export default function AdminDashboard() {
                               </td>
                               <td className="px-4 py-4">
                                 <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                  invoice.status === 'paid' ? 'bg-green-100 text-green-800' :
-                                  invoice.status === 'sent' ? 'bg-blue-100 text-blue-800' :
-                                  invoice.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                                  'bg-gray-100 text-gray-800'
+                                  invoice.payment_status === 'all_paid' ? 'bg-green-100 text-green-800' :
+                                  invoice.payment_status === 'initial_deposit_paid' ? 'bg-yellow-100 text-yellow-800' :
+                                  'bg-red-100 text-red-800'
                                 }`}>
-                                  {invoice.status.toUpperCase()}
+                                  {invoice.payment_status.replace(/_/g, ' ').toUpperCase()}
                                 </span>
                               </td>
                               <td className="px-4 py-4 text-sm">

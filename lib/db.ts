@@ -69,6 +69,7 @@ export interface Invoice {
   additional_fees_description?: string;
   total_amount: number;
   payment_method: string;
+  payment_status: 'unpaid' | 'initial_deposit_paid' | 'all_paid';
   status: 'draft' | 'sent' | 'paid' | 'cancelled';
   notes?: string;
   sent_at?: string;
@@ -150,6 +151,7 @@ export async function initDatabase() {
         additional_fees_description TEXT,
         total_amount DECIMAL(10, 2) NOT NULL,
         payment_method TEXT NOT NULL,
+        payment_status TEXT DEFAULT 'unpaid' CHECK (payment_status IN ('unpaid', 'initial_deposit_paid', 'all_paid')),
         status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'sent', 'paid', 'cancelled')),
         notes TEXT,
         sent_at TIMESTAMP,
@@ -486,13 +488,13 @@ export async function createInvoice(invoice: Omit<Invoice, 'id' | 'created_at'>)
       invoice_number, booking_id, guest_name, guest_email,
       check_in_date, check_out_date, accommodation_cost,
       cleaning_fee, tax_amount, additional_fees, additional_fees_description,
-      total_amount, payment_method, status, notes, sent_at
+      total_amount, payment_method, payment_status, status, notes, sent_at
     )
     VALUES (
       ${invoice.invoice_number}, ${invoice.booking_id || null}, ${invoice.guest_name}, ${invoice.guest_email},
       ${invoice.check_in_date}, ${invoice.check_out_date}, ${invoice.accommodation_cost},
       ${invoice.cleaning_fee}, ${invoice.tax_amount}, ${invoice.additional_fees}, ${invoice.additional_fees_description || null},
-      ${invoice.total_amount}, ${invoice.payment_method}, ${invoice.status}, ${invoice.notes || null}, ${invoice.sent_at || null}
+      ${invoice.total_amount}, ${invoice.payment_method}, ${invoice.payment_status}, ${invoice.status}, ${invoice.notes || null}, ${invoice.sent_at || null}
     )
     RETURNING *
   `;
@@ -532,6 +534,7 @@ export async function updateInvoice(id: number, updates: Partial<Invoice>): Prom
       additional_fees_description = ${updates.additional_fees_description ?? invoice.additional_fees_description},
       total_amount = ${updates.total_amount ?? invoice.total_amount},
       payment_method = ${updates.payment_method ?? invoice.payment_method},
+      payment_status = ${updates.payment_status ?? invoice.payment_status},
       status = ${updates.status ?? invoice.status},
       notes = ${updates.notes ?? invoice.notes},
       sent_at = ${updates.sent_at ?? invoice.sent_at}
