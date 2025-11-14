@@ -23,7 +23,7 @@ export default function Reviews() {
 
   const fetchReviews = async () => {
     try {
-      const response = await fetch('/api/admin?resource=reviews')
+      const response = await fetch('/api/reviews')
       const data = await response.json()
       if (data.success) {
         setReviews(data.reviews || [])
