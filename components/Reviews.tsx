@@ -120,36 +120,6 @@ export default function Reviews() {
           )))}
         </div>
 
-        {/* Review Statistics */}
-        <div className="bg-white rounded-lg shadow-sm p-8">
-          <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center font-serif">
-            What Guests Love Most
-          </h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="text-center">
-              <div className="text-4xl mb-3">🏰</div>
-              <div className="font-semibold text-gray-900 mb-1">Disney Access</div>
-              <div className="text-sm text-gray-600">Just 9 miles to Disney World</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl mb-3">🏊‍♀️</div>
-              <div className="font-semibold text-gray-900 mb-1">Private Pool</div>
-              <div className="text-sm text-gray-600">Pool and spa access</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl mb-3">🎮</div>
-              <div className="font-semibold text-gray-900 mb-1">Game Room</div>
-              <div className="text-sm text-gray-600">Marvel arcade games</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl mb-3">✨</div>
-              <div className="font-semibold text-gray-900 mb-1">Cleanliness</div>
-              <div className="text-sm text-gray-600">Immaculate condition</div>
-            </div>
-          </div>
-        </div>
-
         {/* Call to Action */}
         <div className="text-center mt-16">
           <h3 className="text-2xl font-bold text-gray-900 mb-4 font-serif">
