@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import ical from 'node-ical';
 import { createDateBlock, updateAirbnbSync, getLastAirbnbSync, deleteAllAirbnbBlocks } from '@/lib/db';
 
@@ -42,6 +43,10 @@ export async function POST(request: NextRequest) {
 
       // Update sync record
       await updateAirbnbSync(icalUrl, 'success');
+
+      // Revalidate the availability cache to show updated data immediately
+      revalidatePath('/api/availability', 'page');
+      console.log('Cache revalidated for availability API');
 
       return NextResponse.json({
         success: true,
