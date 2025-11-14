@@ -455,7 +455,7 @@ export default function AdminDashboard() {
                 }`}
               >
                 <Users className="w-4 h-4" />
-                Bookings ({bookings.length})
+                Inquiries ({bookings.length})
               </button>
               <button
                 onClick={() => setActiveTab('calendar')}
@@ -508,7 +508,7 @@ export default function AdminDashboard() {
             {/* Bookings Tab */}
             {activeTab === 'bookings' && (
               <div>
-                <h2 className="text-2xl font-bold text-gray-800 mb-6">All Bookings</h2>
+                <h2 className="text-2xl font-bold text-gray-800 mb-6">All Inquiries</h2>
                 <div className="overflow-x-auto">
                   {bookings.length === 0 ? (
                     <p className="text-gray-500 text-center py-8">No bookings yet</p>
