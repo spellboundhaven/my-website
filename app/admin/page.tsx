@@ -1012,6 +1012,59 @@ export default function AdminDashboard() {
                         </div>
                       </div>
 
+                      {/* Tax Calculator */}
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                        <h3 className="text-lg font-semibold text-blue-900 mb-4">💡 Calculate from Total Amount</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Total Amount (including tax) ($)
+                            </label>
+                            <input
+                              type="number"
+                              id="total_with_tax"
+                              step="0.01"
+                              min="0"
+                              placeholder="e.g., 2060"
+                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                          </div>
+                          <div className="md:col-span-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const form = document.querySelector('form') as HTMLFormElement;
+                                const totalWithTax = parseFloat((document.getElementById('total_with_tax') as HTMLInputElement).value || '0');
+                                const cleaningFee = parseFloat((form.elements.namedItem('cleaning_fee') as HTMLInputElement).value || '400');
+                                const additionalFees = parseFloat((form.elements.namedItem('additional_fees') as HTMLInputElement).value || '0');
+                                
+                                if (totalWithTax > 0) {
+                                  // Calculate: Total = (Accommodation + Cleaning + Additional) × 1.12
+                                  // So: (Accommodation + Cleaning + Additional) = Total / 1.12
+                                  const subtotal = totalWithTax / 1.12;
+                                  const accommodationCost = subtotal - cleaningFee - additionalFees;
+                                  const taxAmount = totalWithTax - subtotal;
+                                  
+                                  // Fill in the form fields
+                                  (form.elements.namedItem('accommodation_cost') as HTMLInputElement).value = accommodationCost.toFixed(2);
+                                  (form.elements.namedItem('tax_amount') as HTMLInputElement).value = taxAmount.toFixed(2);
+                                  
+                                  alert(`Calculated:\nAccommodation: $${accommodationCost.toFixed(2)}\nCleaning Fee: $${cleaningFee.toFixed(2)}\nAdditional Fees: $${additionalFees.toFixed(2)}\nTax (12%): $${taxAmount.toFixed(2)}\nTotal: $${totalWithTax.toFixed(2)}`);
+                                } else {
+                                  alert('Please enter a total amount');
+                                }
+                              }}
+                              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition"
+                            >
+                              Calculate from Total
+                            </button>
+                          </div>
+                        </div>
+                        <p className="text-sm text-gray-600 mt-2">
+                          Enter your total amount (with tax), and we'll calculate the accommodation cost and tax (12%) for you.
+                        </p>
+                      </div>
+
                       {/* Costs */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -1036,7 +1089,7 @@ export default function AdminDashboard() {
                             name="cleaning_fee"
                             step="0.01"
                             min="0"
-                            defaultValue="0"
+                            defaultValue="400"
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                           />
                         </div>
