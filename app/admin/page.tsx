@@ -1242,10 +1242,9 @@ export default function AdminDashboard() {
                               </td>
                               <td className="px-4 py-4 text-sm">
                                 <div className="flex gap-2">
-                                  {invoice.status === 'draft' && (
-                                    <button
-                                      onClick={async () => {
-                                        if (!confirm('Send this invoice to spellboundhaven.disney@gmail.com?')) return;
+                                  <button
+                                    onClick={async () => {
+                                      if (!confirm('Send this invoice to spellboundhaven.disney@gmail.com?')) return;
                                         try {
                                           setLoading(true);
                                           const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123';
@@ -1281,7 +1280,6 @@ export default function AdminDashboard() {
                                     >
                                       Send
                                     </button>
-                                  )}
                                   <button
                                     onClick={async () => {
                                       try {

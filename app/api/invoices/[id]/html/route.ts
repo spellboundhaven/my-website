@@ -198,8 +198,7 @@ function generateInvoiceHTML(invoice: any): string {
         <p>Thank you for choosing Spellbound Haven!</p>
         <p>We look forward to hosting your magical Disney vacation.</p>
         <p style="margin-top: 20px; font-size: 12px;">
-          Spellbound Haven, LLC<br>
-          spellboundhaven.disney@gmail.com
+          Spellbound Haven, LLC
         </p>
       </div>
     </body>
