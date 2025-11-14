@@ -133,8 +133,8 @@ function generateInvoiceHTML(invoice: Invoice): string {
     </head>
     <body>
       <div class="header">
-        <h1>🏰 Spellbound Haven</h1>
-        <p>Windsor Island Resort, Orlando, FL</p>
+        <h1>Spellbound Haven</h1>
+        <p>4449 Kaipo Rd, Davenport, FL 33897</p>
         <p>Email: spellboundhaven.disney@gmail.com</p>
       </div>
 
@@ -209,7 +209,7 @@ function generateInvoiceHTML(invoice: Invoice): string {
         <p>Thank you for choosing Spellbound Haven!</p>
         <p>We look forward to hosting your magical Disney vacation.</p>
         <p style="margin-top: 20px; font-size: 12px;">
-          Windsor Island Resort | Orlando, FL<br>
+          4449 Kaipo Rd, Davenport, FL 33897<br>
           spellboundhaven.disney@gmail.com
         </p>
       </div>
