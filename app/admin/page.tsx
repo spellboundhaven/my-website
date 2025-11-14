@@ -144,6 +144,8 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error('Error fetching admin data:', error)
+    } finally {
+      setLoading(false)
     }
   }
 
