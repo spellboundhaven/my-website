@@ -69,7 +69,7 @@ export interface Invoice {
   additional_fees_description?: string;
   total_amount: number;
   payment_method: string;
-  payment_status: 'unpaid' | 'initial_deposit_paid' | 'all_paid';
+  payment_status?: 'unpaid' | 'initial_deposit_paid' | 'all_paid';
   status: 'draft' | 'sent' | 'paid' | 'cancelled';
   notes?: string;
   sent_at?: string;

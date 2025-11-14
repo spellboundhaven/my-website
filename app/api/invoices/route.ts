@@ -144,7 +144,7 @@ function generateInvoiceHTML(invoice: Invoice): string {
           <p><strong>Invoice Number:</strong> ${invoice.invoice_number}</p>
           <p><strong>Date:</strong> ${new Date(invoice.created_at || '').toLocaleDateString()}</p>
           <p><strong>Payment Method:</strong> ${invoice.payment_method}</p>
-          <p><strong>Payment Status:</strong> ${invoice.payment_status.replace(/_/g, ' ').toUpperCase()}</p>
+          <p><strong>Payment Status:</strong> ${(invoice.payment_status || 'unpaid').replace(/_/g, ' ').toUpperCase()}</p>
         </div>
 
         <div class="section">

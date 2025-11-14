@@ -52,7 +52,7 @@ interface Invoice {
   additional_fees_description?: string
   total_amount: number
   payment_method: string
-  payment_status: 'unpaid' | 'initial_deposit_paid' | 'all_paid'
+  payment_status?: 'unpaid' | 'initial_deposit_paid' | 'all_paid'
   status: 'draft' | 'sent' | 'paid' | 'cancelled'
   notes?: string
   sent_at?: string
@@ -1184,7 +1184,7 @@ export default function AdminDashboard() {
                                   invoice.payment_status === 'initial_deposit_paid' ? 'bg-yellow-100 text-yellow-800' :
                                   'bg-red-100 text-red-800'
                                 }`}>
-                                  {invoice.payment_status.replace(/_/g, ' ').toUpperCase()}
+                                  {String(invoice.payment_status || 'unpaid').replace(/_/g, ' ').toUpperCase()}
                                 </span>
                               </td>
                               <td className="px-4 py-4 text-sm">
