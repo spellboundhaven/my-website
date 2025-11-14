@@ -1,12 +1,43 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { Star, Quote } from 'lucide-react'
-import { propertyData } from '@/data/property'
+
+interface Review {
+  id: number
+  name: string
+  rating: number
+  date: string
+  location?: string
+  comment: string
+}
 
 export default function Reviews() {
-  const reviews = propertyData.reviews
-  const averageRating = reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
+  const [reviews, setReviews] = useState<Review[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchReviews()
+  }, [])
+
+  const fetchReviews = async () => {
+    try {
+      const response = await fetch('/api/admin?resource=reviews')
+      const data = await response.json()
+      if (data.success) {
+        setReviews(data.reviews || [])
+      }
+    } catch (error) {
+      console.error('Error fetching reviews:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const averageRating = reviews.length > 0 
+    ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length 
+    : 5
 
   return (
     <section id="reviews" className="section-padding bg-gray-50">
@@ -46,7 +77,16 @@ export default function Reviews() {
 
         {/* Reviews Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
-          {reviews.map((review) => (
+          {loading ? (
+            <div className="col-span-2 text-center py-12">
+              <p className="text-gray-500">Loading reviews...</p>
+            </div>
+          ) : reviews.length === 0 ? (
+            <div className="col-span-2 text-center py-12">
+              <p className="text-gray-500">No reviews yet. Be the first to stay!</p>
+            </div>
+          ) : (
+            reviews.map((review) => (
             <div key={review.id} className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow duration-200">
               <div className="mb-4">
                 <div className="font-semibold text-gray-900 mb-1">{review.name}</div>
@@ -77,7 +117,7 @@ export default function Reviews() {
                 </p>
               </div>
             </div>
-          ))}
+          )))}
         </div>
 
         {/* Review Statistics */}

@@ -4,11 +4,12 @@ import {
   getAllDateBlocks,
   createDateBlock,
   deleteDateBlock,
-  getAllPricingRules,
-  createPricingRule,
-  deletePricingRule,
   updateBooking,
-  deleteBooking
+  deleteBooking,
+  getAllReviews,
+  createReview,
+  updateReview,
+  deleteReview
 } from '@/lib/db';
 
 function verifyAuth(request: NextRequest): boolean {
@@ -44,23 +45,23 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: true, blocks });
     }
 
-    if (resource === 'pricing') {
-      const rules = await getAllPricingRules();
-      return NextResponse.json({ success: true, rules });
+    if (resource === 'reviews') {
+      const reviews = await getAllReviews();
+      return NextResponse.json({ success: true, reviews });
     }
 
     // Return all data for dashboard
-    const [bookings, blocks, rules] = await Promise.all([
+    const [bookings, blocks, reviews] = await Promise.all([
       getAllBookings(),
       getAllDateBlocks(),
-      getAllPricingRules()
+      getAllReviews()
     ]);
 
     return NextResponse.json({
       success: true,
       bookings,
       blocks,
-      rules
+      reviews
     });
   } catch (error) {
     console.error('Error fetching admin data:', error);
@@ -93,16 +94,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success });
     }
 
-    if (action === 'createPricing') {
-      const rule = await createPricingRule(data);
-      return NextResponse.json({ success: true, rule });
-    }
-
-    if (action === 'deletePricing') {
-      const success = await deletePricingRule(data.id);
-      return NextResponse.json({ success });
-    }
-
     if (action === 'updateBooking') {
       const booking = await updateBooking(data.id, data.updates);
       return NextResponse.json({ success: true, booking });
@@ -110,6 +101,21 @@ export async function POST(request: NextRequest) {
 
     if (action === 'deleteBooking') {
       const success = await deleteBooking(data.id);
+      return NextResponse.json({ success });
+    }
+
+    if (action === 'createReview') {
+      const review = await createReview(data);
+      return NextResponse.json({ success: true, review });
+    }
+
+    if (action === 'updateReview') {
+      const review = await updateReview(data.id, data.updates);
+      return NextResponse.json({ success: true, review });
+    }
+
+    if (action === 'deleteReview') {
+      const success = await deleteReview(data.id);
       return NextResponse.json({ success });
     }
 

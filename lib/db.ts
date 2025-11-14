@@ -38,22 +38,20 @@ export interface DateBlock {
   created_at?: string;
 }
 
-export interface PricingRule {
-  id?: number;
-  start_date: string;
-  end_date: string;
-  price_per_night: number;
-  minimum_stay: number;
-  rule_type: 'standard' | 'peak' | 'holiday';
-  created_at?: string;
-}
-
 export interface AvailabilityDate {
   date: string;
   available: boolean;
-  price: number;
-  minimum_stay: number;
   reason?: string;
+}
+
+export interface Review {
+  id?: number;
+  name: string;
+  rating: number;
+  date: string;
+  location?: string;
+  comment: string;
+  created_at?: string;
 }
 
 // Initialize database tables
@@ -91,19 +89,6 @@ export async function initDatabase() {
       )
     `;
 
-    // Create pricing_rules table
-    await sql`
-      CREATE TABLE IF NOT EXISTS pricing_rules (
-        id SERIAL PRIMARY KEY,
-        start_date DATE NOT NULL,
-        end_date DATE NOT NULL,
-        price_per_night DECIMAL(10,2) NOT NULL,
-        minimum_stay INTEGER DEFAULT 3,
-        rule_type TEXT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `;
-
     // Create airbnb_sync table for tracking last sync
     await sql`
       CREATE TABLE IF NOT EXISTS airbnb_sync (
@@ -111,6 +96,19 @@ export async function initDatabase() {
         last_synced TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         ical_url TEXT,
         sync_status TEXT DEFAULT 'success'
+      )
+    `;
+
+    // Create reviews table
+    await sql`
+      CREATE TABLE IF NOT EXISTS reviews (
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+        date TEXT NOT NULL,
+        location TEXT,
+        comment TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `;
 
@@ -244,59 +242,6 @@ export async function deleteDateBlock(id: number): Promise<boolean> {
   return result.rowCount ? result.rowCount > 0 : false;
 }
 
-// Pricing rule operations
-export async function createPricingRule(rule: PricingRule): Promise<PricingRule> {
-  const result = await sql`
-    INSERT INTO pricing_rules (start_date, end_date, price_per_night, minimum_stay, rule_type, created_at)
-    VALUES (
-      ${rule.start_date},
-      ${rule.end_date},
-      ${rule.price_per_night},
-      ${rule.minimum_stay},
-      ${rule.rule_type},
-      ${rule.created_at || new Date().toISOString()}
-    )
-    RETURNING *
-  `;
-  return result.rows[0] as PricingRule;
-}
-
-export async function getAllPricingRules(): Promise<PricingRule[]> {
-  const result = await sql`
-    SELECT * FROM pricing_rules ORDER BY start_date ASC
-  `;
-  return result.rows as PricingRule[];
-}
-
-export async function deletePricingRule(id: number): Promise<boolean> {
-  const result = await sql`
-    DELETE FROM pricing_rules WHERE id = ${id}
-  `;
-  return result.rowCount ? result.rowCount > 0 : false;
-}
-
-// Get pricing for a specific date
-export async function getPriceForDate(date: string): Promise<number> {
-  const result = await sql`
-    SELECT price_per_night FROM pricing_rules
-    WHERE start_date <= ${date} AND end_date >= ${date}
-    ORDER BY 
-      CASE rule_type
-        WHEN 'holiday' THEN 1
-        WHEN 'peak' THEN 2
-        ELSE 3
-      END
-    LIMIT 1
-  `;
-  
-  if (result.rows.length > 0) {
-    return parseFloat(result.rows[0].price_per_night);
-  }
-  
-  // Default price if no rule found
-  return 450;
-}
-
 // Check if a date is available
 export async function isDateAvailable(date: string): Promise<boolean> {
   // Check for bookings
@@ -342,9 +287,6 @@ export async function getAvailabilityForRange(startDate: string, endDate: string
     AND end_date >= ${startDate}
   `;
   
-  // Get all pricing rules
-  const rules = await getAllPricingRules();
-  
   // Generate availability for each date
   const start = new Date(startDate + 'T00:00:00');
   const end = new Date(endDate + 'T00:00:00');
@@ -367,18 +309,9 @@ export async function getAvailabilityForRange(startDate: string, endDate: string
       return dateStr >= blockStart && dateStr < blockEnd;
     });
     
-    // Get price for date
-    const price = await getPriceForDate(dateStr);
-    
-    // Get minimum stay
-    const rule = rules.find(r => dateStr >= r.start_date && dateStr <= r.end_date);
-    const minimumStay = rule?.minimum_stay || 3;
-    
     availability.push({
       date: dateStr,
       available: !isBooked && !block,
-      price,
-      minimum_stay: minimumStay,
       reason: block ? block.reason : undefined
     });
   }
@@ -401,5 +334,74 @@ export async function getLastAirbnbSync(): Promise<{ last_synced: string; ical_u
     LIMIT 1
   `;
   return (result.rows[0] as { last_synced: string; ical_url: string }) || null;
+}
+
+// Review operations
+export async function createReview(review: Review): Promise<Review> {
+  const result = await sql`
+    INSERT INTO reviews (name, rating, date, location, comment)
+    VALUES (${review.name}, ${review.rating}, ${review.date}, ${review.location || null}, ${review.comment})
+    RETURNING *
+  `;
+  return result.rows[0] as Review;
+}
+
+export async function getAllReviews(): Promise<Review[]> {
+  const result = await sql`
+    SELECT * FROM reviews
+    ORDER BY created_at DESC
+  `;
+  return result.rows as Review[];
+}
+
+export async function getReview(id: number): Promise<Review | null> {
+  const result = await sql`
+    SELECT * FROM reviews WHERE id = ${id}
+  `;
+  return (result.rows[0] as Review) || null;
+}
+
+export async function updateReview(id: number, updates: Partial<Review>): Promise<Review | null> {
+  const fields = [];
+  const values = [];
+  
+  if (updates.name !== undefined) {
+    fields.push('name');
+    values.push(updates.name);
+  }
+  if (updates.rating !== undefined) {
+    fields.push('rating');
+    values.push(updates.rating);
+  }
+  if (updates.date !== undefined) {
+    fields.push('date');
+    values.push(updates.date);
+  }
+  if (updates.location !== undefined) {
+    fields.push('location');
+    values.push(updates.location);
+  }
+  if (updates.comment !== undefined) {
+    fields.push('comment');
+    values.push(updates.comment);
+  }
+  
+  if (fields.length === 0) return null;
+  
+  const setClause = fields.map((field, i) => `${field} = $${i + 2}`).join(', ');
+  
+  const result = await sql.query(
+    `UPDATE reviews SET ${setClause} WHERE id = $1 RETURNING *`,
+    [id, ...values]
+  );
+  
+  return (result.rows[0] as Review) || null;
+}
+
+export async function deleteReview(id: number): Promise<boolean> {
+  const result = await sql`
+    DELETE FROM reviews WHERE id = ${id}
+  `;
+  return result.rowCount ? result.rowCount > 0 : false;
 }
 
