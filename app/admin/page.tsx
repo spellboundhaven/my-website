@@ -903,6 +903,7 @@ export default function AdminDashboard() {
                           total_amount: totalAmount,
                           payment_method: formData.get('payment_method'),
                           payment_status: formData.get('payment_status'),
+                          initial_deposit_percentage: formData.get('initial_deposit_percentage'),
                           notes: formData.get('notes'),
                         };
 
@@ -1118,7 +1119,7 @@ export default function AdminDashboard() {
                       </div>
 
                       {/* Payment Method & Payment Status */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
                             Payment Method *
@@ -1150,6 +1151,20 @@ export default function AdminDashboard() {
                             <option value="initial_deposit_paid">Initial Deposit Paid</option>
                             <option value="all_paid">All Paid</option>
                           </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Initial Deposit (%)
+                          </label>
+                          <input
+                            type="number"
+                            name="initial_deposit_percentage"
+                            min="0"
+                            max="100"
+                            defaultValue="30"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            placeholder="30"
+                          />
                         </div>
                       </div>
 

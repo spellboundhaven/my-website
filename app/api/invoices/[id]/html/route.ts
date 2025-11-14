@@ -53,14 +53,15 @@ function generateInvoiceHTML(invoice: any): string {
 
   // Calculate payment amounts based on payment_status
   const totalAmount = Number(invoice.total_amount);
+  const depositPercentage = invoice.initial_deposit_percentage || 30;
   let amountPaid = 0;
   let amountDue = totalAmount;
   let paymentPercentage = '0%';
 
   if (invoice.payment_status === 'initial_deposit_paid') {
-    amountPaid = totalAmount * 0.30; // 30% deposit
-    amountDue = totalAmount * 0.70; // 70% remaining
-    paymentPercentage = '30%';
+    amountPaid = totalAmount * (depositPercentage / 100);
+    amountDue = totalAmount - amountPaid;
+    paymentPercentage = `${depositPercentage}%`;
   } else if (invoice.payment_status === 'all_paid') {
     amountPaid = totalAmount; // 100% paid
     amountDue = 0;
