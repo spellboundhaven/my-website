@@ -47,32 +47,19 @@ export default function Amenities() {
                     className="object-cover"
                     priority={currentImageIndex === 0}
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+                    quality={75}
                   />
                   
-                  {/* Preload Next Image */}
+                  {/* Preload Only Next Image (not previous) - lighter approach */}
                   {images.length > 1 && (
-                    <div className="hidden">
-                      <Image
-                        src={images[(currentImageIndex + 1) % images.length].src}
-                        alt="Preload next"
-                        width={1200}
-                        height={675}
-                        priority
-                      />
-                    </div>
-                  )}
-                  
-                  {/* Preload Previous Image */}
-                  {images.length > 1 && (
-                    <div className="hidden">
-                      <Image
-                        src={images[(currentImageIndex - 1 + images.length) % images.length].src}
-                        alt="Preload previous"
-                        width={1200}
-                        height={675}
-                        priority
-                      />
-                    </div>
+                    <Image
+                      src={images[(currentImageIndex + 1) % images.length].src}
+                      alt="Preload next"
+                      width={1}
+                      height={1}
+                      className="hidden"
+                      quality={75}
+                    />
                   )}
                 </>
               )}
