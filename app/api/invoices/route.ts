@@ -57,10 +57,26 @@ function generateInvoiceHTML(invoice: Invoice): string {
       year: 'numeric'
     });
     
-    const nights = Math.ceil(
-      (checkOutDateObj.getTime() - checkInDateObj.getTime()) / 
-      (1000 * 60 * 60 * 24)
-    );
+  const nights = Math.ceil(
+    (checkOutDateObj.getTime() - checkInDateObj.getTime()) / 
+    (1000 * 60 * 60 * 24)
+  );
+
+  // Calculate payment amounts based on payment_status
+  const totalAmount = Number(invoice.total_amount);
+  let amountPaid = 0;
+  let amountDue = totalAmount;
+  let paymentPercentage = '0%';
+
+  if (invoice.payment_status === 'initial_deposit_paid') {
+    amountPaid = totalAmount * 0.30; // 30% deposit
+    amountDue = totalAmount * 0.70; // 70% remaining
+    paymentPercentage = '30%';
+  } else if (invoice.payment_status === 'all_paid') {
+    amountPaid = totalAmount; // 100% paid
+    amountDue = 0;
+    paymentPercentage = '100%';
+  }
 
   return `
     <!DOCTYPE html>
@@ -211,9 +227,19 @@ function generateInvoiceHTML(invoice: Invoice): string {
             <td class="text-right">$${Number(invoice.additional_fees).toFixed(2)}</td>
           </tr>
           ` : ''}
+          <tr style="border-top: 2px solid #6B46C1;">
+            <td style="padding-top: 15px;"><strong>Total Amount</strong></td>
+            <td class="text-right" style="padding-top: 15px;"><strong>$${totalAmount.toFixed(2)}</strong></td>
+          </tr>
+          ${amountPaid > 0 ? `
+          <tr>
+            <td>Amount Paid (${paymentPercentage})</td>
+            <td class="text-right" style="color: #10b981;">- $${amountPaid.toFixed(2)}</td>
+          </tr>
+          ` : ''}
           <tr class="total-row">
-            <td>TOTAL AMOUNT DUE</td>
-            <td class="text-right">$${Number(invoice.total_amount).toFixed(2)}</td>
+            <td>AMOUNT DUE</td>
+            <td class="text-right">$${amountDue.toFixed(2)}</td>
           </tr>
         </tbody>
       </table>
