@@ -1320,6 +1320,44 @@ export default function AdminDashboard() {
                                     </button>
                                   <button
                                     onClick={async () => {
+                                      if (!confirm(`Send this invoice to guest email (${invoice.guest_email})?`)) return;
+                                        try {
+                                          setLoading(true);
+                                          const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123';
+                                          const response = await fetch('/api/invoices', {
+                                            method: 'POST',
+                                            headers: {
+                                              'Content-Type': 'application/json',
+                                              'Authorization': `Bearer ${adminPassword}`
+                                            },
+                                            body: JSON.stringify({
+                                              action: 'send',
+                                              id: invoice.id,
+                                              data: { send_to_guest: true }
+                                            })
+                                          });
+
+                                          const result = await response.json();
+                                          
+                                          if (result.success) {
+                                            alert(`Invoice sent successfully to ${invoice.guest_email}!`);
+                                            fetchAdminData();
+                                          } else {
+                                            alert('Failed to send invoice: ' + (result.error || 'Unknown error'));
+                                          }
+                                        } catch (error) {
+                                          console.error('Error sending invoice:', error);
+                                          alert('Error sending invoice. Please try again.');
+                                        } finally {
+                                          setLoading(false);
+                                        }
+                                      }}
+                                      className="text-purple-600 hover:text-purple-800 font-medium"
+                                    >
+                                      Send to Guest
+                                    </button>
+                                  <button
+                                    onClick={async () => {
                                       try {
                                         setLoading(true);
                                         
