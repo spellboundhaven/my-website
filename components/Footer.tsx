@@ -1,6 +1,6 @@
 'use client'
 
-import { Facebook, Instagram, Home, Mail, MessageCircle, MapPin, BookOpen } from 'lucide-react'
+import { Facebook, Instagram, Mail, MessageCircle, MapPin, BookOpen } from 'lucide-react'
 import { propertyData } from '@/data/property'
 
 export default function Footer() {
@@ -57,15 +57,6 @@ export default function Footer() {
                   aria-label="Instagram"
                 >
                   <Instagram className="w-5 h-5" />
-                </a>
-                <a
-                  href="https://airbnb.com/h/spellbound-haven"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-gray-800 hover:bg-primary-600 p-2 rounded-lg transition-colors duration-200"
-                  aria-label="Airbnb"
-                >
-                  <Home className="w-5 h-5" />
                 </a>
                 <a
                   href="/blog"
