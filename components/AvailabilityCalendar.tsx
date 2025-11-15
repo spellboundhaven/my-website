@@ -261,6 +261,7 @@ export default function AvailabilityCalendar() {
                     setCurrentMonth(activeStartDate)
                   }
                 }}
+                calendarType="US"
                 className="w-full"
               />
             </div>
