@@ -160,7 +160,6 @@ function generateInvoiceHTML(invoice: any): string {
     <body>
       <div class="header">
         <h1>Spellbound Haven</h1>
-        <p>4449 Kaipo Rd, Davenport, FL 33897</p>
         <p>Email: spellboundhaven.disney@gmail.com</p>
       </div>
 
