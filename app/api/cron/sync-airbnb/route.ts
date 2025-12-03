@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import ical from 'node-ical';
-import { createDateBlock, getLastAirbnbSync, updateAirbnbSync, getAllDateBlocks } from '@/lib/db';
+import { createDateBlock, getLastAirbnbSync, updateAirbnbSync, deleteAllAirbnbBlocks } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
@@ -55,30 +55,20 @@ export async function GET(request: NextRequest) {
 
     console.log(`[CRON] Found ${bookedDates.length} bookings in Airbnb calendar`);
 
-    // Get existing Airbnb blocks
-    const existingBlocks = await getAllDateBlocks();
-    const airbnbBlocks = existingBlocks.filter(b => b.reason.startsWith('Airbnb:'));
-
-    console.log(`[CRON] Existing Airbnb blocks: ${airbnbBlocks.length}`);
+    // Clear all existing Airbnb blocks before syncing (prevents duplicates)
+    const deletedCount = await deleteAllAirbnbBlocks();
+    console.log(`[CRON] Cleared ${deletedCount} old Airbnb blocks`);
 
     // Create new blocks for each booked date range
-    let newBlocksCreated = 0;
     for (const booking of bookedDates) {
-      // Check if this date range already exists
-      const exists = airbnbBlocks.some(
-        b => b.start_date === booking.start && b.end_date === booking.end
-      );
-
-      if (!exists) {
-        await createDateBlock({
-          start_date: booking.start,
-          end_date: booking.end,
-          reason: `Airbnb: ${booking.summary}`
-        });
-        newBlocksCreated++;
-        console.log(`[CRON] Created block: ${booking.start} to ${booking.end}`);
-      }
+      await createDateBlock({
+        start_date: booking.start,
+        end_date: booking.end,
+        reason: `Airbnb: ${booking.summary}`
+      });
     }
+    
+    console.log(`[CRON] Created ${bookedDates.length} new Airbnb blocks`);
 
     // Update sync record
     await updateAirbnbSync(icalUrl, 'success');
@@ -86,14 +76,14 @@ export async function GET(request: NextRequest) {
     // Revalidate the availability cache to show updated data immediately
     revalidatePath('/api/availability', 'page');
     
-    console.log(`[CRON] Sync completed. New blocks created: ${newBlocksCreated}`);
+    console.log(`[CRON] Sync completed. Blocks synced: ${bookedDates.length}`);
     console.log(`[CRON] Cache revalidated for availability API`);
 
     return NextResponse.json({
       success: true,
       message: `Synced ${bookedDates.length} Airbnb bookings`,
-      newBlocksCreated,
-      totalBookings: bookedDates.length,
+      blocksDeleted: deletedCount,
+      blocksCreated: bookedDates.length,
       timestamp: new Date().toISOString()
     });
   } catch (error) {
