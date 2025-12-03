@@ -321,7 +321,7 @@ export async function removeDuplicateDateBlocks(): Promise<number> {
 
 // Check if a date is available
 export async function isDateAvailable(date: string): Promise<boolean> {
-  // Check for bookings
+  // Check for bookings (only confirmed and pending, NOT inquiries)
   const bookingResult = await sql`
     SELECT COUNT(*) as count FROM bookings
     WHERE check_in_date <= ${date} 
@@ -357,9 +357,10 @@ export async function getAvailabilityForRange(startDate: string, endDate: string
   
   // Get all bookings in range
   // Using >= for check_out_date to catch bookings ending on the first day of range
+  // Note: Only include confirmed and pending bookings, NOT inquiries
   const bookings = await sql`
     SELECT check_in_date, check_out_date FROM bookings
-    WHERE status IN ('confirmed', 'pending', 'inquiry')
+    WHERE status IN ('confirmed', 'pending')
     AND check_in_date < ${endDate}
     AND check_out_date >= ${startDate}
   `;
