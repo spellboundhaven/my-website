@@ -259,7 +259,7 @@ function generateInvoiceHTML(invoice: any): string {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   if (!verifyAuth(request)) {
     return NextResponse.json(
@@ -269,7 +269,8 @@ export async function GET(
   }
 
   try {
-    const invoiceId = parseInt(params.id);
+    const { id } = await params;
+    const invoiceId = parseInt(id);
     const invoice = await getInvoice(invoiceId);
 
     if (!invoice) {
