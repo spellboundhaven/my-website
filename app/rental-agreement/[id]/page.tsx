@@ -235,7 +235,7 @@ export default function RentalAgreementForm() {
                 <img 
                   src={agreement.logo} 
                   alt="Property logo" 
-                  className="h-16 w-auto max-w-[200px] object-contain"
+                  className="h-24 w-auto max-w-[300px] object-contain"
                 />
               </div>
             )}

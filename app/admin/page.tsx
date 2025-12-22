@@ -171,6 +171,11 @@ export default function AdminDashboard() {
         fetchRentalSubmissions()
         if (rentalAgreementTab === 'create') {
           loadRentalTemplates()
+          // Load saved logo from localStorage
+          const savedLogo = localStorage.getItem('last_uploaded_logo')
+          if (savedLogo && !rentalFormData.logo) {
+            setRentalFormData(prev => ({ ...prev, logo: savedLogo }))
+          }
         }
       }
     }

@@ -35,10 +35,16 @@
   }
 
   /* Rental terms content styling */
+  .rental-terms-content {
+    @apply overflow-wrap-anywhere break-words;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+  
   .rental-terms-content h1,
   .rental-terms-content h2,
   .rental-terms-content h3 {
-    @apply font-bold mb-2 mt-4;
+    @apply font-bold mb-2 mt-4 break-words;
   }
   
   .rental-terms-content h1 { @apply text-xl; }
@@ -55,11 +61,15 @@
   }
   
   .rental-terms-content p {
-    @apply mb-2;
+    @apply mb-2 break-words;
   }
   
   .rental-terms-content a {
-    @apply text-blue-600 underline;
+    @apply text-blue-600 underline break-all;
+  }
+  
+  .rental-terms-content * {
+    max-width: 100%;
   }
 
   /* Rich text editor styling */
