@@ -121,7 +121,8 @@ export default function AvailabilityCalendar() {
     
     const isToday = compareDate.getTime() === today.getTime()
     
-    if (compareDate < today) {
+    // Block all dates up to and including today (no same-day check-in)
+    if (compareDate <= today) {
       return 'bg-blue-50 text-gray-400 cursor-not-allowed'
     }
     
@@ -299,6 +300,7 @@ export default function AvailabilityCalendar() {
                   <input
                     type="date"
                     required
+                    min={new Date(Date.now() + 86400000).toISOString().split('T')[0]}
                     value={formData.checkIn}
                     onChange={(e) => setFormData({ ...formData, checkIn: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-base"
@@ -311,6 +313,7 @@ export default function AvailabilityCalendar() {
                   <input
                     type="date"
                     required
+                    min={formData.checkIn || new Date(Date.now() + 86400000).toISOString().split('T')[0]}
                     value={formData.checkOut}
                     onChange={(e) => setFormData({ ...formData, checkOut: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-base"
