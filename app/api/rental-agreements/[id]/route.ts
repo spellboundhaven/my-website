@@ -3,11 +3,12 @@ import { getRentalAgreement, initDatabase } from '@/lib/db';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await initDatabase();
-    const agreement = await getRentalAgreement(params.id);
+    const { id } = await params;
+    const agreement = await getRentalAgreement(id);
 
     if (!agreement) {
       return NextResponse.json(

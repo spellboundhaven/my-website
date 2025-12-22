@@ -3,12 +3,12 @@ import { getRentalSubmissionByViewToken, getRentalAgreement, initDatabase } from
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await initDatabase();
-    const viewToken = params.id;
-    const submission = await getRentalSubmissionByViewToken(viewToken);
+    const { id } = await params;
+    const submission = await getRentalSubmissionByViewToken(id);
 
     if (!submission) {
       return NextResponse.json(
