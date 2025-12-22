@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { Star, Quote } from 'lucide-react'
+import { Star, Quote, ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface Review {
   id: number
@@ -16,6 +16,8 @@ interface Review {
 export default function Reviews() {
   const [reviews, setReviews] = useState<Review[]>([])
   const [loading, setLoading] = useState(true)
+  const [currentPage, setCurrentPage] = useState(0)
+  const reviewsPerPage = 4
 
   useEffect(() => {
     fetchReviews()
@@ -38,6 +40,19 @@ export default function Reviews() {
   const averageRating = reviews.length > 0 
     ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length 
     : 5
+
+  const totalPages = Math.ceil(reviews.length / reviewsPerPage)
+  const startIndex = currentPage * reviewsPerPage
+  const endIndex = startIndex + reviewsPerPage
+  const currentReviews = reviews.slice(startIndex, endIndex)
+
+  const nextPage = () => {
+    setCurrentPage((prev) => (prev + 1) % totalPages)
+  }
+
+  const prevPage = () => {
+    setCurrentPage((prev) => (prev - 1 + totalPages) % totalPages)
+  }
 
   return (
     <section id="reviews" className="section-padding bg-gray-50">
@@ -75,50 +90,100 @@ export default function Reviews() {
           </div>
         </div>
 
-        {/* Reviews Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
-          {loading ? (
-            <div className="col-span-2 text-center py-12">
-              <p className="text-gray-500">Loading reviews...</p>
-            </div>
-          ) : reviews.length === 0 ? (
-            <div className="col-span-2 text-center py-12">
-              <p className="text-gray-500">No reviews yet. Be the first to stay!</p>
-            </div>
-          ) : (
-            reviews.map((review) => (
-            <div key={review.id} className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow duration-200">
-              <div className="mb-4">
-                <div className="font-semibold text-gray-900 mb-1">{review.name}</div>
-                {review.location && (
-                  <div className="text-sm text-gray-500 mb-2">{review.location}</div>
-                )}
-                <div className="flex items-center">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`w-4 h-4 ${
-                        i < review.rating
-                          ? 'text-yellow-400 fill-current'
-                          : 'text-gray-300'
-                      }`}
-                    />
-                  ))}
-                  <span className="ml-2 text-sm text-gray-500">
-                    {review.date}
-                  </span>
+        {/* Reviews Carousel */}
+        {loading ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500">Loading reviews...</p>
+          </div>
+        ) : reviews.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500">No reviews yet. Be the first to stay!</p>
+          </div>
+        ) : (
+          <div className="relative mb-16">
+            {/* Navigation Buttons */}
+            {totalPages > 1 && (
+              <>
+                <button
+                  onClick={prevPage}
+                  className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 lg:-translate-x-12 z-10 bg-white hover:bg-gray-50 rounded-full p-3 transition-all duration-200 shadow-lg hover:scale-110"
+                  aria-label="Previous reviews"
+                >
+                  <ChevronLeft className="w-6 h-6 text-gray-800" />
+                </button>
+                
+                <button
+                  onClick={nextPage}
+                  className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 lg:translate-x-12 z-10 bg-white hover:bg-gray-50 rounded-full p-3 transition-all duration-200 shadow-lg hover:scale-110"
+                  aria-label="Next reviews"
+                >
+                  <ChevronRight className="w-6 h-6 text-gray-800" />
+                </button>
+              </>
+            )}
+
+            {/* Reviews Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {currentReviews.map((review) => (
+                <div key={review.id} className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow duration-200">
+                  <div className="mb-4">
+                    <div className="font-semibold text-gray-900 mb-1">{review.name}</div>
+                    {review.location && (
+                      <div className="text-sm text-gray-500 mb-2">{review.location}</div>
+                    )}
+                    <div className="flex items-center">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`w-4 h-4 ${
+                            i < review.rating
+                              ? 'text-yellow-400 fill-current'
+                              : 'text-gray-300'
+                          }`}
+                        />
+                      ))}
+                      <span className="ml-2 text-sm text-gray-500">
+                        {review.date}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="relative">
+                    <Quote className="absolute -top-2 -left-2 w-8 h-8 text-primary-200" />
+                    <p className="text-gray-700 italic pl-6">
+                      "{review.comment}"
+                    </p>
+                  </div>
                 </div>
-              </div>
-              
-              <div className="relative">
-                <Quote className="absolute -top-2 -left-2 w-8 h-8 text-primary-200" />
-                <p className="text-gray-700 italic pl-6">
-                  "{review.comment}"
-                </p>
-              </div>
+              ))}
             </div>
-          )))}
-        </div>
+
+            {/* Page Indicators */}
+            {totalPages > 1 && (
+              <div className="flex justify-center gap-2 mt-8">
+                {[...Array(totalPages)].map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentPage(index)}
+                    className={`w-3 h-3 rounded-full transition-all duration-200 ${
+                      index === currentPage
+                        ? 'bg-primary-600 w-8'
+                        : 'bg-gray-300 hover:bg-gray-400'
+                    }`}
+                    aria-label={`Go to page ${index + 1}`}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Page Counter */}
+            {totalPages > 1 && (
+              <p className="text-center text-sm text-gray-500 mt-4">
+                Showing {startIndex + 1}-{Math.min(endIndex, reviews.length)} of {reviews.length} reviews
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Call to Action */}
         <div className="text-center mt-16">
