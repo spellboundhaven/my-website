@@ -10,7 +10,8 @@ import {
   createReview,
   updateReview,
   deleteReview,
-  getAllInvoices
+  getAllInvoices,
+  initDatabase
 } from '@/lib/db';
 
 function verifyAuth(request: NextRequest): boolean {

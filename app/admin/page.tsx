@@ -409,10 +409,12 @@ export default function AdminDashboard() {
         alert('Review added successfully!')
         fetchAdminData()
         e.currentTarget.reset()
+      } else {
+        alert(`Failed to create review: ${data.error || 'Unknown error'}`)
       }
     } catch (error) {
       console.error('Error creating review:', error)
-      alert('Failed to create review')
+      alert(`Failed to create review: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setLoading(false)
     }
