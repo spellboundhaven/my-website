@@ -380,7 +380,8 @@ export default function AdminDashboard() {
 
   const handleCreateReview = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const formData = new FormData(e.currentTarget)
+    const form = e.currentTarget
+    const formData = new FormData(form)
     
     setLoading(true)
     try {
@@ -408,7 +409,7 @@ export default function AdminDashboard() {
       if (data.success) {
         alert('Review added successfully!')
         fetchAdminData()
-        e.currentTarget.reset()
+        form.reset()
       } else {
         alert(`Failed to create review: ${data.error || 'Unknown error'}`)
       }
