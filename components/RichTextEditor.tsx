@@ -1,17 +1,13 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import dynamic from 'next/dynamic'
+import 'react-quill-new/dist/quill.snow.css'
 
-const ReactQuill = dynamic(() => import('react-quill'), { 
+const ReactQuill = dynamic(() => import('react-quill-new'), { 
   ssr: false,
   loading: () => <div className="border border-gray-300 rounded-lg p-4 min-h-[200px] bg-white">Loading editor...</div>
 })
-
-// Import Quill CSS
-if (typeof window !== 'undefined') {
-  require('react-quill/dist/quill.snow.css');
-}
 
 interface RichTextEditorProps {
   value: string

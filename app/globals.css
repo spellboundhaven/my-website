@@ -33,6 +33,47 @@
   .container-max {
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
+
+  /* Rental terms content styling */
+  .rental-terms-content h1,
+  .rental-terms-content h2,
+  .rental-terms-content h3 {
+    @apply font-bold mb-2 mt-4;
+  }
+  
+  .rental-terms-content h1 { @apply text-xl; }
+  .rental-terms-content h2 { @apply text-lg; }
+  .rental-terms-content h3 { @apply text-base; }
+  
+  .rental-terms-content ul,
+  .rental-terms-content ol {
+    @apply list-disc list-inside ml-4 mb-2;
+  }
+  
+  .rental-terms-content ol {
+    @apply list-decimal;
+  }
+  
+  .rental-terms-content p {
+    @apply mb-2;
+  }
+  
+  .rental-terms-content a {
+    @apply text-blue-600 underline;
+  }
+
+  /* Rich text editor styling */
+  .rich-text-editor .quill {
+    @apply bg-white rounded-lg;
+  }
+  
+  .rich-text-editor .ql-container {
+    @apply min-h-[200px] border border-gray-300 rounded-b-lg;
+  }
+  
+  .rich-text-editor .ql-toolbar {
+    @apply border border-gray-300 rounded-t-lg bg-gray-50;
+  }
 }
 
 
