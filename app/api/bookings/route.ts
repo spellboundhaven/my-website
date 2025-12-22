@@ -74,10 +74,6 @@ export async function POST(request: NextRequest) {
                 <h2 style="color: #1f2937; margin-top: 0;">📝 Guest Message</h2>
                 <p>${notes}</p>
               </div>` : ''}
-              
-              <div style="background-color: #f0fdf4; border-radius: 8px; padding: 20px; margin: 20px 0; border-left: 4px solid #22c55e;">
-                <p style="margin: 0;"><strong>Next Steps:</strong> Reply to ${guest_email} to confirm availability and provide a personalized quote including taxes, cleaning fees, and any other applicable charges.</p>
-              </div>
             </div>
           `
         });
