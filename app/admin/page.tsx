@@ -138,12 +138,12 @@ export default function AdminDashboard() {
   // Rental agreement state
   const [rentalAgreementTab, setRentalAgreementTab] = useState<'create' | 'view'>('create')
   const [rentalFormData, setRentalFormData] = useState({
-    property_name: '',
-    property_address: '',
+    property_name: 'Spellbound Haven',
+    property_address: '4449 Kaipo Rd, Davenport, FL 33897',
     check_in_date: '',
     check_out_date: '',
     rental_terms: '',
-    host_email: '',
+    host_email: 'spellboundhaven.disney@gmail.com',
     logo: '',
     expires_in_days: '30',
   })
@@ -526,9 +526,9 @@ export default function AdminDashboard() {
       if (data.success) {
         setCreatedRentalLink(data.link)
         setRentalFormData({
-          property_name: '',
-          property_address: '',
-          host_email: '',
+          property_name: 'Spellbound Haven',
+          property_address: '4449 Kaipo Rd, Davenport, FL 33897',
+          host_email: 'spellboundhaven.disney@gmail.com',
           check_in_date: '',
           check_out_date: '',
           rental_terms: '',
