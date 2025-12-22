@@ -34,6 +34,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    await initDatabase();
     const searchParams = request.nextUrl.searchParams;
     const resource = searchParams.get('resource');
 
@@ -90,6 +91,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    await initDatabase();
     const body = await request.json();
     const { action, data } = body;
 
