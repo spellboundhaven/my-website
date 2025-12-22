@@ -1,7 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { CalendarIcon, Users, Ban, Settings, Star, FileText } from 'lucide-react'
+import { CalendarIcon, Users, Ban, Settings, Star, FileText, FileSignature } from 'lucide-react'
+import dynamic from 'next/dynamic'
+
+const RichTextEditor = dynamic(() => import('@/components/RichTextEditor'), { ssr: false })
 
 // Helper function to format dates consistently (EST timezone, YYYY-MM-DD format)
 function formatDateForDisplay(date: string | Date): string {
@@ -76,20 +79,80 @@ interface Invoice {
   created_at: string
 }
 
+interface RentalAgreement {
+  id: string
+  property_name: string
+  property_address: string
+  check_in_date: string
+  check_out_date: string
+  rental_terms: string
+  host_email?: string
+  logo?: string
+  created_at: string
+  link_expires_at?: string
+}
+
+interface Vehicle {
+  license_plate: string
+  make: string
+  model: string
+  color: string
+}
+
+interface RentalSubmission {
+  id: number
+  agreement_id: string
+  guest_name: string
+  guest_email: string
+  guest_phone: string
+  guest_address?: string
+  num_adults: number
+  num_children: number
+  vehicles?: Vehicle[]
+  security_deposit_authorized: boolean
+  electronic_signature_agreed: boolean
+  signature_data: string
+  check_in_date?: string
+  check_out_date?: string
+  view_token?: string
+  submitted_at: string
+}
+
 export default function AdminDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
   const [authError, setAuthError] = useState('')
-  const [activeTab, setActiveTab] = useState<'bookings' | 'calendar' | 'reviews' | 'invoices' | 'settings'>('bookings')
+  const [activeTab, setActiveTab] = useState<'bookings' | 'calendar' | 'reviews' | 'invoices' | 'rental-agreements' | 'settings'>('bookings')
   
   const [bookings, setBookings] = useState<Booking[]>([])
   const [dateBlocks, setDateBlocks] = useState<DateBlock[]>([])
   const [reviews, setReviews] = useState<Review[]>([])
   const [invoices, setInvoices] = useState<Invoice[]>([])
+  const [rentalAgreements, setRentalAgreements] = useState<RentalAgreement[]>([])
+  const [rentalSubmissions, setRentalSubmissions] = useState<RentalSubmission[]>([])
   const [loading, setLoading] = useState(true)
   
   const [airbnbUrl, setAirbnbUrl] = useState('')
   const [lastSync, setLastSync] = useState<{ last_synced: string; ical_url: string } | null>(null)
+
+  // Rental agreement state
+  const [rentalAgreementTab, setRentalAgreementTab] = useState<'create' | 'view'>('create')
+  const [rentalFormData, setRentalFormData] = useState({
+    property_name: '',
+    property_address: '',
+    check_in_date: '',
+    check_out_date: '',
+    rental_terms: '',
+    host_email: '',
+    logo: '',
+    expires_in_days: '30',
+  })
+  const [createdRentalLink, setCreatedRentalLink] = useState<string | null>(null)
+  const [copiedLink, setCopiedLink] = useState<string | null>(null)
+  const [templates, setTemplates] = useState<Array<{id: string, name: string, content: string, last_updated: string}>>([])
+  const [showSaveDialog, setShowSaveDialog] = useState(false)
+  const [templateName, setTemplateName] = useState('')
+  const [templateMessage, setTemplateMessage] = useState<string | null>(null)
 
   // Check authentication on mount
   useEffect(() => {
@@ -103,8 +166,15 @@ export default function AdminDashboard() {
     if (isAuthenticated) {
       fetchAdminData()
       fetchLastSync()
+      if (activeTab === 'rental-agreements') {
+        fetchRentalAgreements()
+        fetchRentalSubmissions()
+        if (rentalAgreementTab === 'create') {
+          loadRentalTemplates()
+        }
+      }
     }
-  }, [isAuthenticated, activeTab])
+  }, [isAuthenticated, activeTab, rentalAgreementTab])
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
@@ -408,6 +478,245 @@ export default function AdminDashboard() {
     }
   }
 
+  // Rental Agreement functions
+  const fetchRentalAgreements = async () => {
+    try {
+      const response = await fetch('/api/rental-agreements')
+      const data = await response.json()
+      setRentalAgreements(data.agreements || [])
+    } catch (error) {
+      console.error('Error fetching rental agreements:', error)
+    }
+  }
+
+  const fetchRentalSubmissions = async () => {
+    try {
+      const response = await fetch('/api/rental-submissions')
+      const data = await response.json()
+      setRentalSubmissions(data.submissions || [])
+    } catch (error) {
+      console.error('Error fetching rental submissions:', error)
+    }
+  }
+
+  const loadRentalTemplates = async () => {
+    try {
+      const response = await fetch('/api/rental-template')
+      const data = await response.json()
+      setTemplates(data.templates || [])
+    } catch (error) {
+      console.error('Error loading rental templates:', error)
+    }
+  }
+
+  const handleCreateRentalAgreement = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+
+    try {
+      const response = await fetch('/api/rental-agreements', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(rentalFormData),
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        setCreatedRentalLink(data.link)
+        setRentalFormData({
+          property_name: '',
+          property_address: '',
+          host_email: '',
+          check_in_date: '',
+          check_out_date: '',
+          rental_terms: '',
+          logo: '',
+          expires_in_days: '30',
+        })
+      }
+    } catch (error) {
+      console.error('Error creating rental agreement:', error)
+      alert('Failed to create rental agreement')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDeleteRentalAgreement = async (agreementId: string, propertyName: string) => {
+    if (!confirm(`Are you sure you want to delete the rental agreement for "${propertyName}"?`)) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/rental-agreements?id=${agreementId}`, {
+        method: 'DELETE',
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        fetchRentalAgreements()
+      } else {
+        alert('Failed to delete rental agreement')
+      }
+    } catch (error) {
+      console.error('Error deleting rental agreement:', error)
+      alert('Failed to delete rental agreement')
+    }
+  }
+
+  const handleDeleteRentalSubmission = async (submissionId: number, guestName: string) => {
+    if (!confirm(`Are you sure you want to delete the submission from "${guestName}"?`)) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/rental-submissions?id=${submissionId}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        alert('Failed to delete submission')
+        return
+      }
+
+      const data = await response.json()
+      if (data.success) {
+        fetchRentalSubmissions()
+      } else {
+        alert('Failed to delete submission')
+      }
+    } catch (error) {
+      console.error('Error deleting rental submission:', error)
+      alert('Failed to delete rental submission')
+    }
+  }
+
+  const copyToClipboard = (link: string) => {
+    navigator.clipboard.writeText(link)
+    setCopiedLink(link)
+    setTimeout(() => setCopiedLink(null), 2000)
+  }
+
+  const getRentalAgreementLink = (agreementId: string) => {
+    return `${window.location.origin}/rental-agreement/${agreementId}`
+  }
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert('Logo file size must be less than 2MB')
+        return
+      }
+      
+      if (!file.type.startsWith('image/')) {
+        alert('Please upload an image file')
+        return
+      }
+
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        const logoData = reader.result as string
+        setRentalFormData(prev => ({ ...prev, logo: logoData }))
+        localStorage.setItem('last_uploaded_logo', logoData)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const removeLogo = () => {
+    setRentalFormData(prev => ({ ...prev, logo: '' }))
+    localStorage.removeItem('last_uploaded_logo')
+  }
+
+  const openSaveDialog = () => {
+    if (!rentalFormData.rental_terms) {
+      alert('Please enter rental terms before saving as template')
+      return
+    }
+    setShowSaveDialog(true)
+    setTemplateName('')
+  }
+
+  const saveAsTemplate = async () => {
+    if (!templateName.trim()) {
+      alert('Please enter a template name')
+      return
+    }
+
+    try {
+      const response = await fetch('/api/rental-template', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: templateName.trim(),
+          content: rentalFormData.rental_terms,
+        }),
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        setTemplateMessage('✓ Template saved successfully!')
+        setShowSaveDialog(false)
+        setTemplateName('')
+        loadRentalTemplates()
+        setTimeout(() => setTemplateMessage(null), 3000)
+      }
+    } catch (error) {
+      console.error('Error saving template:', error)
+      alert('Failed to save template')
+    }
+  }
+
+  const loadTemplateContent = async (templateId: string) => {
+    try {
+      const response = await fetch(`/api/rental-template?id=${templateId}`)
+      const data = await response.json()
+      
+      if (data.template) {
+        setRentalFormData(prev => ({ ...prev, rental_terms: data.template.content }))
+        setTemplateMessage(`✓ Loaded "${data.template.name}"`)
+        setTimeout(() => setTemplateMessage(null), 2000)
+      }
+    } catch (error) {
+      console.error('Error loading template:', error)
+      alert('Failed to load template')
+    }
+  }
+
+  const deleteTemplate = async (templateId: string, templateName: string) => {
+    if (!confirm(`Delete template "${templateName}"?`)) {
+      return
+    }
+
+    try {
+      const response = await fetch('/api/rental-template', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'delete',
+          id: templateId,
+        }),
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        setTemplateMessage('✓ Template deleted')
+        loadRentalTemplates()
+        setTimeout(() => setTemplateMessage(null), 2000)
+      }
+    } catch (error) {
+      console.error('Error deleting template:', error)
+      alert('Failed to delete template')
+    }
+  }
+
   // Login screen
   if (!isAuthenticated) {
     return (
@@ -523,6 +832,17 @@ export default function AdminDashboard() {
               >
                 <FileText className="w-4 h-4" />
                 Invoices ({invoices.length})
+              </button>
+              <button
+                onClick={() => setActiveTab('rental-agreements')}
+                className={`px-6 py-3 font-medium transition-colors flex items-center gap-2 ${
+                  activeTab === 'rental-agreements'
+                    ? 'border-b-2 border-purple-600 text-purple-600'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <FileSignature className="w-4 h-4" />
+                Rental Agreements ({rentalAgreements.length})
               </button>
               <button
                 onClick={() => setActiveTab('settings')}
@@ -1555,6 +1875,512 @@ export default function AdminDashboard() {
                     )}
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* Rental Agreements Tab */}
+            {activeTab === 'rental-agreements' && (
+              <div>
+                {/* Sub-tabs */}
+                <div className="border-b border-gray-200 mb-6">
+                  <div className="flex">
+                    <button
+                      onClick={() => setRentalAgreementTab('create')}
+                      className={`px-6 py-3 font-medium transition-colors ${
+                        rentalAgreementTab === 'create'
+                          ? 'border-b-2 border-indigo-600 text-indigo-600'
+                          : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                    >
+                      Create New Agreement
+                    </button>
+                    <button
+                      onClick={() => setRentalAgreementTab('view')}
+                      className={`px-6 py-3 font-medium transition-colors ${
+                        rentalAgreementTab === 'view'
+                          ? 'border-b-2 border-indigo-600 text-indigo-600'
+                          : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                    >
+                      View Agreements & Submissions
+                    </button>
+                  </div>
+                </div>
+
+                {/* Create Agreement Sub-tab */}
+                {rentalAgreementTab === 'create' && (
+                  <div className="max-w-2xl mx-auto">
+                    <h2 className="text-2xl font-bold text-gray-800 mb-6">Create New Rental Agreement Link</h2>
+
+                    <form onSubmit={handleCreateRentalAgreement} className="space-y-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Property Name *
+                        </label>
+                        <input
+                          type="text"
+                          name="property_name"
+                          required
+                          value={rentalFormData.property_name}
+                          onChange={(e) => setRentalFormData(prev => ({ ...prev, property_name: e.target.value }))}
+                          placeholder="e.g., Spellbound Haven"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Property Address *
+                        </label>
+                        <input
+                          type="text"
+                          name="property_address"
+                          required
+                          value={rentalFormData.property_address}
+                          onChange={(e) => setRentalFormData(prev => ({ ...prev, property_address: e.target.value }))}
+                          placeholder="123 Main St, City, State 12345"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Host Email *
+                        </label>
+                        <input
+                          type="email"
+                          name="host_email"
+                          required
+                          value={rentalFormData.host_email}
+                          onChange={(e) => setRentalFormData(prev => ({ ...prev, host_email: e.target.value }))}
+                          placeholder="your-email@example.com"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        />
+                        <p className="mt-1 text-xs text-gray-500">
+                          You'll receive an email notification when guests sign the agreement
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Check-in Date *
+                          </label>
+                          <input
+                            type="date"
+                            name="check_in_date"
+                            required
+                            value={rentalFormData.check_in_date}
+                            onChange={(e) => setRentalFormData(prev => ({ ...prev, check_in_date: e.target.value }))}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Check-out Date *
+                          </label>
+                          <input
+                            type="date"
+                            name="check_out_date"
+                            required
+                            value={rentalFormData.check_out_date}
+                            onChange={(e) => setRentalFormData(prev => ({ ...prev, check_out_date: e.target.value }))}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <label className="block text-sm font-medium text-gray-700">
+                            Rental Terms & Conditions
+                          </label>
+                          <button
+                            type="button"
+                            onClick={openSaveDialog}
+                            className="text-xs px-3 py-1 bg-green-100 text-green-700 hover:bg-green-200 rounded font-medium transition"
+                          >
+                            Save as Template
+                          </button>
+                        </div>
+
+                        {/* Saved Templates */}
+                        {templates.length > 0 && (
+                          <div className="mb-2 p-3 bg-blue-50 rounded border border-blue-200">
+                            <p className="text-xs font-medium text-blue-800 mb-2">Saved Templates:</p>
+                            <div className="space-y-1">
+                              {templates.map((template) => (
+                                <div key={template.id} className="flex items-center justify-between text-xs bg-white p-2 rounded">
+                                  <span className="font-medium text-gray-700">{template.name}</span>
+                                  <div className="flex gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => loadTemplateContent(template.id)}
+                                      className="text-blue-600 hover:text-blue-800 font-medium"
+                                    >
+                                      Load
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => deleteTemplate(template.id, template.name)}
+                                      className="text-red-600 hover:text-red-800 font-medium"
+                                    >
+                                      Delete
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {templateMessage && (
+                          <div className="mb-2 text-xs text-green-600 font-medium">
+                            {templateMessage}
+                          </div>
+                        )}
+
+                        {/* Save Template Dialog */}
+                        {showSaveDialog && (
+                          <div className="mb-2 p-3 bg-green-50 rounded border border-green-200">
+                            <p className="text-xs font-medium text-green-800 mb-2">Save Template As:</p>
+                            <div className="flex gap-2">
+                              <input
+                                type="text"
+                                value={templateName}
+                                onChange={(e) => setTemplateName(e.target.value)}
+                                placeholder="e.g., Standard House Rules"
+                                className="flex-1 px-3 py-1 text-sm border border-green-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault()
+                                    saveAsTemplate()
+                                  }
+                                }}
+                              />
+                              <button
+                                type="button"
+                                onClick={saveAsTemplate}
+                                className="text-xs px-3 py-1 bg-green-600 text-white hover:bg-green-700 rounded font-medium"
+                              >
+                                Save
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setShowSaveDialog(false)}
+                                className="text-xs px-3 py-1 bg-gray-200 text-gray-700 hover:bg-gray-300 rounded font-medium"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                            <p className="text-xs text-gray-600 mt-1">If a template with this name exists, it will be updated.</p>
+                          </div>
+                        )}
+
+                        <RichTextEditor
+                          value={rentalFormData.rental_terms}
+                          onChange={(value) => setRentalFormData(prev => ({ ...prev, rental_terms: value }))}
+                          placeholder="Enter any specific terms, house rules, or conditions..."
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Logo (Optional)
+                        </label>
+                        <p className="text-xs text-gray-500 mb-2">Upload a logo to display in the top right corner of the agreement form (max 2MB)</p>
+                        {rentalFormData.logo ? (
+                          <div className="space-y-2">
+                            <div className="border border-gray-300 rounded-lg p-4 bg-gray-50 flex items-center justify-between">
+                              <img 
+                                src={rentalFormData.logo} 
+                                alt="Logo preview" 
+                                className="h-16 w-auto object-contain"
+                              />
+                              <button
+                                type="button"
+                                onClick={removeLogo}
+                                className="text-sm text-red-600 hover:text-red-800 font-medium"
+                              >
+                                Remove Logo
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleLogoUpload}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                          />
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Link Expires In
+                        </label>
+                        <select
+                          name="expires_in_days"
+                          value={rentalFormData.expires_in_days}
+                          onChange={(e) => setRentalFormData(prev => ({ ...prev, expires_in_days: e.target.value }))}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        >
+                          <option value="">Never</option>
+                          <option value="1">1 day</option>
+                          <option value="3">3 days</option>
+                          <option value="7">7 days</option>
+                          <option value="14">14 days</option>
+                          <option value="30">30 days</option>
+                        </select>
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition duration-200"
+                      >
+                        {loading ? 'Creating...' : 'Create Agreement Link'}
+                      </button>
+                    </form>
+
+                    {/* Success Modal */}
+                    {createdRentalLink && (
+                      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                        <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+                          <div className="text-center mb-6">
+                            <div className="text-green-500 text-5xl mb-3">✓</div>
+                            <h3 className="text-2xl font-bold text-gray-800 mb-2">Agreement Created!</h3>
+                            <p className="text-gray-600">Your rental agreement link is ready to share</p>
+                          </div>
+
+                          <div className="space-y-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Agreement Link
+                              </label>
+                              <div className="flex gap-2">
+                                <input
+                                  type="text"
+                                  value={createdRentalLink}
+                                  readOnly
+                                  className="flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded text-sm"
+                                />
+                                <button
+                                  onClick={() => copyToClipboard(createdRentalLink)}
+                                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded font-medium whitespace-nowrap"
+                                >
+                                  {copiedLink === createdRentalLink ? '✓ Copied!' : 'Copy'}
+                                </button>
+                              </div>
+                              <p className="text-xs text-gray-500 mt-2">Share this link with your guest</p>
+                            </div>
+
+                            <button
+                              onClick={() => setCreatedRentalLink(null)}
+                              className="w-full py-3 px-6 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold rounded-lg transition duration-200"
+                            >
+                              Close
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* View Agreements & Submissions Sub-tab */}
+                {rentalAgreementTab === 'view' && (
+                  <div className="space-y-8">
+                    {/* Agreements Section */}
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-800 mb-4">All Rental Agreements</h2>
+                      <div className="space-y-4">
+                        {rentalAgreements.length === 0 ? (
+                          <p className="text-gray-500 text-center py-8">No rental agreements created yet</p>
+                        ) : (
+                          rentalAgreements.map((agreement) => (
+                            <div key={agreement.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                              <div className="flex justify-between items-start">
+                                <div className="flex-1">
+                                  <h3 className="font-semibold text-lg text-gray-800">{agreement.property_name}</h3>
+                                  <p className="text-sm text-gray-600">{agreement.property_address}</p>
+                                  <p className="text-sm text-gray-600 mt-1">
+                                    {formatDateForDisplay(agreement.check_in_date)} - {formatDateForDisplay(agreement.check_out_date)}
+                                  </p>
+                                  <p className="text-xs text-gray-500 mt-2">
+                                    Created: {new Date(agreement.created_at).toLocaleString()}
+                                  </p>
+                                  {agreement.link_expires_at && (
+                                    <p className="text-xs text-orange-600 mt-1">
+                                      Expires: {new Date(agreement.link_expires_at).toLocaleString()}
+                                    </p>
+                                  )}
+                                  {agreement.rental_terms && (
+                                    <details className="mt-3">
+                                      <summary className="text-sm font-medium text-indigo-600 cursor-pointer hover:text-indigo-800">
+                                        View Rental Terms
+                                      </summary>
+                                      <div 
+                                        className="mt-2 text-sm text-gray-700 rental-terms-content bg-white p-3 rounded border border-gray-200"
+                                        dangerouslySetInnerHTML={{ __html: agreement.rental_terms }}
+                                      />
+                                    </details>
+                                  )}
+                                </div>
+                                <div className="ml-4 flex flex-col gap-2">
+                                  <button
+                                    onClick={() => copyToClipboard(getRentalAgreementLink(agreement.id))}
+                                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded font-medium text-sm whitespace-nowrap"
+                                  >
+                                    {copiedLink === getRentalAgreementLink(agreement.id) ? 'Copied!' : 'Copy Link'}
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteRentalAgreement(agreement.id, agreement.property_name)}
+                                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded font-medium text-sm whitespace-nowrap"
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Submissions Section */}
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-800 mb-4">Guest Submissions</h2>
+                      <div className="overflow-x-auto">
+                        {rentalSubmissions.length === 0 ? (
+                          <p className="text-gray-500 text-center py-8">No submissions yet</p>
+                        ) : (
+                          <table className="w-full">
+                            <thead className="bg-gray-100">
+                              <tr>
+                                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Guest Name</th>
+                                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Check-in / Check-out</th>
+                                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Contact</th>
+                                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Guests</th>
+                                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Vehicles</th>
+                                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Authorizations</th>
+                                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Submitted</th>
+                                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">View</th>
+                                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">View Link</th>
+                                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-200">
+                              {rentalSubmissions.map((submission) => (
+                                <tr key={submission.id} className="hover:bg-gray-50">
+                                  <td className="px-4 py-3 text-sm text-gray-800">{submission.guest_name}</td>
+                                  <td className="px-4 py-3 text-sm text-gray-600">
+                                    <div className="space-y-1">
+                                      <div className="font-medium">{submission.check_in_date ? formatDateForDisplay(submission.check_in_date) : 'N/A'}</div>
+                                      <div className="text-xs text-gray-500">to {submission.check_out_date ? formatDateForDisplay(submission.check_out_date) : 'N/A'}</div>
+                                    </div>
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-600">
+                                    <div className="space-y-1">
+                                      <div>{submission.guest_email}</div>
+                                      <div className="text-xs">{submission.guest_phone}</div>
+                                    </div>
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-600">
+                                    <div className="space-y-1">
+                                      <div>{submission.num_adults} Adult{submission.num_adults !== 1 ? 's' : ''}</div>
+                                      <div>{submission.num_children} Child{submission.num_children !== 1 ? 'ren' : ''}</div>
+                                    </div>
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-600">
+                                    {submission.vehicles && submission.vehicles.length > 0 ? (
+                                      <details className="cursor-pointer">
+                                        <summary className="text-indigo-600 hover:text-indigo-800 font-medium">
+                                          {submission.vehicles.length} Vehicle{submission.vehicles.length !== 1 ? 's' : ''}
+                                        </summary>
+                                        <div className="mt-2 space-y-2 bg-gray-50 p-2 rounded text-xs">
+                                          {submission.vehicles.map((vehicle, idx) => (
+                                            <div key={idx} className="border-b border-gray-200 pb-1 last:border-0">
+                                              <div><strong>Plate:</strong> {vehicle.license_plate || 'N/A'}</div>
+                                              <div><strong>Make/Model:</strong> {vehicle.make || 'N/A'} {vehicle.model || ''}</div>
+                                              <div><strong>Color:</strong> {vehicle.color || 'N/A'}</div>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </details>
+                                    ) : (
+                                      <span className="text-gray-400">None</span>
+                                    )}
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-600">
+                                    <div className="space-y-1">
+                                      <div>
+                                        {submission.security_deposit_authorized ? (
+                                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                            ✓ Deposit
+                                          </span>
+                                        ) : (
+                                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                                            ✗ Deposit
+                                          </span>
+                                        )}
+                                      </div>
+                                      <div>
+                                        {submission.electronic_signature_agreed ? (
+                                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                            ✓ E-Sign
+                                          </span>
+                                        ) : (
+                                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                                            ✗ E-Sign
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-600">
+                                    {new Date(submission.submitted_at).toLocaleString()}
+                                  </td>
+                                  <td className="px-4 py-3">
+                                    <a
+                                      href={`/rental-submission/${submission.view_token}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+                                    >
+                                      View Agreement
+                                    </a>
+                                  </td>
+                                  <td className="px-4 py-3">
+                                    <button
+                                      onClick={() => {
+                                        const viewLink = `${window.location.origin}/rental-submission/${submission.view_token}`
+                                        navigator.clipboard.writeText(viewLink)
+                                        alert('View link copied to clipboard!')
+                                      }}
+                                      className="text-sm text-green-600 hover:text-green-800 font-medium"
+                                    >
+                                      Copy Link
+                                    </button>
+                                  </td>
+                                  <td className="px-4 py-3">
+                                    <button
+                                      onClick={() => handleDeleteRentalSubmission(submission.id!, submission.guest_name)}
+                                      className="text-sm text-red-600 hover:text-red-800 font-medium"
+                                    >
+                                      Delete
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

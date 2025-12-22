@@ -1,4 +1,5 @@
 import { sql } from '@vercel/postgres';
+import { v4 as uuidv4 } from 'uuid';
 
 // Helper function to convert dates to EST timezone
 function toESTDate(date: Date | string): string {
@@ -159,6 +160,9 @@ export async function initDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `;
+
+    // Initialize rental agreement tables
+    await initRentalAgreementTables();
 
     console.log('Database tables initialized successfully');
   } catch (error) {
@@ -598,5 +602,308 @@ export async function generateInvoiceNumber(): Promise<string> {
   
   const sequenceStr = String(sequence).padStart(4, '0');
   return `${prefix}-${sequenceStr}`;
+}
+
+// ============================================
+// RENTAL AGREEMENT TYPES AND FUNCTIONS
+// ============================================
+
+export interface RentalAgreement {
+  id: string;
+  property_name: string;
+  property_address: string;
+  check_in_date: string;
+  check_out_date: string;
+  rental_terms: string;
+  host_email?: string;
+  logo?: string;
+  created_at: string;
+  link_expires_at?: string;
+}
+
+export interface Vehicle {
+  license_plate: string;
+  make: string;
+  model: string;
+  color: string;
+}
+
+export interface AdditionalAdult {
+  name: string;
+}
+
+export interface RentalSubmission {
+  id?: number;
+  agreement_id: string;
+  guest_name: string;
+  guest_email: string;
+  guest_phone: string;
+  guest_address?: string;
+  num_adults: number;
+  num_children: number;
+  additional_adults?: AdditionalAdult[];
+  vehicles?: Vehicle[];
+  security_deposit_authorized: boolean;
+  electronic_signature_agreed: boolean;
+  signature_data: string;
+  check_in_date?: string;
+  check_out_date?: string;
+  view_token?: string;
+  submitted_at?: string;
+}
+
+export interface RentalTermsTemplate {
+  id: string;
+  name: string;
+  content: string;
+  created_at: string;
+  last_updated: string;
+}
+
+// Initialize rental agreement database tables
+export async function initRentalAgreementTables() {
+  try {
+    // Create rental agreements table
+    await sql`
+      CREATE TABLE IF NOT EXISTS rental_agreements (
+        id TEXT PRIMARY KEY,
+        property_name TEXT NOT NULL,
+        property_address TEXT NOT NULL,
+        check_in_date TEXT NOT NULL,
+        check_out_date TEXT NOT NULL,
+        rental_terms TEXT,
+        host_email TEXT,
+        logo TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        link_expires_at TIMESTAMP
+      )
+    `;
+
+    // Create rental submissions table
+    await sql`
+      CREATE TABLE IF NOT EXISTS rental_submissions (
+        id SERIAL PRIMARY KEY,
+        agreement_id TEXT NOT NULL,
+        guest_name TEXT NOT NULL,
+        guest_email TEXT NOT NULL,
+        guest_phone TEXT NOT NULL,
+        guest_address TEXT,
+        num_adults INTEGER DEFAULT 0,
+        num_children INTEGER DEFAULT 0,
+        additional_adults JSONB,
+        vehicles JSONB,
+        security_deposit_authorized BOOLEAN DEFAULT FALSE,
+        electronic_signature_agreed BOOLEAN DEFAULT FALSE,
+        signature_data TEXT NOT NULL,
+        check_in_date TEXT,
+        check_out_date TEXT,
+        view_token TEXT UNIQUE,
+        submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    // Create rental terms templates table
+    await sql`
+      CREATE TABLE IF NOT EXISTS rental_terms_templates (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL UNIQUE,
+        content TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    console.log('Rental agreement database tables initialized successfully');
+  } catch (error) {
+    console.error('Error initializing rental agreement database tables:', error);
+    throw error;
+  }
+}
+
+// Rental Agreement operations
+export async function createRentalAgreement(agreement: RentalAgreement): Promise<RentalAgreement> {
+  const result = await sql`
+    INSERT INTO rental_agreements (
+      id, property_name, property_address, check_in_date, check_out_date,
+      rental_terms, host_email, logo, created_at, link_expires_at
+    )
+    VALUES (
+      ${agreement.id},
+      ${agreement.property_name},
+      ${agreement.property_address},
+      ${agreement.check_in_date},
+      ${agreement.check_out_date},
+      ${agreement.rental_terms || ''},
+      ${agreement.host_email || null},
+      ${agreement.logo || null},
+      ${agreement.created_at},
+      ${agreement.link_expires_at || null}
+    )
+    RETURNING *
+  `;
+  return result.rows[0] as RentalAgreement;
+}
+
+export async function getRentalAgreement(id: string): Promise<RentalAgreement | undefined> {
+  const result = await sql`
+    SELECT * FROM rental_agreements WHERE id = ${id}
+  `;
+  return result.rows[0] as RentalAgreement | undefined;
+}
+
+export async function getAllRentalAgreements(): Promise<RentalAgreement[]> {
+  const result = await sql`
+    SELECT * FROM rental_agreements ORDER BY created_at DESC
+  `;
+  return result.rows as RentalAgreement[];
+}
+
+export async function deleteRentalAgreement(id: string): Promise<boolean> {
+  const result = await sql`
+    DELETE FROM rental_agreements WHERE id = ${id}
+  `;
+  return result.rowCount ? result.rowCount > 0 : false;
+}
+
+// Rental Submission operations
+export async function createRentalSubmission(submission: RentalSubmission): Promise<RentalSubmission> {
+  // Generate a unique view token
+  const viewToken = uuidv4();
+  
+  const result = await sql`
+    INSERT INTO rental_submissions (
+      agreement_id, guest_name, guest_email, guest_phone, guest_address,
+      num_adults, num_children, additional_adults, vehicles, security_deposit_authorized,
+      electronic_signature_agreed, signature_data, check_in_date, check_out_date, view_token, submitted_at
+    )
+    VALUES (
+      ${submission.agreement_id},
+      ${submission.guest_name},
+      ${submission.guest_email},
+      ${submission.guest_phone},
+      ${submission.guest_address || null},
+      ${submission.num_adults || 0},
+      ${submission.num_children || 0},
+      ${JSON.stringify(submission.additional_adults || [])},
+      ${JSON.stringify(submission.vehicles || [])},
+      ${submission.security_deposit_authorized || false},
+      ${submission.electronic_signature_agreed || false},
+      ${submission.signature_data},
+      ${submission.check_in_date || null},
+      ${submission.check_out_date || null},
+      ${viewToken},
+      ${submission.submitted_at || new Date().toISOString()}
+    )
+    RETURNING *
+  `;
+  const row = result.rows[0];
+  // Parse JSON back to arrays
+  if (row.additional_adults && typeof row.additional_adults === 'string') {
+    row.additional_adults = JSON.parse(row.additional_adults);
+  }
+  if (row.vehicles && typeof row.vehicles === 'string') {
+    row.vehicles = JSON.parse(row.vehicles);
+  }
+  return row as RentalSubmission;
+}
+
+export async function getRentalSubmissionsByAgreement(agreementId: string): Promise<RentalSubmission[]> {
+  const result = await sql`
+    SELECT * FROM rental_submissions
+    WHERE agreement_id = ${agreementId}
+    ORDER BY submitted_at DESC
+  `;
+  // Parse JSON for each row
+  return result.rows.map(row => ({
+    ...row,
+    additional_adults: typeof row.additional_adults === 'string' ? JSON.parse(row.additional_adults) : row.additional_adults,
+    vehicles: typeof row.vehicles === 'string' ? JSON.parse(row.vehicles) : row.vehicles
+  })) as RentalSubmission[];
+}
+
+export async function getAllRentalSubmissions(): Promise<RentalSubmission[]> {
+  const result = await sql`
+    SELECT * FROM rental_submissions ORDER BY check_in_date DESC, submitted_at DESC
+  `;
+  // Parse JSON for each row
+  return result.rows.map(row => ({
+    ...row,
+    additional_adults: typeof row.additional_adults === 'string' ? JSON.parse(row.additional_adults) : row.additional_adults,
+    vehicles: typeof row.vehicles === 'string' ? JSON.parse(row.vehicles) : row.vehicles
+  })) as RentalSubmission[];
+}
+
+export async function getRentalSubmissionByViewToken(viewToken: string): Promise<RentalSubmission | null> {
+  const result = await sql`
+    SELECT * FROM rental_submissions WHERE view_token = ${viewToken}
+  `;
+  if (result.rows.length === 0) return null;
+  
+  const row = result.rows[0];
+  // Parse JSON
+  if (row.additional_adults && typeof row.additional_adults === 'string') {
+    row.additional_adults = JSON.parse(row.additional_adults);
+  }
+  if (row.vehicles && typeof row.vehicles === 'string') {
+    row.vehicles = JSON.parse(row.vehicles);
+  }
+  return row as RentalSubmission;
+}
+
+export async function deleteRentalSubmission(id: number): Promise<boolean> {
+  const result = await sql`
+    DELETE FROM rental_submissions WHERE id = ${id}
+  `;
+  return result.rowCount ? result.rowCount > 0 : false;
+}
+
+// Rental Terms Template operations
+export async function saveRentalTemplate(name: string, content: string): Promise<RentalTermsTemplate> {
+  // Check if template exists
+  const existing = await sql`
+    SELECT * FROM rental_terms_templates WHERE name = ${name}
+  `;
+
+  if (existing.rows.length > 0) {
+    // Update existing
+    const result = await sql`
+      UPDATE rental_terms_templates
+      SET content = ${content}, last_updated = ${new Date().toISOString()}
+      WHERE name = ${name}
+      RETURNING *
+    `;
+    return result.rows[0] as RentalTermsTemplate;
+  } else {
+    // Insert new
+    const id = Date.now().toString();
+    const now = new Date().toISOString();
+    const result = await sql`
+      INSERT INTO rental_terms_templates (id, name, content, created_at, last_updated)
+      VALUES (${id}, ${name}, ${content}, ${now}, ${now})
+      RETURNING *
+    `;
+    return result.rows[0] as RentalTermsTemplate;
+  }
+}
+
+export async function loadRentalTemplate(id: string): Promise<RentalTermsTemplate | null> {
+  const result = await sql`
+    SELECT * FROM rental_terms_templates WHERE id = ${id}
+  `;
+  return (result.rows[0] as RentalTermsTemplate) || null;
+}
+
+export async function getAllRentalTemplates(): Promise<RentalTermsTemplate[]> {
+  const result = await sql`
+    SELECT * FROM rental_terms_templates ORDER BY last_updated DESC
+  `;
+  return result.rows as RentalTermsTemplate[];
+}
+
+export async function deleteRentalTemplate(id: string): Promise<boolean> {
+  const result = await sql`
+    DELETE FROM rental_terms_templates WHERE id = ${id}
+  `;
+  return result.rowCount ? result.rowCount > 0 : false;
 }
 
