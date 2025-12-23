@@ -393,7 +393,7 @@ export const propertyData = {
     },
     {
       name: "Windsor Island Resort Amenities",
-      description: "Exclusive resort facilities including resort-style pool, lazy river, water slides, mini-golf, sports courts, and more.",
+      description: "Exclusive resort facilities including resort-style pool, lazy river, water slides, kids playground, sports courts, and more.",
       images: [
         {
           src: "/images/rooms/resort/121.jpeg",
@@ -402,6 +402,14 @@ export const propertyData = {
         {
           src: "/images/rooms/resort/122.jpeg",
           alt: "Water Slides"
+        },
+        {
+          src: "/images/rooms/resort/playground.jpg",
+          alt: "Kids Playground"
+        },
+        {
+          src: "/images/rooms/resort/pickleball.jpg",
+          alt: "Pickleball Court"
         },
         {
           src: "/images/rooms/resort/123.jpeg",
