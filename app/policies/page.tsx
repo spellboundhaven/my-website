@@ -39,7 +39,7 @@ export default function PoliciesPage() {
                 <li className="flex gap-3">
                   <span className="text-primary-600 font-bold">•</span>
                   <span><strong>Check-in:</strong> 4:00 PM | <strong>Check-out:</strong> 10:00 AM<br />
-                  Late checkout is subject to availability and a $200 fee applies for checkouts extended to 4 PM.</span>
+                  Early checkin and late checkout are subject to availability with a fee.</span>
                 </li>
                 <li className="flex gap-3">
                   <span className="text-primary-600 font-bold">•</span>
