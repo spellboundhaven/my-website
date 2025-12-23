@@ -795,78 +795,86 @@ export default function AdminDashboard() {
           </div>
 
           {/* Tabs */}
-          <div className="border-b border-gray-200">
-            <div className="flex">
+          <div className="border-b border-gray-200 overflow-x-auto scrollbar-hide">
+            <div className="flex min-w-max">
               <button
                 onClick={() => setActiveTab('bookings')}
-                className={`px-6 py-3 font-medium transition-colors flex items-center gap-2 ${
+                className={`px-3 sm:px-6 py-3 font-medium transition-colors flex items-center gap-1 sm:gap-2 whitespace-nowrap text-sm sm:text-base ${
                   activeTab === 'bookings'
                     ? 'border-b-2 border-purple-600 text-purple-600'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
                 <Users className="w-4 h-4" />
-                Inquiries ({bookings.length})
+                <span className="hidden xs:inline">Inquiries</span>
+                <span className="xs:hidden">Inq.</span>
+                <span className="hidden sm:inline">({bookings.length})</span>
               </button>
               <button
                 onClick={() => setActiveTab('calendar')}
-                className={`px-6 py-3 font-medium transition-colors flex items-center gap-2 ${
+                className={`px-3 sm:px-6 py-3 font-medium transition-colors flex items-center gap-1 sm:gap-2 whitespace-nowrap text-sm sm:text-base ${
                   activeTab === 'calendar'
                     ? 'border-b-2 border-purple-600 text-purple-600'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
                 <Ban className="w-4 h-4" />
-                Date Blocks ({dateBlocks.length})
+                <span className="hidden xs:inline">Date Blocks</span>
+                <span className="xs:hidden">Dates</span>
+                <span className="hidden sm:inline">({dateBlocks.length})</span>
               </button>
               <button
                 onClick={() => setActiveTab('reviews')}
-                className={`px-6 py-3 font-medium transition-colors flex items-center gap-2 ${
+                className={`px-3 sm:px-6 py-3 font-medium transition-colors flex items-center gap-1 sm:gap-2 whitespace-nowrap text-sm sm:text-base ${
                   activeTab === 'reviews'
                     ? 'border-b-2 border-purple-600 text-purple-600'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
                 <Star className="w-4 h-4" />
-                Reviews ({reviews.length})
+                <span>Reviews</span>
+                <span className="hidden sm:inline">({reviews.length})</span>
               </button>
               <button
                 onClick={() => setActiveTab('invoices')}
-                className={`px-6 py-3 font-medium transition-colors flex items-center gap-2 ${
+                className={`px-3 sm:px-6 py-3 font-medium transition-colors flex items-center gap-1 sm:gap-2 whitespace-nowrap text-sm sm:text-base ${
                   activeTab === 'invoices'
                     ? 'border-b-2 border-purple-600 text-purple-600'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
                 <FileText className="w-4 h-4" />
-                Invoices ({invoices.length})
+                <span>Invoices</span>
+                <span className="hidden sm:inline">({invoices.length})</span>
               </button>
               <button
                 onClick={() => setActiveTab('rental-agreements')}
-                className={`px-6 py-3 font-medium transition-colors flex items-center gap-2 ${
+                className={`px-3 sm:px-6 py-3 font-medium transition-colors flex items-center gap-1 sm:gap-2 whitespace-nowrap text-sm sm:text-base ${
                   activeTab === 'rental-agreements'
                     ? 'border-b-2 border-purple-600 text-purple-600'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
                 <FileSignature className="w-4 h-4" />
-                Rental Agreements ({rentalAgreements.length})
+                <span className="hidden sm:inline">Rental Agreements</span>
+                <span className="sm:hidden">Rentals</span>
+                <span className="hidden sm:inline">({rentalAgreements.length})</span>
               </button>
               <button
                 onClick={() => setActiveTab('settings')}
-                className={`px-6 py-3 font-medium transition-colors flex items-center gap-2 ${
+                className={`px-3 sm:px-6 py-3 font-medium transition-colors flex items-center gap-1 sm:gap-2 whitespace-nowrap text-sm sm:text-base ${
                   activeTab === 'settings'
                     ? 'border-b-2 border-purple-600 text-purple-600'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
                 <Settings className="w-4 h-4" />
-                Settings
+                <span>Settings</span>
               </button>
             </div>
           </div>
 
-          <div className="p-6">
+          <div className="p-3 sm:p-6">
             {/* Bookings Tab */}
             {activeTab === 'bookings' && (
               <div>
