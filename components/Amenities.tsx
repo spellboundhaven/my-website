@@ -36,11 +36,7 @@ export default function Amenities() {
         <div className="max-w-5xl mx-auto">
           <div className="relative bg-white rounded-lg shadow-lg overflow-hidden">
             {/* Image Container */}
-            <div className={`relative w-full ${
-              images[currentImageIndex]?.src.includes('playground.jpg')
-                ? 'aspect-[16/11]'
-                : 'aspect-video'
-            }`}>
+            <div className="relative aspect-[3/2] w-full">
               {images.length > 0 && (
                 <>
                   {/* Current Image */}
