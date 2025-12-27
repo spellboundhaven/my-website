@@ -36,7 +36,11 @@ export default function Amenities() {
         <div className="max-w-5xl mx-auto">
           <div className="relative bg-white rounded-lg shadow-lg overflow-hidden">
             {/* Image Container */}
-            <div className="relative aspect-video w-full">
+            <div className={`relative w-full ${
+              images[currentImageIndex]?.src.includes('playground.jpg')
+                ? 'aspect-[16/11]'
+                : 'aspect-video'
+            }`}>
               {images.length > 0 && (
                 <>
                   {/* Current Image */}
@@ -45,11 +49,6 @@ export default function Amenities() {
                     alt={images[currentImageIndex].alt}
                     fill
                     className="object-cover"
-                    style={
-                      images[currentImageIndex].src.includes('playground.jpg')
-                        ? { objectPosition: 'center 30%' }
-                        : undefined
-                    }
                     priority={currentImageIndex === 0}
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
                     quality={75}
