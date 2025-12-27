@@ -47,7 +47,7 @@ export default function Amenities() {
                     className="object-cover"
                     style={
                       images[currentImageIndex].src.includes('playground.jpg')
-                        ? { objectPosition: 'center 10%' }
+                        ? { objectPosition: 'center 0%' }
                         : undefined
                     }
                     priority={currentImageIndex === 0}
