@@ -33,7 +33,7 @@ export default function Amenities() {
         </div>
 
         {/* Carousel */}
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           <div className="relative bg-white rounded-lg shadow-lg overflow-hidden">
             {/* Image Container */}
             <div className="relative aspect-[3/2] w-full">
@@ -45,6 +45,11 @@ export default function Amenities() {
                     alt={images[currentImageIndex].alt}
                     fill
                     className="object-cover"
+                    style={
+                      images[currentImageIndex].src.includes('playground.jpg')
+                        ? { objectPosition: 'center 35%' }
+                        : undefined
+                    }
                     priority={currentImageIndex === 0}
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
                     quality={75}
