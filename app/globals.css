@@ -71,7 +71,8 @@
   
   .rental-terms-content a {
     @apply text-blue-600 underline;
-    word-break: break-all;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
   
   .rental-terms-content * {
