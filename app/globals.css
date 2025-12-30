@@ -38,8 +38,10 @@
   .rental-terms-content {
     word-wrap: break-word;
     overflow-wrap: break-word;
-    word-break: normal;
-    hyphens: none;
+    word-break: keep-all !important;
+    hyphens: none !important;
+    -webkit-hyphens: none !important;
+    -moz-hyphens: none !important;
   }
   
   .rental-terms-content h1,
@@ -47,8 +49,9 @@
   .rental-terms-content h3 {
     @apply font-bold mb-2 mt-4;
     word-wrap: break-word;
-    word-break: normal;
-    hyphens: none;
+    word-break: keep-all !important;
+    hyphens: none !important;
+    -webkit-hyphens: none !important;
   }
   
   .rental-terms-content h1 { @apply text-xl; }
@@ -66,26 +69,34 @@
 
   .rental-terms-content li {
     @apply mb-2;
-    word-break: normal;
-    hyphens: none;
+    word-break: keep-all !important;
+    hyphens: none !important;
+    -webkit-hyphens: none !important;
   }
   
   .rental-terms-content p {
     @apply mb-2;
     word-wrap: break-word;
-    word-break: normal;
-    hyphens: none;
+    word-break: keep-all !important;
+    hyphens: none !important;
+    -webkit-hyphens: none !important;
   }
   
   .rental-terms-content a {
     @apply text-blue-600 underline;
     word-wrap: break-word;
     overflow-wrap: break-word;
-    word-break: normal;
+    word-break: keep-all !important;
   }
   
-  .rental-terms-content * {
+  .rental-terms-content *,
+  .rental-terms-content span,
+  .rental-terms-content strong,
+  .rental-terms-content em {
     max-width: 100%;
+    word-break: keep-all !important;
+    hyphens: none !important;
+    -webkit-hyphens: none !important;
   }
 
   /* Rich text editor styling */
