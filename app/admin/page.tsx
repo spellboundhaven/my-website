@@ -86,6 +86,7 @@ interface RentalAgreement {
   check_in_date: string
   check_out_date: string
   rental_terms: string
+  total_amount?: string
   host_email?: string
   logo?: string
   created_at: string
@@ -143,6 +144,7 @@ export default function AdminDashboard() {
     check_in_date: '',
     check_out_date: '',
     rental_terms: '',
+    total_amount: '',
     host_email: 'spellboundhaven.disney@gmail.com',
     logo: '',
     expires_in_days: '30',
@@ -540,6 +542,7 @@ export default function AdminDashboard() {
           check_in_date: '',
           check_out_date: '',
           rental_terms: '',
+          total_amount: '',
           logo: '',
           expires_in_days: '30',
         })
@@ -2004,6 +2007,23 @@ export default function AdminDashboard() {
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                           />
                         </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Total Amount for Stay
+                        </label>
+                        <input
+                          type="text"
+                          name="total_amount"
+                          value={rentalFormData.total_amount}
+                          onChange={(e) => setRentalFormData(prev => ({ ...prev, total_amount: e.target.value }))}
+                          placeholder="e.g., $2,500.00"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        />
+                        <p className="mt-1 text-xs text-gray-500">
+                          Optional: The total cost for the entire stay (will be displayed on the agreement)
+                        </p>
                       </div>
 
                       <div>

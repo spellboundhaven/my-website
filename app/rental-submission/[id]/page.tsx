@@ -10,6 +10,7 @@ interface Agreement {
   check_in_date: string
   check_out_date: string
   rental_terms: string
+  total_amount?: string
   logo?: string
 }
 
@@ -129,6 +130,9 @@ export default function ViewRentalSubmission() {
               <p><span className="font-medium">Address:</span> {agreement.property_address}</p>
               <p><span className="font-medium">Check-in:</span> {formatDateForDisplay(submission.check_in_date || agreement.check_in_date)}</p>
               <p><span className="font-medium">Check-out:</span> {formatDateForDisplay(submission.check_out_date || agreement.check_out_date)}</p>
+              {agreement.total_amount && (
+                <p><span className="font-medium">Total Amount:</span> {agreement.total_amount}</p>
+              )}
             </div>
           </div>
 

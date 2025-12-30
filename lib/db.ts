@@ -615,6 +615,7 @@ export interface RentalAgreement {
   check_in_date: string;
   check_out_date: string;
   rental_terms: string;
+  total_amount?: string;
   host_email?: string;
   logo?: string;
   created_at: string;
@@ -672,6 +673,7 @@ export async function initRentalAgreementTables() {
         check_in_date TEXT NOT NULL,
         check_out_date TEXT NOT NULL,
         rental_terms TEXT,
+        total_amount TEXT,
         host_email TEXT,
         logo TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -713,6 +715,17 @@ export async function initRentalAgreementTables() {
       )
     `;
 
+    // Add total_amount column if it doesn't exist (for existing databases)
+    try {
+      await sql`
+        ALTER TABLE rental_agreements 
+        ADD COLUMN IF NOT EXISTS total_amount TEXT
+      `;
+    } catch (alterError) {
+      // Column might already exist, that's okay
+      console.log('Note: total_amount column may already exist');
+    }
+
     console.log('Rental agreement database tables initialized successfully');
   } catch (error) {
     console.error('Error initializing rental agreement database tables:', error);
@@ -725,7 +738,7 @@ export async function createRentalAgreement(agreement: RentalAgreement): Promise
   const result = await sql`
     INSERT INTO rental_agreements (
       id, property_name, property_address, check_in_date, check_out_date,
-      rental_terms, host_email, logo, created_at, link_expires_at
+      rental_terms, total_amount, host_email, logo, created_at, link_expires_at
     )
     VALUES (
       ${agreement.id},
@@ -734,6 +747,7 @@ export async function createRentalAgreement(agreement: RentalAgreement): Promise
       ${agreement.check_in_date},
       ${agreement.check_out_date},
       ${agreement.rental_terms || ''},
+      ${agreement.total_amount || null},
       ${agreement.host_email || null},
       ${agreement.logo || null},
       ${agreement.created_at},
