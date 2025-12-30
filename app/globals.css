@@ -36,22 +36,22 @@
 
   /* Rental terms content styling */
   .rental-terms-content {
-    word-wrap: break-word;
-    overflow-wrap: break-word;
+    word-wrap: normal !important;
+    overflow-wrap: normal !important;
     word-break: keep-all !important;
-    hyphens: none !important;
-    -webkit-hyphens: none !important;
-    -moz-hyphens: none !important;
+    hyphens: manual !important;
+    -webkit-hyphens: manual !important;
+    -moz-hyphens: manual !important;
+    white-space: normal !important;
   }
   
   .rental-terms-content h1,
   .rental-terms-content h2,
   .rental-terms-content h3 {
     @apply font-bold mb-2 mt-4;
-    word-wrap: break-word;
     word-break: keep-all !important;
-    hyphens: none !important;
-    -webkit-hyphens: none !important;
+    hyphens: manual !important;
+    -webkit-hyphens: manual !important;
   }
   
   .rental-terms-content h1 { @apply text-xl; }
@@ -70,23 +70,22 @@
   .rental-terms-content li {
     @apply mb-2;
     word-break: keep-all !important;
-    hyphens: none !important;
-    -webkit-hyphens: none !important;
+    hyphens: manual !important;
+    -webkit-hyphens: manual !important;
   }
   
   .rental-terms-content p {
     @apply mb-2;
-    word-wrap: break-word;
     word-break: keep-all !important;
-    hyphens: none !important;
-    -webkit-hyphens: none !important;
+    hyphens: manual !important;
+    -webkit-hyphens: manual !important;
+    white-space: normal !important;
   }
   
   .rental-terms-content a {
     @apply text-blue-600 underline;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
     word-break: keep-all !important;
+    overflow-wrap: break-word !important;
   }
   
   .rental-terms-content *,
@@ -95,8 +94,13 @@
   .rental-terms-content em {
     max-width: 100%;
     word-break: keep-all !important;
-    hyphens: none !important;
-    -webkit-hyphens: none !important;
+    hyphens: manual !important;
+    -webkit-hyphens: manual !important;
+  }
+  
+  /* Remove any word break opportunities inserted by editor */
+  .rental-terms-content wbr {
+    display: none !important;
   }
 
   /* Rich text editor styling */
