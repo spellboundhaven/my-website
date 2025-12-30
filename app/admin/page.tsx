@@ -524,12 +524,23 @@ export default function AdminDashboard() {
     setLoading(true)
 
     try {
+      // Sanitize rental terms to remove invisible characters and soft hyphens
+      const sanitizedRentalTerms = rentalFormData.rental_terms
+        .replace(/\u00AD/g, '') // Remove soft hyphens
+        .replace(/\u200B/g, '') // Remove zero-width spaces
+        .replace(/\u200C/g, '') // Remove zero-width non-joiners
+        .replace(/\u200D/g, '') // Remove zero-width joiners
+        .replace(/\uFEFF/g, '') // Remove zero-width no-break spaces
+      
       const response = await fetch('/api/rental-agreements', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(rentalFormData),
+        body: JSON.stringify({
+          ...rentalFormData,
+          rental_terms: sanitizedRentalTerms
+        }),
       })
 
       const data = await response.json()
