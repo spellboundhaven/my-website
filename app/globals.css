@@ -36,8 +36,7 @@
 
   /* Rental terms content styling */
   .rental-terms-content {
-    word-wrap: normal !important;
-    overflow-wrap: normal !important;
+    overflow-wrap: break-word !important;
     word-break: keep-all !important;
     hyphens: manual !important;
     -webkit-hyphens: manual !important;
@@ -49,6 +48,7 @@
   .rental-terms-content h2,
   .rental-terms-content h3 {
     @apply font-bold mb-2 mt-4;
+    overflow-wrap: break-word !important;
     word-break: keep-all !important;
     hyphens: manual !important;
     -webkit-hyphens: manual !important;
@@ -69,6 +69,7 @@
 
   .rental-terms-content li {
     @apply mb-2;
+    overflow-wrap: break-word !important;
     word-break: keep-all !important;
     hyphens: manual !important;
     -webkit-hyphens: manual !important;
@@ -76,6 +77,7 @@
   
   .rental-terms-content p {
     @apply mb-2;
+    overflow-wrap: break-word !important;
     word-break: keep-all !important;
     hyphens: manual !important;
     -webkit-hyphens: manual !important;
@@ -84,8 +86,8 @@
   
   .rental-terms-content a {
     @apply text-blue-600 underline;
-    word-break: keep-all !important;
     overflow-wrap: break-word !important;
+    word-break: keep-all !important;
   }
   
   .rental-terms-content *,
@@ -93,6 +95,7 @@
   .rental-terms-content strong,
   .rental-terms-content em {
     max-width: 100%;
+    overflow-wrap: break-word !important;
     word-break: keep-all !important;
     hyphens: manual !important;
     -webkit-hyphens: manual !important;
