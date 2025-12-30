@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     await initDatabase();
     
     const body = await request.json();
-    const { property_name, property_address, check_in_date, check_out_date, rental_terms, host_email, logo, expires_in_days } = body;
+    const { property_name, property_address, check_in_date, check_out_date, rental_terms, total_amount, host_email, logo, expires_in_days } = body;
 
     if (!property_name || !property_address || !check_in_date || !check_out_date) {
       return NextResponse.json(
@@ -32,6 +32,7 @@ export async function POST(request: NextRequest) {
       check_in_date,
       check_out_date,
       rental_terms: rental_terms || '',
+      total_amount: total_amount || undefined,
       host_email: host_email || undefined,
       logo: logo || undefined,
       created_at: new Date().toISOString(),

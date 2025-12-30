@@ -2018,11 +2018,11 @@ export default function AdminDashboard() {
                           name="total_amount"
                           value={rentalFormData.total_amount}
                           onChange={(e) => setRentalFormData(prev => ({ ...prev, total_amount: e.target.value }))}
-                          placeholder="e.g., $2,500.00"
+                          placeholder="$2,500.00"
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                         />
                         <p className="mt-1 text-xs text-gray-500">
-                          Optional: The total cost for the entire stay (will be displayed on the agreement)
+                          Optional: Include dollar sign (e.g., $2,500.00) - will be displayed on the agreement
                         </p>
                       </div>
 
