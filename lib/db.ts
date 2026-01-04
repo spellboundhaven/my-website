@@ -113,15 +113,33 @@ export async function initDatabase() {
       )
     `;
 
-    // Create airbnb_sync table for tracking last sync
+    // Create calendar_sync table for tracking syncs from multiple sources
     await sql`
-      CREATE TABLE IF NOT EXISTS airbnb_sync (
+      CREATE TABLE IF NOT EXISTS calendar_sync (
         id SERIAL PRIMARY KEY,
+        source TEXT NOT NULL,
+        ical_url TEXT NOT NULL,
         last_synced TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        ical_url TEXT,
-        sync_status TEXT DEFAULT 'success'
+        sync_status TEXT DEFAULT 'success',
+        bookings_synced INTEGER DEFAULT 0
       )
     `;
+
+    // Migrate data from old airbnb_sync table if it exists
+    try {
+      await sql`
+        INSERT INTO calendar_sync (source, ical_url, last_synced, sync_status)
+        SELECT 'airbnb' as source, ical_url, last_synced, sync_status
+        FROM airbnb_sync
+        WHERE NOT EXISTS (
+          SELECT 1 FROM calendar_sync WHERE source = 'airbnb'
+        )
+        LIMIT 1
+      `;
+    } catch (migrateError) {
+      // Migration might fail if airbnb_sync doesn't exist or calendar_sync already has data
+      console.log('Note: Calendar sync migration skipped (may already be done)');
+    }
 
     // Create reviews table
     await sql`
@@ -421,21 +439,48 @@ export async function getAvailabilityForRange(startDate: string, endDate: string
   return availability;
 }
 
-// Airbnb sync operations
-export async function updateAirbnbSync(icalUrl: string, status: string): Promise<void> {
+// Calendar sync operations
+export async function updateCalendarSync(source: string, icalUrl: string, status: string, bookingsSynced: number = 0): Promise<void> {
   await sql`
-    INSERT INTO airbnb_sync (ical_url, sync_status, last_synced)
-    VALUES (${icalUrl}, ${status}, ${new Date().toISOString()})
+    INSERT INTO calendar_sync (source, ical_url, sync_status, last_synced, bookings_synced)
+    VALUES (${source}, ${icalUrl}, ${status}, ${new Date().toISOString()}, ${bookingsSynced})
+    ON CONFLICT (id) DO UPDATE
+    SET ical_url = ${icalUrl},
+        sync_status = ${status},
+        last_synced = ${new Date().toISOString()},
+        bookings_synced = ${bookingsSynced}
   `;
 }
 
-export async function getLastAirbnbSync(): Promise<{ last_synced: string; ical_url: string } | null> {
+export async function getLastCalendarSync(source: string): Promise<{ last_synced: string; ical_url: string; bookings_synced: number } | null> {
   const result = await sql`
-    SELECT last_synced, ical_url FROM airbnb_sync
+    SELECT last_synced, ical_url, bookings_synced 
+    FROM calendar_sync
+    WHERE source = ${source}
     ORDER BY last_synced DESC
     LIMIT 1
   `;
-  return (result.rows[0] as { last_synced: string; ical_url: string }) || null;
+  return (result.rows[0] as { last_synced: string; ical_url: string; bookings_synced: number }) || null;
+}
+
+export async function getAllCalendarSyncs(): Promise<Array<{ source: string; last_synced: string; ical_url: string; sync_status: string; bookings_synced: number }>> {
+  const result = await sql`
+    SELECT source, last_synced, ical_url, sync_status, bookings_synced
+    FROM calendar_sync
+    ORDER BY source, last_synced DESC
+  `;
+  return result.rows as Array<{ source: string; last_synced: string; ical_url: string; sync_status: string; bookings_synced: number }>;
+}
+
+// Legacy support - keep these for backward compatibility
+export async function updateAirbnbSync(icalUrl: string, status: string): Promise<void> {
+  await updateCalendarSync('airbnb', icalUrl, status);
+}
+
+export async function getLastAirbnbSync(): Promise<{ last_synced: string; ical_url: string } | null> {
+  const result = await getLastCalendarSync('airbnb');
+  if (!result) return null;
+  return { last_synced: result.last_synced, ical_url: result.ical_url };
 }
 
 // Review operations
@@ -920,4 +965,5 @@ export async function deleteRentalTemplate(id: string): Promise<boolean> {
   `;
   return result.rowCount ? result.rowCount > 0 : false;
 }
+
 

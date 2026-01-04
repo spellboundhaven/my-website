@@ -134,7 +134,9 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   
   const [airbnbUrl, setAirbnbUrl] = useState('')
+  const [vrboUrl, setVrboUrl] = useState('')
   const [lastSync, setLastSync] = useState<{ last_synced: string; ical_url: string } | null>(null)
+  const [vrboLastSync, setVrboLastSync] = useState<{ last_synced: string; ical_url: string } | null>(null)
 
   // Rental agreement state
   const [rentalAgreementTab, setRentalAgreementTab] = useState<'create' | 'view'>('create')
@@ -228,11 +230,21 @@ export default function AdminDashboard() {
 
   const fetchLastSync = async () => {
     try {
-      const response = await fetch('/api/airbnb-sync')
+      const response = await fetch('/api/calendar-sync')
       const data = await response.json()
-      if (data.success && data.lastSync) {
-        setLastSync(data.lastSync)
-        setAirbnbUrl(data.lastSync.ical_url || '')
+      if (data.success) {
+        // Find Airbnb sync
+        const airbnbSync = data.syncs?.find((s: any) => s.source === 'airbnb')
+        if (airbnbSync) {
+          setLastSync({ last_synced: airbnbSync.last_synced, ical_url: airbnbSync.ical_url })
+          setAirbnbUrl(airbnbSync.ical_url || '')
+        }
+        // Find VRBO sync
+        const vrboSync = data.syncs?.find((s: any) => s.source === 'vrbo')
+        if (vrboSync) {
+          setVrboLastSync({ last_synced: vrboSync.last_synced, ical_url: vrboSync.ical_url })
+          setVrboUrl(vrboSync.ical_url || '')
+        }
       }
     } catch (error) {
       console.error('Error fetching last sync:', error)
@@ -247,13 +259,13 @@ export default function AdminDashboard() {
 
     setLoading(true)
     try {
-      const response = await fetch('/api/airbnb-sync', {
+      const response = await fetch('/api/calendar-sync', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          action: 'sync',
+          source: 'airbnb',
           icalUrl: airbnbUrl
         })
       })
@@ -261,17 +273,54 @@ export default function AdminDashboard() {
       const data = await response.json()
       
       if (data.success) {
-        alert(`✅ Successfully synced ${data.bookedDates.length} Airbnb bookings!`)
+        alert(`✅ Successfully synced ${data.bookedDates?.length || 0} Airbnb bookings!`)
         fetchAdminData()
         fetchLastSync()
       } else {
-        // Show the actual error details from the API
         const errorMsg = data.details || data.error || 'Failed to sync Airbnb calendar'
         alert(`❌ Sync Failed:\n\n${errorMsg}\n\nPlease check:\n• Your iCal URL is correct\n• The URL is accessible\n• You have internet connection`)
         console.error('Sync error details:', data)
       }
     } catch (error) {
       console.error('Error syncing Airbnb:', error)
+      alert(`❌ Network Error:\n\n${error instanceof Error ? error.message : 'An error occurred while syncing'}\n\nPlease check your internet connection and try again.`)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSyncVrbo = async () => {
+    if (!vrboUrl) {
+      alert('Please enter VRBO iCal URL')
+      return
+    }
+
+    setLoading(true)
+    try {
+      const response = await fetch('/api/calendar-sync', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          source: 'vrbo',
+          icalUrl: vrboUrl
+        })
+      })
+
+      const data = await response.json()
+      
+      if (data.success) {
+        alert(`✅ Successfully synced ${data.bookedDates?.length || 0} VRBO bookings!`)
+        fetchAdminData()
+        fetchLastSync()
+      } else {
+        const errorMsg = data.details || data.error || 'Failed to sync VRBO calendar'
+        alert(`❌ Sync Failed:\n\n${errorMsg}\n\nPlease check:\n• Your iCal URL is correct\n• The URL is accessible\n• You have internet connection`)
+        console.error('Sync error details:', data)
+      }
+    } catch (error) {
+      console.error('Error syncing VRBO:', error)
       alert(`❌ Network Error:\n\n${error instanceof Error ? error.message : 'An error occurred while syncing'}\n\nPlease check your internet connection and try again.`)
     } finally {
       setLoading(false)
@@ -2475,7 +2524,7 @@ export default function AdminDashboard() {
                     {lastSync && (
                       <div className="mt-4 p-3 bg-blue-50 rounded-lg">
                         <div className="text-sm">
-                          <div className="font-medium text-blue-800 mb-1">Last Sync Status:</div>
+                          <div className="font-medium text-blue-800 mb-1">Last Airbnb Sync:</div>
                           <div className="text-blue-700">
                             🕐 {new Date(lastSync.last_synced).toLocaleString()}
                           </div>
@@ -2485,6 +2534,49 @@ export default function AdminDashboard() {
                         </div>
                       </div>
                     )}
+
+                    {/* VRBO Calendar Sync */}
+                    <div className="mt-8 pt-8 border-t border-gray-200">
+                      <h3 className="text-lg font-semibold text-gray-800 mb-4">VRBO Calendar Sync</h3>
+                      
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          VRBO iCal URL
+                        </label>
+                        <input
+                          type="url"
+                          value={vrboUrl}
+                          onChange={(e) => setVrboUrl(e.target.value)}
+                          placeholder="https://www.vrbo.com/icalendar/..."
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          Get this URL from your VRBO listing's calendar export settings
+                        </p>
+                      </div>
+                      
+                      <button
+                        onClick={handleSyncVrbo}
+                        disabled={loading || !vrboUrl}
+                        className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition disabled:bg-gray-400"
+                      >
+                        {loading ? 'Syncing...' : 'Manual Sync VRBO Now'}
+                      </button>
+
+                      {vrboLastSync && (
+                        <div className="mt-4 p-3 bg-green-50 rounded-lg">
+                          <div className="text-sm">
+                            <div className="font-medium text-green-800 mb-1">Last VRBO Sync:</div>
+                            <div className="text-green-700">
+                              🕐 {new Date(vrboLastSync.last_synced).toLocaleString()}
+                            </div>
+                            <div className="text-xs text-green-600 mt-2">
+                              Next automatic sync: Tomorrow at midnight (00:00 UTC)
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
