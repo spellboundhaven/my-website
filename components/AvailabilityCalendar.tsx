@@ -121,21 +121,26 @@ export default function AvailabilityCalendar() {
     
     const isToday = compareDate.getTime() === today.getTime()
     
-    // Block all dates up to and including today (no same-day check-in)
-    if (compareDate <= today) {
+    // Today is ALWAYS blocked (grey) with red border
+    if (isToday) {
+      return 'bg-gray-100 text-gray-600 cursor-not-allowed today-highlight'
+    }
+    
+    // Block all past dates (before today)
+    if (compareDate < today) {
       return 'bg-blue-50 text-gray-400 cursor-not-allowed'
     }
     
     // Check for checkin date first (first blocked day after available period)
     // Shows: left white (morning available), right grey (evening occupied)
     if (isCheckinDate(date)) {
-      return isToday ? 'checkin-date text-blue-600 font-semibold' : 'checkin-date text-gray-700'
+      return 'checkin-date text-gray-700'
     }
     
     // Check for checkout date (first available day after blocked period)  
     // Shows: left grey (morning occupied), right white (afternoon available)
     if (isCheckoutDate(date)) {
-      return isToday ? 'checkout-date text-blue-600 font-semibold' : 'checkout-date text-gray-700'
+      return 'checkout-date text-gray-700'
     }
     
     if (isDateBooked(date)) {
@@ -143,7 +148,7 @@ export default function AvailabilityCalendar() {
     }
     
     if (isDateAvailable(date)) {
-      return isToday ? 'bg-white text-blue-600 font-semibold' : 'bg-white text-gray-900'
+      return 'bg-white text-gray-900'
     }
     
     return ''
@@ -214,6 +219,13 @@ export default function AvailabilityCalendar() {
           background-color: #f3f4f6 !important;
         }
         
+        /* Today's date: Grey with red border */
+        :global(.react-calendar__tile.today-highlight) {
+          background-color: #f3f4f6 !important;
+          border: 2px solid #dc2626 !important;
+          box-shadow: 0 0 0 1px #dc2626 !important;
+        }
+        
         /* Past dates: Light blue */
         :global(.react-calendar__tile.bg-blue-50) {
           background-color: #eff6ff !important;
@@ -276,6 +288,10 @@ export default function AvailabilityCalendar() {
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-gray-100 border border-gray-200 rounded"></div>
                 <span>Booked</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-gray-100 border-2 border-red-600 rounded"></div>
+                <span>Today</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-blue-50 border border-blue-200 rounded"></div>
