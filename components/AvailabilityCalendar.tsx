@@ -122,13 +122,14 @@ export default function AvailabilityCalendar() {
     const isToday = compareDate.getTime() === today.getTime()
     
     // Today is ALWAYS blocked (grey) with red border
+    // Use default react-calendar text colors (grey for weekday, red for weekend)
     if (isToday) {
-      return 'bg-gray-100 text-gray-600 cursor-not-allowed today-highlight'
+      return 'bg-gray-100 cursor-not-allowed today-highlight'
     }
     
-    // Block all past dates (before today)
+    // Block all past dates (before today) - same grey as booked dates
     if (compareDate < today) {
-      return 'bg-blue-50 text-gray-400 cursor-not-allowed'
+      return 'bg-gray-100 text-gray-400 cursor-not-allowed'
     }
     
     // Check for checkin date first (first blocked day after available period)
@@ -214,21 +215,16 @@ export default function AvailabilityCalendar() {
   return (
     <section id="availability" className="section-padding bg-white">
       <style jsx>{`
-        /* Booked dates: Full grey block */
+        /* Booked/Past dates: Full grey block */
         :global(.react-calendar__tile.bg-gray-100) {
           background-color: #f3f4f6 !important;
         }
         
-        /* Today's date: Grey with red border */
+        /* Today's date: Grey with red border, inherit text color (grey/red based on weekday/weekend) */
         :global(.react-calendar__tile.today-highlight) {
           background-color: #f3f4f6 !important;
           border: 2px solid #dc2626 !important;
           box-shadow: 0 0 0 1px #dc2626 !important;
-        }
-        
-        /* Past dates: Light blue */
-        :global(.react-calendar__tile.bg-blue-50) {
-          background-color: #eff6ff !important;
         }
         
         /* Available dates: White */
@@ -287,15 +283,11 @@ export default function AvailabilityCalendar() {
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-gray-100 border border-gray-200 rounded"></div>
-                <span>Booked</span>
+                <span>Booked / Past</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-gray-100 border-2 border-red-600 rounded"></div>
                 <span>Today</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-blue-50 border border-blue-200 rounded"></div>
-                <span>Past Dates</span>
               </div>
             </div>
           </div>
