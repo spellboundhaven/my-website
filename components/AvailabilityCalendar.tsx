@@ -17,6 +17,11 @@ export default function AvailabilityCalendar() {
   const [availability, setAvailability] = useState<Record<string, AvailabilityDate>>({})
   const [loading, setLoading] = useState(false)
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date())
+  const [today] = useState<Date>(() => {
+    const now = new Date()
+    now.setHours(0, 0, 0, 0)
+    return now
+  })
 
   // Inquiry form state
   const [formData, setFormData] = useState({
@@ -114,8 +119,6 @@ export default function AvailabilityCalendar() {
   }
 
   const tileClassName = ({ date }: { date: Date }) => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
     const compareDate = new Date(date)
     compareDate.setHours(0, 0, 0, 0)
     
@@ -263,6 +266,7 @@ export default function AvailabilityCalendar() {
             
             <div className="mb-6">
               <Calendar
+                key={today.toISOString()}
                 value={currentMonth}
                 tileClassName={tileClassName}
                 onActiveStartDateChange={({ activeStartDate }) => {
