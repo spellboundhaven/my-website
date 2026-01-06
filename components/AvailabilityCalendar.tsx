@@ -230,6 +230,23 @@ export default function AvailabilityCalendar() {
           box-shadow: 0 0 0 1px #dc2626 !important;
         }
         
+        /* Override react-calendar default styles for today to ensure proper text color */
+        :global(.react-calendar__tile--now) {
+          background: none !important;
+        }
+        
+        :global(.react-calendar__tile--now abbr) {
+          color: inherit !important;
+        }
+        
+        :global(.react-calendar__tile.today-highlight abbr) {
+          color: #4b5563 !important; /* Grey for weekdays */
+        }
+        
+        :global(.react-calendar__month-view__days__day--weekend.today-highlight abbr) {
+          color: #dc2626 !important; /* Red for weekends */
+        }
+        
         /* Available dates: White */
         :global(.react-calendar__tile.bg-white) {
           background-color: #ffffff !important;
