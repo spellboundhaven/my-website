@@ -41,10 +41,10 @@ async function cleanupDuplicateBlocks() {
       const toDelete = ids.slice(1);
       
       if (toDelete.length > 0) {
-        await sql`
-          DELETE FROM date_blocks 
-          WHERE id = ANY(${toDelete})
-        `;
+        // Delete each duplicate individually
+        for (const id of toDelete) {
+          await sql`DELETE FROM date_blocks WHERE id = ${id}`;
+        }
         
         console.log(`   ✅ Kept block [${ids[0]}], deleted ${toDelete.length} duplicate(s)\n`);
         totalDeleted += toDelete.length;
