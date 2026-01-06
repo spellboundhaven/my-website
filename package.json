@@ -9,6 +9,7 @@
     "lint": "next lint",
     "init-db": "tsx scripts/init-db.ts",
     "migrate-total-amount": "tsx scripts/add-total-amount-column.ts",
+    "migrate-amount-paid": "tsx scripts/migrate-amount-paid.ts",
     "cleanup-duplicates": "tsx scripts/cleanup-duplicate-blocks.ts"
   },
   "dependencies": {

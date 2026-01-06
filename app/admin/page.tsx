@@ -72,7 +72,8 @@ interface Invoice {
   additional_fees_description?: string
   total_amount: number
   payment_method: string
-  payment_status?: 'unpaid' | 'initial_deposit_paid' | 'all_paid'
+  payment_status?: 'unpaid' | 'partial_paid' | 'all_paid'
+  amount_paid?: number
   status: 'draft' | 'sent' | 'paid' | 'cancelled'
   notes?: string
   sent_at?: string
@@ -1342,7 +1343,7 @@ export default function AdminDashboard() {
                           total_amount: totalAmount,
                           payment_method: formData.get('payment_method'),
                           payment_status: formData.get('payment_status'),
-                          initial_deposit_percentage: formData.get('initial_deposit_percentage'),
+                          amount_paid: formData.get('amount_paid'),
                           notes: formData.get('notes'),
                         };
 
@@ -1589,22 +1590,22 @@ export default function AdminDashboard() {
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                           >
                             <option value="unpaid">Unpaid</option>
-                            <option value="initial_deposit_paid">Initial Deposit Paid</option>
+                            <option value="partial_paid">Partially Paid</option>
                             <option value="all_paid">All Paid</option>
                           </select>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Initial Deposit (%)
+                            Amount Paid ($)
                           </label>
                           <input
                             type="number"
-                            name="initial_deposit_percentage"
+                            name="amount_paid"
                             min="0"
-                            max="100"
-                            defaultValue="30"
+                            step="0.01"
+                            defaultValue="0"
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                            placeholder="30"
+                            placeholder="0.00"
                           />
                         </div>
                       </div>
@@ -1673,7 +1674,7 @@ export default function AdminDashboard() {
                               <td className="px-4 py-4">
                                 <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                                   invoice.payment_status === 'all_paid' ? 'bg-green-100 text-green-800' :
-                                  invoice.payment_status === 'initial_deposit_paid' ? 'bg-yellow-100 text-yellow-800' :
+                                  invoice.payment_status === 'partial_paid' ? 'bg-yellow-100 text-yellow-800' :
                                   'bg-red-100 text-red-800'
                                 }`}>
                                   {String(invoice.payment_status || 'unpaid').replace(/_/g, ' ').toUpperCase()}
@@ -1853,16 +1854,16 @@ export default function AdminDashboard() {
                                   <button
                                     onClick={() => {
                                       const newStatus = prompt(
-                                        `Update payment status for ${invoice.invoice_number}\n\nEnter:\n1 = Unpaid\n2 = Initial Deposit Paid\n3 = All Paid`,
+                                        `Update payment status for ${invoice.invoice_number}\n\nEnter:\n1 = Unpaid\n2 = Partially Paid\n3 = All Paid`,
                                         invoice.payment_status === 'all_paid' ? '3' : 
-                                        invoice.payment_status === 'initial_deposit_paid' ? '2' : '1'
+                                        invoice.payment_status === 'partial_paid' ? '2' : '1'
                                       );
                                       
                                       if (!newStatus) return;
                                       
                                       const statusMap: { [key: string]: string } = {
                                         '1': 'unpaid',
-                                        '2': 'initial_deposit_paid',
+                                        '2': 'partial_paid',
                                         '3': 'all_paid'
                                       };
                                       

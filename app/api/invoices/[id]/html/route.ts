@@ -51,19 +51,14 @@ function generateInvoiceHTML(invoice: any): string {
     (1000 * 60 * 60 * 24)
   );
 
-  // Calculate payment amounts based on payment_status
+  // Calculate payment amounts based on payment_status and amount_paid
   const totalAmount = Number(invoice.total_amount);
-  const depositPercentage = invoice.initial_deposit_percentage || 30;
-  let amountPaid = 0;
-  let amountDue = totalAmount;
-  let paymentPercentage = '0%';
+  let amountPaid = Number(invoice.amount_paid || 0);
+  let amountDue = totalAmount - amountPaid;
+  let paymentPercentage = totalAmount > 0 ? `${Math.round((amountPaid / totalAmount) * 100)}%` : '0%';
 
-  if (invoice.payment_status === 'initial_deposit_paid') {
-    amountPaid = totalAmount * (depositPercentage / 100);
-    amountDue = totalAmount - amountPaid;
-    paymentPercentage = `${depositPercentage}%`;
-  } else if (invoice.payment_status === 'all_paid') {
-    amountPaid = totalAmount; // 100% paid
+  if (invoice.payment_status === 'all_paid') {
+    amountPaid = totalAmount;
     amountDue = 0;
     paymentPercentage = '100%';
   }
