@@ -41,7 +41,18 @@ export async function GET(request: NextRequest) {
       console.log('✅ amount_paid column already exists.');
     }
 
-    // Update the payment_status check constraint to include 'partial_paid'
+    // STEP 1: Migrate existing data FIRST (before updating constraint)
+    console.log('Migrating existing payment status values...');
+    
+    const updateResult = await sql`
+      UPDATE invoices
+      SET payment_status = 'partial_paid'
+      WHERE payment_status = 'initial_deposit_paid';
+    `;
+    
+    console.log(`✅ Updated ${updateResult.rowCount || 0} invoice(s) from 'initial_deposit_paid' to 'partial_paid'`);
+
+    // STEP 2: Now update the payment_status check constraint to include 'partial_paid'
     console.log('Updating payment_status constraint...');
     
     // Drop the old constraint
@@ -58,17 +69,6 @@ export async function GET(request: NextRequest) {
     `;
     
     console.log('✅ Successfully updated payment_status constraint!');
-
-    // Migrate existing data: convert 'initial_deposit_paid' to 'partial_paid'
-    console.log('Migrating existing payment status values...');
-    
-    const updateResult = await sql`
-      UPDATE invoices
-      SET payment_status = 'partial_paid'
-      WHERE payment_status = 'initial_deposit_paid';
-    `;
-    
-    console.log(`✅ Updated ${updateResult.rowCount || 0} invoice(s) from 'initial_deposit_paid' to 'partial_paid'`);
 
     // Migrate amount_paid values from percentage for existing invoices
     console.log('Calculating amount_paid from initial_deposit_percentage for existing invoices...');
