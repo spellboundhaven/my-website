@@ -1569,6 +1569,8 @@ export default function AdminDashboard() {
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                           >
                             <option value="">Select payment method</option>
+                            <option value="Stripe">Stripe</option>
+                            <option value="Wise">Wise</option>
                             <option value="Zelle">Zelle</option>
                             <option value="Venmo">Venmo</option>
                             <option value="Cash App">Cash App</option>
