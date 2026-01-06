@@ -23,12 +23,10 @@ export async function POST(request: NextRequest) {
     // Fetch and parse iCal feed
     const events = await ical.async.fromURL(icalUrl);
     
-    // Get existing date blocks to avoid duplicates
+    // Get existing date blocks to avoid duplicates (check ALL sources, not just current one)
     const existingBlocks = await getAllDateBlocks();
     const existingRanges = new Set(
-      existingBlocks
-        .filter((block: any) => block.reason.toLowerCase().includes(sourceName))
-        .map((block: any) => `${block.start_date}_${block.end_date}`)
+      existingBlocks.map((block: any) => `${block.start_date}_${block.end_date}`)
     );
     
     // Extract booked dates from iCal
