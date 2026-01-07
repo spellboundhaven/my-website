@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { CalendarIcon, Users, Ban, Settings, Star, FileText, FileSignature } from 'lucide-react'
+import { CalendarIcon, Users, Ban, Settings, Star, FileText, FileSignature, Download } from 'lucide-react'
 import dynamic from 'next/dynamic'
+import jsPDF from 'jspdf'
 
 const RichTextEditor = dynamic(() => import('@/components/RichTextEditor'), { ssr: false })
 
@@ -613,6 +614,125 @@ export default function AdminDashboard() {
       alert('Failed to create rental agreement')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const downloadRentalAgreementAsPDF = () => {
+    if (!rentalFormData.property_name || !rentalFormData.check_in_date || !rentalFormData.check_out_date) {
+      alert('Please fill in required fields: Property Name, Check-in Date, and Check-out Date')
+      return
+    }
+
+    try {
+      const doc = new jsPDF()
+      const pageWidth = doc.internal.pageSize.getWidth()
+      const pageHeight = doc.internal.pageSize.getHeight()
+      const margin = 20
+      let yPosition = margin
+
+      // Add logo if available
+      if (rentalFormData.logo) {
+        try {
+          const imgWidth = 50
+          const imgHeight = 20
+          doc.addImage(rentalFormData.logo, 'PNG', margin, yPosition, imgWidth, imgHeight)
+          yPosition += imgHeight + 10
+        } catch (error) {
+          console.error('Error adding logo to PDF:', error)
+        }
+      }
+
+      // Title
+      doc.setFontSize(20)
+      doc.setFont('helvetica', 'bold')
+      doc.text('RENTAL AGREEMENT', pageWidth / 2, yPosition, { align: 'center' })
+      yPosition += 15
+
+      // Property Information
+      doc.setFontSize(12)
+      doc.setFont('helvetica', 'bold')
+      doc.text('Property Information', margin, yPosition)
+      yPosition += 8
+
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(10)
+      doc.text(`Property: ${rentalFormData.property_name}`, margin, yPosition)
+      yPosition += 6
+      doc.text(`Address: ${rentalFormData.property_address}`, margin, yPosition)
+      yPosition += 6
+      doc.text(`Check-in: ${new Date(rentalFormData.check_in_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`, margin, yPosition)
+      yPosition += 6
+      doc.text(`Check-out: ${new Date(rentalFormData.check_out_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`, margin, yPosition)
+      yPosition += 6
+
+      if (rentalFormData.total_amount) {
+        doc.text(`Total Amount: ${rentalFormData.total_amount}`, margin, yPosition)
+        yPosition += 6
+      }
+
+      yPosition += 5
+
+      // Rental Terms
+      if (rentalFormData.rental_terms) {
+        doc.setFontSize(12)
+        doc.setFont('helvetica', 'bold')
+        doc.text('Terms and Conditions', margin, yPosition)
+        yPosition += 8
+
+        // Strip HTML tags and convert to plain text
+        const tempDiv = document.createElement('div')
+        tempDiv.innerHTML = rentalFormData.rental_terms
+        const plainText = tempDiv.textContent || tempDiv.innerText || ''
+        
+        doc.setFont('helvetica', 'normal')
+        doc.setFontSize(9)
+        
+        // Split text into lines that fit the page width
+        const maxWidth = pageWidth - (margin * 2)
+        const lines = doc.splitTextToSize(plainText, maxWidth)
+        
+        // Add lines, creating new pages as needed
+        for (const line of lines) {
+          if (yPosition > pageHeight - margin) {
+            doc.addPage()
+            yPosition = margin
+          }
+          doc.text(line, margin, yPosition)
+          yPosition += 5
+        }
+      }
+
+      // Add signature section on new page or at bottom
+      if (yPosition > pageHeight - 60) {
+        doc.addPage()
+        yPosition = margin
+      } else {
+        yPosition += 15
+      }
+
+      doc.setFontSize(12)
+      doc.setFont('helvetica', 'bold')
+      doc.text('Guest Signature', margin, yPosition)
+      yPosition += 10
+
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(10)
+      doc.text('Guest Name: _______________________________', margin, yPosition)
+      yPosition += 10
+      doc.text('Guest Email: _______________________________', margin, yPosition)
+      yPosition += 15
+      doc.text('Signature: _______________________________', margin, yPosition)
+      yPosition += 10
+      doc.text('Date: _______________________________', margin, yPosition)
+
+      // Save the PDF
+      const fileName = `Rental_Agreement_${rentalFormData.property_name.replace(/\s+/g, '_')}_${rentalFormData.check_in_date}.pdf`
+      doc.save(fileName)
+      
+      alert('PDF downloaded successfully!')
+    } catch (error) {
+      console.error('Error generating PDF:', error)
+      alert('Failed to generate PDF. Please try again.')
     }
   }
 
@@ -2234,13 +2354,24 @@ export default function AdminDashboard() {
                         </select>
                       </div>
 
-                      <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition duration-200"
-                      >
-                        {loading ? 'Creating...' : 'Create Agreement Link'}
-                      </button>
+                      <div className="flex gap-3">
+                        <button
+                          type="submit"
+                          disabled={loading}
+                          className="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 flex items-center justify-center gap-2"
+                        >
+                          <FileSignature className="w-5 h-5" />
+                          {loading ? 'Creating...' : 'Create Agreement Link'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={downloadRentalAgreementAsPDF}
+                          className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 flex items-center justify-center gap-2"
+                        >
+                          <Download className="w-5 h-5" />
+                          Download as PDF
+                        </button>
+                      </div>
                     </form>
 
                     {/* Success Modal */}
