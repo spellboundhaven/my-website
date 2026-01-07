@@ -617,7 +617,7 @@ export default function AdminDashboard() {
     }
   }
 
-  const downloadRentalAgreementAsPDF = () => {
+  const downloadRentalAgreementAsPDF = async () => {
     if (!rentalFormData.property_name || !rentalFormData.check_in_date || !rentalFormData.check_out_date) {
       alert('Please fill in required fields: Property Name, Check-in Date, and Check-out Date')
       return
@@ -657,8 +657,27 @@ export default function AdminDashboard() {
       // Add logo if available
       if (rentalFormData.logo) {
         try {
-          const imgWidth = 50
-          const imgHeight = 20
+          // Load image to get natural dimensions
+          const img = new Image()
+          img.src = rentalFormData.logo
+          await new Promise((resolve) => {
+            img.onload = resolve
+          })
+          
+          // Calculate dimensions while preserving aspect ratio
+          const maxWidth = 60
+          const maxHeight = 30
+          const aspectRatio = img.naturalWidth / img.naturalHeight
+          
+          let imgWidth = maxWidth
+          let imgHeight = maxWidth / aspectRatio
+          
+          // If height exceeds max, scale by height instead
+          if (imgHeight > maxHeight) {
+            imgHeight = maxHeight
+            imgWidth = maxHeight * aspectRatio
+          }
+          
           doc.addImage(rentalFormData.logo, 'PNG', margin, yPosition, imgWidth, imgHeight)
           yPosition += imgHeight + 10
         } catch (error) {
