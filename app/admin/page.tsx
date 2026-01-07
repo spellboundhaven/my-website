@@ -628,7 +628,31 @@ export default function AdminDashboard() {
       const pageWidth = doc.internal.pageSize.getWidth()
       const pageHeight = doc.internal.pageSize.getHeight()
       const margin = 20
+      const maxWidth = pageWidth - (margin * 2)
       let yPosition = margin
+
+      // Helper function to check if we need a new page
+      const checkNewPage = (spaceNeeded: number) => {
+        if (yPosition + spaceNeeded > pageHeight - margin) {
+          doc.addPage()
+          yPosition = margin
+          return true
+        }
+        return false
+      }
+
+      // Helper function to add text with word wrap
+      const addWrappedText = (text: string, x: number, fontSize: number, fontStyle: 'normal' | 'bold' = 'normal', lineHeight: number = 5) => {
+        doc.setFont('helvetica', fontStyle)
+        doc.setFontSize(fontSize)
+        const lines = doc.splitTextToSize(text, maxWidth - (x - margin))
+        
+        for (const line of lines) {
+          checkNewPage(lineHeight)
+          doc.text(line, x, yPosition)
+          yPosition += lineHeight
+        }
+      }
 
       // Add logo if available
       if (rentalFormData.logo) {
@@ -656,13 +680,23 @@ export default function AdminDashboard() {
 
       doc.setFont('helvetica', 'normal')
       doc.setFontSize(10)
+      
+      // Parse dates correctly without timezone issues
+      const parseDate = (dateStr: string) => {
+        const [year, month, day] = dateStr.split('-').map(Number)
+        return new Date(year, month - 1, day)
+      }
+      
+      const checkInDate = parseDate(rentalFormData.check_in_date)
+      const checkOutDate = parseDate(rentalFormData.check_out_date)
+      
       doc.text(`Property: ${rentalFormData.property_name}`, margin, yPosition)
       yPosition += 6
       doc.text(`Address: ${rentalFormData.property_address}`, margin, yPosition)
       yPosition += 6
-      doc.text(`Check-in: ${new Date(rentalFormData.check_in_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`, margin, yPosition)
+      doc.text(`Check-in: ${checkInDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`, margin, yPosition)
       yPosition += 6
-      doc.text(`Check-out: ${new Date(rentalFormData.check_out_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`, margin, yPosition)
+      doc.text(`Check-out: ${checkOutDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`, margin, yPosition)
       yPosition += 6
 
       if (rentalFormData.total_amount) {
@@ -670,40 +704,83 @@ export default function AdminDashboard() {
         yPosition += 6
       }
 
-      yPosition += 5
+      yPosition += 10
 
-      // Rental Terms
+      // Rental Terms with HTML parsing
       if (rentalFormData.rental_terms) {
         doc.setFontSize(12)
         doc.setFont('helvetica', 'bold')
         doc.text('Terms and Conditions', margin, yPosition)
         yPosition += 8
 
-        // Strip HTML tags and convert to plain text
+        // Parse HTML and preserve structure
         const tempDiv = document.createElement('div')
         tempDiv.innerHTML = rentalFormData.rental_terms
-        const plainText = tempDiv.textContent || tempDiv.innerText || ''
         
-        doc.setFont('helvetica', 'normal')
-        doc.setFontSize(9)
-        
-        // Split text into lines that fit the page width
-        const maxWidth = pageWidth - (margin * 2)
-        const lines = doc.splitTextToSize(plainText, maxWidth)
-        
-        // Add lines, creating new pages as needed
-        for (const line of lines) {
-          if (yPosition > pageHeight - margin) {
-            doc.addPage()
-            yPosition = margin
+        const processNode = (node: Node, indent: number = 0) => {
+          if (node.nodeType === Node.TEXT_NODE) {
+            const text = node.textContent?.trim()
+            if (text) {
+              addWrappedText(text, margin + indent, 10, 'normal', 5)
+            }
+          } else if (node.nodeType === Node.ELEMENT_NODE) {
+            const element = node as HTMLElement
+            const tagName = element.tagName.toLowerCase()
+            
+            if (tagName === 'h1') {
+              yPosition += 3
+              addWrappedText(element.textContent || '', margin, 14, 'bold', 7)
+              yPosition += 2
+            } else if (tagName === 'h2') {
+              yPosition += 2
+              addWrappedText(element.textContent || '', margin, 12, 'bold', 6)
+              yPosition += 1
+            } else if (tagName === 'h3') {
+              yPosition += 2
+              addWrappedText(element.textContent || '', margin, 11, 'bold', 6)
+              yPosition += 1
+            } else if (tagName === 'p') {
+              const text = element.textContent?.trim()
+              if (text) {
+                addWrappedText(text, margin, 10, 'normal', 5)
+                yPosition += 2
+              }
+            } else if (tagName === 'ul' || tagName === 'ol') {
+              const items = element.querySelectorAll('li')
+              items.forEach((li, index) => {
+                const bullet = tagName === 'ul' ? '•' : `${index + 1}.`
+                const text = li.textContent?.trim()
+                if (text) {
+                  checkNewPage(5)
+                  doc.setFont('helvetica', 'normal')
+                  doc.setFontSize(10)
+                  doc.text(bullet, margin + 5, yPosition)
+                  const lines = doc.splitTextToSize(text, maxWidth - 15)
+                  for (const line of lines) {
+                    checkNewPage(5)
+                    doc.text(line, margin + 12, yPosition)
+                    yPosition += 5
+                  }
+                }
+              })
+              yPosition += 2
+            } else if (tagName === 'strong' || tagName === 'b') {
+              const text = element.textContent?.trim()
+              if (text) {
+                addWrappedText(text, margin, 10, 'bold', 5)
+              }
+            } else {
+              // Process child nodes for other elements
+              element.childNodes.forEach(child => processNode(child, indent))
+            }
           }
-          doc.text(line, margin, yPosition)
-          yPosition += 5
         }
+        
+        tempDiv.childNodes.forEach(node => processNode(node))
       }
 
       // Add signature section on new page or at bottom
-      if (yPosition > pageHeight - 60) {
+      if (yPosition > pageHeight - 80) {
         doc.addPage()
         yPosition = margin
       } else {
@@ -720,6 +797,8 @@ export default function AdminDashboard() {
       doc.text('Guest Name: _______________________________', margin, yPosition)
       yPosition += 10
       doc.text('Guest Email: _______________________________', margin, yPosition)
+      yPosition += 10
+      doc.text('Guest Phone: _______________________________', margin, yPosition)
       yPosition += 15
       doc.text('Signature: _______________________________', margin, yPosition)
       yPosition += 10
