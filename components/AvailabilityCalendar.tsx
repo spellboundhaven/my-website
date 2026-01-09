@@ -16,8 +16,15 @@ interface AvailabilityDate {
 export default function AvailabilityCalendar() {
   const [availability, setAvailability] = useState<Record<string, AvailabilityDate>>({})
   const [loading, setLoading] = useState(false)
-  const [currentMonth, setCurrentMonth] = useState<Date>(new Date())
+  
+  // Initialize both today and currentMonth together to ensure they're in sync
   const [today] = useState<Date>(() => {
+    const now = new Date()
+    now.setHours(0, 0, 0, 0)
+    return now
+  })
+  
+  const [currentMonth, setCurrentMonth] = useState<Date>(() => {
     const now = new Date()
     now.setHours(0, 0, 0, 0)
     return now
@@ -218,6 +225,20 @@ export default function AvailabilityCalendar() {
   return (
     <section id="availability" className="section-padding bg-white">
       <style jsx>{`
+        /* Remove default react-calendar background colors */
+        :global(.react-calendar__tile) {
+          background: none !important;
+        }
+        
+        /* Override any default white backgrounds on tiles */
+        :global(.react-calendar__month-view__days__day) {
+          color: #1f2937 !important; /* Default dark text color */
+        }
+        
+        :global(.react-calendar__month-view__days__day abbr) {
+          color: inherit !important;
+        }
+        
         /* Booked/Past dates: Full grey block */
         :global(.react-calendar__tile.bg-gray-100) {
           background-color: #f3f4f6 !important;
@@ -247,9 +268,14 @@ export default function AvailabilityCalendar() {
           color: #dc2626 !important; /* Red for weekends */
         }
         
-        /* Available dates: White */
+        /* Available dates: White background with dark text */
         :global(.react-calendar__tile.bg-white) {
           background-color: #ffffff !important;
+          color: #1f2937 !important;
+        }
+        
+        :global(.react-calendar__tile.bg-white abbr) {
+          color: #1f2937 !important;
         }
         
         /* Checkout date: Left half light grey (still occupied), right half white (available) */
@@ -283,8 +309,8 @@ export default function AvailabilityCalendar() {
             
             <div className="mb-6">
               <Calendar
-                key={today.toISOString()}
-                value={currentMonth}
+                defaultActiveStartDate={today}
+                activeStartDate={currentMonth}
                 tileClassName={tileClassName}
                 onActiveStartDateChange={({ activeStartDate }) => {
                   if (activeStartDate) {
