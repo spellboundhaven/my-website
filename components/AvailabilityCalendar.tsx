@@ -230,13 +230,14 @@ export default function AvailabilityCalendar() {
           background: none !important;
         }
         
-        /* Override any default white backgrounds on tiles */
-        :global(.react-calendar__month-view__days__day) {
-          color: #1f2937 !important; /* Default dark text color */
+        /* Override any default white backgrounds on tiles - weekdays only */
+        :global(.react-calendar__month-view__days__day:not(.react-calendar__month-view__days__day--weekend)) {
+          color: #1f2937 !important; /* Default dark text color for weekdays */
         }
         
-        :global(.react-calendar__month-view__days__day abbr) {
-          color: inherit !important;
+        /* Weekends should be red */
+        :global(.react-calendar__month-view__days__day--weekend abbr) {
+          color: #dc2626 !important; /* Red for all weekends */
         }
         
         /* Booked/Past dates: Full grey block */
@@ -268,14 +269,23 @@ export default function AvailabilityCalendar() {
           color: #dc2626 !important; /* Red for weekends */
         }
         
-        /* Available dates: White background with dark text */
-        :global(.react-calendar__tile.bg-white) {
+        /* Available dates: White background with dark text (weekdays) */
+        :global(.react-calendar__tile.bg-white:not(.react-calendar__month-view__days__day--weekend)) {
           background-color: #ffffff !important;
           color: #1f2937 !important;
         }
         
-        :global(.react-calendar__tile.bg-white abbr) {
+        :global(.react-calendar__tile.bg-white:not(.react-calendar__month-view__days__day--weekend) abbr) {
           color: #1f2937 !important;
+        }
+        
+        /* Available dates: White background with red text (weekends) */
+        :global(.react-calendar__tile.bg-white.react-calendar__month-view__days__day--weekend) {
+          background-color: #ffffff !important;
+        }
+        
+        :global(.react-calendar__tile.bg-white.react-calendar__month-view__days__day--weekend abbr) {
+          color: #dc2626 !important;
         }
         
         /* Checkout date: Left half light grey (still occupied), right half white (available) */
