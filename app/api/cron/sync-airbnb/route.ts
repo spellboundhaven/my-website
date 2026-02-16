@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import ical from 'node-ical';
-import { createDateBlock, getLastCalendarSync, updateCalendarSync, deleteAllAirbnbBlocks, getAllDateBlocks } from '@/lib/db';
+import { createDateBlock, getLastCalendarSync, updateCalendarSync, hasOverlappingDateBlock } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,12 +40,6 @@ export async function GET(request: NextRequest) {
         // Fetch and parse iCal feed
         const events = await ical.async.fromURL(icalUrl);
         
-        // Get existing blocks to avoid duplicates (check ALL sources to prevent cross-platform duplicates)
-        const existingBlocks = await getAllDateBlocks();
-        const existingRanges = new Set(
-          existingBlocks.map((block: any) => `${block.start_date}_${block.end_date}`)
-        );
-        
         // Extract booked dates from iCal
         const bookedDates: { start: string; end: string; summary: string }[] = [];
         
@@ -56,9 +50,12 @@ export async function GET(request: NextRequest) {
             
             const startStr = start.toISOString().split('T')[0];
             const endStr = end.toISOString().split('T')[0];
-            const rangeKey = `${startStr}_${endStr}`;
             
-            if (!existingRanges.has(rangeKey)) {
+            // Check if this range overlaps with any existing block
+            const hasOverlap = await hasOverlappingDateBlock(startStr, endStr);
+            
+            // Only add if no overlap found
+            if (!hasOverlap) {
               bookedDates.push({
                 start: startStr,
                 end: endStr,

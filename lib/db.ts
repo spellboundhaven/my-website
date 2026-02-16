@@ -298,6 +298,20 @@ export async function getAllDateBlocks(): Promise<DateBlock[]> {
   return result.rows as DateBlock[];
 }
 
+// Check if a date range overlaps with any existing blocks
+export async function hasOverlappingDateBlock(startDate: string, endDate: string): Promise<boolean> {
+  const result = await sql`
+    SELECT EXISTS (
+      SELECT 1 FROM date_blocks
+      WHERE (
+        -- New range starts before existing ends AND new range ends after existing starts
+        (${startDate} < end_date AND ${endDate} > start_date)
+      )
+    ) as exists
+  `;
+  return result.rows[0]?.exists || false;
+}
+
 export async function getActiveDateBlocks(): Promise<DateBlock[]> {
   const today = new Date().toISOString().split('T')[0];
   const result = await sql`
@@ -331,17 +345,125 @@ export async function cleanupPastDateBlocks(): Promise<number> {
 }
 
 export async function removeDuplicateDateBlocks(): Promise<number> {
-  // Remove duplicate blocks (same start_date, end_date, reason)
-  // Keep only the one with the smallest ID (oldest)
-  const result = await sql`
-    DELETE FROM date_blocks
-    WHERE id NOT IN (
-      SELECT MIN(id)
-      FROM date_blocks
-      GROUP BY start_date, end_date, reason
+  // Strategy: Find all overlapping blocks and keep only the oldest one from each group
+  // This handles both exact duplicates AND overlapping date ranges
+  
+  console.log('[CLEANUP] Starting comprehensive duplicate block removal...');
+  
+  // Step 1: Find all overlapping block pairs
+  const overlaps = await sql`
+    SELECT 
+      b1.id as id1,
+      b2.id as id2,
+      b1.start_date as start1,
+      b1.end_date as end1,
+      b2.start_date as start2,
+      b2.end_date as end2,
+      b1.created_at as created1,
+      b2.created_at as created2
+    FROM date_blocks b1
+    JOIN date_blocks b2 ON b1.id < b2.id
+    WHERE (
+      -- Blocks overlap if start1 < end2 AND start2 < end1
+      b1.start_date < b2.end_date AND b2.start_date < b1.end_date
     )
+    ORDER BY b1.id, b2.id
   `;
-  return result.rowCount || 0;
+  
+  if (overlaps.rows.length === 0) {
+    console.log('[CLEANUP] No overlapping blocks found');
+    return 0;
+  }
+  
+  console.log(`[CLEANUP] Found ${overlaps.rows.length} overlapping block pairs`);
+  
+  // Step 2: Build groups of overlapping blocks using union-find
+  const parent = new Map<number, number>();
+  const rank = new Map<number, number>();
+  
+  function find(x: number): number {
+    if (!parent.has(x)) {
+      parent.set(x, x);
+      rank.set(x, 0);
+      return x;
+    }
+    if (parent.get(x) !== x) {
+      parent.set(x, find(parent.get(x)!));
+    }
+    return parent.get(x)!;
+  }
+  
+  function union(x: number, y: number): void {
+    const px = find(x);
+    const py = find(y);
+    if (px === py) return;
+    
+    const rx = rank.get(px) || 0;
+    const ry = rank.get(py) || 0;
+    
+    if (rx < ry) {
+      parent.set(px, py);
+    } else if (rx > ry) {
+      parent.set(py, px);
+    } else {
+      parent.set(py, px);
+      rank.set(px, rx + 1);
+    }
+  }
+  
+  // Union all overlapping blocks
+  for (const row of overlaps.rows) {
+    union(row.id1, row.id2);
+  }
+  
+  // Group blocks by their root parent
+  const groups = new Map<number, number[]>();
+  const allIds = new Set<number>();
+  
+  for (const row of overlaps.rows) {
+    allIds.add(row.id1);
+    allIds.add(row.id2);
+  }
+  
+  for (const id of allIds) {
+    const root = find(id);
+    if (!groups.has(root)) {
+      groups.set(root, []);
+    }
+    groups.get(root)!.push(id);
+  }
+  
+  console.log(`[CLEANUP] Found ${groups.size} groups of overlapping blocks`);
+  
+  // Step 3: For each group, keep the oldest and delete the rest
+  let totalDeleted = 0;
+  
+  for (const [root, ids] of groups.entries()) {
+    if (ids.length <= 1) continue;
+    
+    // Get full details for all blocks in this group
+    const groupDetails = await sql`
+      SELECT id, start_date, end_date, reason, created_at
+      FROM date_blocks
+      WHERE id = ANY(${ids})
+      ORDER BY created_at ASC, id ASC
+    `;
+    
+    // Keep the oldest (first created), delete the rest
+    const toKeep = groupDetails.rows[0];
+    const toDelete = groupDetails.rows.slice(1);
+    
+    console.log(`[CLEANUP] Group: Keeping block ${toKeep.id} (${toKeep.start_date} to ${toKeep.end_date}), deleting ${toDelete.length} duplicate(s)`);
+    
+    for (const block of toDelete) {
+      await sql`DELETE FROM date_blocks WHERE id = ${block.id}`;
+      totalDeleted++;
+      console.log(`[CLEANUP]   Deleted block ${block.id}: ${block.start_date} to ${block.end_date} (${block.reason})`);
+    }
+  }
+  
+  console.log(`[CLEANUP] Cleanup complete. Deleted ${totalDeleted} overlapping/duplicate blocks`);
+  return totalDeleted;
 }
 
 // Check if a date is available
