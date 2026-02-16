@@ -439,7 +439,8 @@ export async function removeDuplicateDateBlocks(): Promise<number> {
   // Step 3: For each group, keep the oldest and delete the rest
   let totalDeleted = 0;
   
-  for (const [root, ids] of groups.entries()) {
+  // Convert Map entries to Array for iteration
+  for (const [root, ids] of Array.from(groups.entries())) {
     if (ids.length <= 1) continue;
     
     // Get full details for all blocks in this group
