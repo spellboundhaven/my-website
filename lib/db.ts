@@ -444,12 +444,15 @@ export async function removeDuplicateDateBlocks(): Promise<number> {
     if (ids.length <= 1) continue;
     
     // Get full details for all blocks in this group
-    const groupDetails = await sql`
-      SELECT id, start_date, end_date, reason, created_at
-      FROM date_blocks
-      WHERE id = ANY(${ids})
-      ORDER BY created_at ASC, id ASC
-    `;
+    // Use IN clause instead of ANY() for compatibility with Vercel Postgres
+    const placeholders = ids.map((_, i) => `$${i + 1}`).join(', ');
+    const groupDetails = await sql.query(
+      `SELECT id, start_date, end_date, reason, created_at
+       FROM date_blocks
+       WHERE id IN (${placeholders})
+       ORDER BY created_at ASC, id ASC`,
+      ids
+    );
     
     // Keep the oldest (first created), delete the rest
     const toKeep = groupDetails.rows[0];
