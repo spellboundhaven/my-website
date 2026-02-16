@@ -425,7 +425,8 @@ export async function removeDuplicateDateBlocks(): Promise<number> {
     allIds.add(row.id2);
   }
   
-  for (const id of allIds) {
+  // Convert Set to Array for iteration
+  for (const id of Array.from(allIds)) {
     const root = find(id);
     if (!groups.has(root)) {
       groups.set(root, []);
