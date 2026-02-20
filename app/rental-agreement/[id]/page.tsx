@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import SignaturePad from '@/components/SignaturePad'
-import { formatDateForDisplay } from '@/lib/utils'
+import { formatDateForDisplay, cleanHtml } from '@/lib/utils'
 
 interface Agreement {
   id: string
@@ -257,11 +257,11 @@ export default function RentalAgreementForm() {
               )}
             </div>
             {agreement?.rental_terms && (
-              <div className="mt-4 pt-4 border-t border-indigo-200 overflow-hidden">
+              <div className="mt-4 pt-4 border-t border-indigo-200">
                 <p className="font-medium mb-2">Rental Terms:</p>
                 <div 
-                  className="text-sm text-gray-700 rental-terms-content break-words"
-                  dangerouslySetInnerHTML={{ __html: agreement.rental_terms }}
+                  className="prose prose-sm prose-gray max-w-none"
+                  dangerouslySetInnerHTML={{ __html: cleanHtml(agreement.rental_terms) }}
                 />
               </div>
             )}

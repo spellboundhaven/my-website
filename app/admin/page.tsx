@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { CalendarIcon, Users, Ban, Settings, Star, FileText, FileSignature, Download } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import jsPDF from 'jspdf'
+import { cleanHtml } from '@/lib/utils'
 
 const RichTextEditor = dynamic(() => import('@/components/RichTextEditor'), { ssr: false })
 
@@ -2595,8 +2596,8 @@ export default function AdminDashboard() {
                                         View Rental Terms
                                       </summary>
                                       <div 
-                                        className="mt-2 text-sm text-gray-700 rental-terms-content break-words bg-white p-3 rounded border border-gray-200 overflow-hidden"
-                                        dangerouslySetInnerHTML={{ __html: agreement.rental_terms }}
+                                        className="mt-2 prose prose-sm prose-gray max-w-none bg-white p-3 rounded border border-gray-200"
+                                        dangerouslySetInnerHTML={{ __html: cleanHtml(agreement.rental_terms) }}
                                       />
                                     </details>
                                   )}

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
-import { formatDateForDisplay } from '@/lib/utils'
+import { formatDateForDisplay, cleanHtml } from '@/lib/utils'
 
 interface Agreement {
   property_name: string
@@ -189,11 +189,11 @@ export default function ViewRentalSubmission() {
 
           {/* Rental Terms */}
           {agreement.rental_terms && (
-            <div className="bg-yellow-50 rounded-lg p-6 mb-6 overflow-hidden">
+            <div className="bg-yellow-50 rounded-lg p-6 mb-6">
               <h2 className="text-xl font-semibold text-gray-800 mb-4">Rental Terms & Conditions</h2>
               <div 
-                className="text-sm text-gray-700 rental-terms-content break-words"
-                dangerouslySetInnerHTML={{ __html: agreement.rental_terms }}
+                className="prose prose-sm prose-gray max-w-none"
+                dangerouslySetInnerHTML={{ __html: cleanHtml(agreement.rental_terms) }}
               />
             </div>
           )}
