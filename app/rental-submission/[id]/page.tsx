@@ -189,10 +189,10 @@ export default function ViewRentalSubmission() {
 
           {/* Rental Terms */}
           {agreement.rental_terms && (
-            <div className="bg-yellow-50 rounded-lg p-6 mb-6">
+            <div className="bg-yellow-50 rounded-lg p-6 mb-6 overflow-hidden">
               <h2 className="text-xl font-semibold text-gray-800 mb-4">Rental Terms & Conditions</h2>
               <div 
-                className="text-sm text-gray-700 rental-terms-content"
+                className="text-sm text-gray-700 rental-terms-content break-words"
                 dangerouslySetInnerHTML={{ __html: agreement.rental_terms }}
               />
             </div>

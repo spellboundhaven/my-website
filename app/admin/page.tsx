@@ -2595,7 +2595,7 @@ export default function AdminDashboard() {
                                         View Rental Terms
                                       </summary>
                                       <div 
-                                        className="mt-2 text-sm text-gray-700 rental-terms-content bg-white p-3 rounded border border-gray-200"
+                                        className="mt-2 text-sm text-gray-700 rental-terms-content break-words bg-white p-3 rounded border border-gray-200 overflow-hidden"
                                         dangerouslySetInnerHTML={{ __html: agreement.rental_terms }}
                                       />
                                     </details>

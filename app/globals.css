@@ -37,6 +37,19 @@
   /* Rental terms content styling */
   .rental-terms-content {
     overflow-wrap: break-word;
+    word-wrap: break-word;
+    white-space: normal;
+    min-width: 0;
+  }
+
+  .rental-terms-content *,
+  .rental-terms-content *::before,
+  .rental-terms-content *::after {
+    max-width: 100% !important;
+    overflow-wrap: break-word !important;
+    word-wrap: break-word !important;
+    white-space: normal !important;
+    min-width: 0;
   }
   
   .rental-terms-content h1,
@@ -68,11 +81,6 @@
   
   .rental-terms-content a {
     @apply text-blue-600 underline;
-    overflow-wrap: break-word;
-  }
-  
-  .rental-terms-content * {
-    max-width: 100%;
   }
 
   /* Rich text editor styling */

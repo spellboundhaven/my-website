@@ -257,10 +257,10 @@ export default function RentalAgreementForm() {
               )}
             </div>
             {agreement?.rental_terms && (
-              <div className="mt-4 pt-4 border-t border-indigo-200">
+              <div className="mt-4 pt-4 border-t border-indigo-200 overflow-hidden">
                 <p className="font-medium mb-2">Rental Terms:</p>
                 <div 
-                  className="text-sm text-gray-700 rental-terms-content"
+                  className="text-sm text-gray-700 rental-terms-content break-words"
                   dangerouslySetInnerHTML={{ __html: agreement.rental_terms }}
                 />
               </div>
