@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
-import { formatDateForDisplay, cleanHtml } from '@/lib/utils'
+import { formatDateForDisplay } from '@/lib/utils'
+import RichTextContent from '@/components/RichTextContent'
 
 interface Agreement {
   property_name: string
@@ -191,10 +192,7 @@ export default function ViewRentalSubmission() {
           {agreement.rental_terms && (
             <div className="bg-yellow-50 rounded-lg p-6 mb-6">
               <h2 className="text-xl font-semibold text-gray-800 mb-4">Rental Terms & Conditions</h2>
-              <div 
-                className="prose prose-sm prose-gray max-w-none"
-                dangerouslySetInnerHTML={{ __html: cleanHtml(agreement.rental_terms) }}
-              />
+              <RichTextContent html={agreement.rental_terms} className="text-sm text-gray-700" />
             </div>
           )}
 
