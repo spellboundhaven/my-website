@@ -13,6 +13,7 @@ interface Agreement {
   check_out_date: string
   rental_terms: string
   total_amount?: string
+  security_deposit?: string
   logo?: string
 }
 
@@ -133,7 +134,7 @@ export default function RentalAgreementForm() {
       return
     }
 
-    if (!formData.security_deposit_authorized) {
+    if (agreement?.security_deposit && !formData.security_deposit_authorized) {
       setError('Please authorize the security deposit to continue')
       setSubmitting(false)
       return
@@ -507,26 +508,28 @@ export default function RentalAgreementForm() {
             </div>
 
             {/* Security Deposit Authorization */}
-            <div>
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">Security Deposit</h2>
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <label className="flex items-start cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="security_deposit_authorized"
-                    required
-                    checked={formData.security_deposit_authorized}
-                    onChange={(e) => setFormData(prev => ({ ...prev, security_deposit_authorized: e.target.checked }))}
-                    className="mt-1 h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                  />
-                  <span className="ml-3 text-gray-700">
-                    I authorize the host to hold a refundable <strong>$500 security deposit</strong>. 
-                    I understand this deposit will be refunded within <strong>5 days</strong> after checkout, 
-                    provided there is no damage to the property. *
-                  </span>
-                </label>
+            {agreement?.security_deposit && (
+              <div>
+                <h2 className="text-xl font-semibold text-gray-800 mb-4">Security Deposit</h2>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <label className="flex items-start cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="security_deposit_authorized"
+                      required
+                      checked={formData.security_deposit_authorized}
+                      onChange={(e) => setFormData(prev => ({ ...prev, security_deposit_authorized: e.target.checked }))}
+                      className="mt-1 h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                    />
+                    <span className="ml-3 text-gray-700">
+                      I authorize the host to hold a refundable <strong>${agreement.security_deposit} security deposit</strong>. 
+                      I understand this deposit will be refunded within <strong>5 days</strong> after checkout, 
+                      provided there is no damage to the property. *
+                    </span>
+                  </label>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Electronic Signature Agreement */}
             <div>

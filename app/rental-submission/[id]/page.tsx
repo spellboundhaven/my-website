@@ -11,6 +11,7 @@ interface Agreement {
   check_out_date: string
   rental_terms: string
   total_amount?: string
+  security_deposit?: string
   logo?: string
 }
 
@@ -201,13 +202,15 @@ export default function ViewRentalSubmission() {
           <div className="bg-blue-50 rounded-lg p-6 mb-6">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Authorizations</h2>
             <div className="space-y-2">
-              <p>
-                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                  submission.security_deposit_authorized ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                }`}>
-                  {submission.security_deposit_authorized ? '✓' : '✗'} Security Deposit Authorized
-                </span>
-              </p>
+              {agreement.security_deposit && (
+                <p>
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                    submission.security_deposit_authorized ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  }`}>
+                    {submission.security_deposit_authorized ? '✓' : '✗'} Security Deposit Authorized (${agreement.security_deposit})
+                  </span>
+                </p>
+              )}
               <p>
                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
                   submission.electronic_signature_agreed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'

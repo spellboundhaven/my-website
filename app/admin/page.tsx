@@ -154,6 +154,7 @@ export default function AdminDashboard() {
     check_out_date: '',
     rental_terms: '',
     total_amount: '',
+    security_deposit: '',
     host_email: 'spellboundhaven.disney@gmail.com',
     logo: '',
     expires_in_days: '30',
@@ -725,6 +726,11 @@ export default function AdminDashboard() {
 
       if (rentalFormData.total_amount) {
         doc.text(`Total Amount: ${rentalFormData.total_amount}`, margin, yPosition)
+        yPosition += 6
+      }
+
+      if (rentalFormData.security_deposit) {
+        doc.text(`Security Deposit: $${rentalFormData.security_deposit}`, margin, yPosition)
         yPosition += 6
       }
 
@@ -2310,6 +2316,39 @@ export default function AdminDashboard() {
                         <p className="mt-1 text-xs text-gray-500">
                           Optional: Include dollar sign (e.g., $2,500.00) - will be displayed on the agreement
                         </p>
+                      </div>
+
+                      <div>
+                        <label className="flex items-center cursor-pointer mb-2">
+                          <input
+                            type="checkbox"
+                            checked={rentalFormData.security_deposit !== ''}
+                            onChange={(e) => setRentalFormData(prev => ({ ...prev, security_deposit: e.target.checked ? '500' : '' }))}
+                            className="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                          />
+                          <span className="ml-2 text-sm font-medium text-gray-700">Require Security Deposit</span>
+                        </label>
+                        {rentalFormData.security_deposit !== '' && (
+                          <div className="ml-7">
+                            <label className="block text-xs text-gray-500 mb-1">Amount ($)</label>
+                            <input
+                              type="text"
+                              name="security_deposit"
+                              value={rentalFormData.security_deposit}
+                              onChange={(e) => setRentalFormData(prev => ({ ...prev, security_deposit: e.target.value }))}
+                              placeholder="500"
+                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                            />
+                            <p className="mt-1 text-xs text-gray-500">
+                              Default: $500. Guest will be asked to authorize this refundable deposit.
+                            </p>
+                          </div>
+                        )}
+                        {rentalFormData.security_deposit === '' && (
+                          <p className="ml-7 text-xs text-gray-500">
+                            No security deposit will be required (e.g., for VRBO guests)
+                          </p>
+                        )}
                       </div>
 
                       <div>
