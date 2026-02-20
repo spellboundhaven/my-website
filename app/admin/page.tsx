@@ -611,6 +611,7 @@ export default function AdminDashboard() {
           check_out_date: '',
           rental_terms: '',
           total_amount: '',
+          security_deposit: '',
           logo: '',
           expires_in_days: '30',
         })
