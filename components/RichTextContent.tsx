@@ -40,9 +40,18 @@ export default function RichTextContent({ html, className = '' }: RichTextConten
     }
 
     unwrapSpans(doc.body)
-
-    // Merge adjacent text nodes so "d" + "riveway" becomes "driveway"
     doc.body.normalize()
+
+    // Replace non-breaking spaces (&nbsp; / \u00A0) with regular spaces.
+    // Quill stores &nbsp; instead of normal spaces, which tells the browser
+    // "do not break here" — making entire paragraphs one unbreakable line.
+    const walker = document.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT)
+    let node: Text | null
+    while ((node = walker.nextNode() as Text | null)) {
+      if (node.nodeValue) {
+        node.nodeValue = node.nodeValue.replace(/\u00A0/g, ' ')
+      }
+    }
 
     containerRef.current.innerHTML = doc.body.innerHTML
   }, [html])
