@@ -21,6 +21,10 @@ interface Vehicle {
   color: string
 }
 
+interface AdditionalAdult {
+  name: string
+}
+
 interface Submission {
   id: number
   agreement_id: string
@@ -30,6 +34,7 @@ interface Submission {
   guest_address?: string
   num_adults: number
   num_children: number
+  additional_adults?: AdditionalAdult[]
   vehicles?: Vehicle[]
   security_deposit_authorized: boolean
   electronic_signature_agreed: boolean
@@ -148,6 +153,20 @@ export default function ViewRentalSubmission() {
               )}
               <p><span className="font-medium">Guests:</span> {submission.num_adults} Adult(s), {submission.num_children} Child(ren)</p>
             </div>
+
+            {/* Additional Adult Names */}
+            {submission.additional_adults && submission.additional_adults.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <p className="font-medium mb-2">Additional Adult Names:</p>
+                <div className="space-y-1">
+                  {submission.additional_adults.map((adult, idx) => (
+                    <p key={idx} className="text-sm text-gray-700 ml-2">
+                      {idx + 1}. {adult.name}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Vehicle Information */}
             {submission.vehicles && submission.vehicles.length > 0 && (

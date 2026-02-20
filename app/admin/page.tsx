@@ -102,6 +102,10 @@ interface Vehicle {
   color: string
 }
 
+interface AdditionalAdult {
+  name: string
+}
+
 interface RentalSubmission {
   id: number
   agreement_id: string
@@ -111,6 +115,7 @@ interface RentalSubmission {
   guest_address?: string
   num_adults: number
   num_children: number
+  additional_adults?: AdditionalAdult[]
   vehicles?: Vehicle[]
   security_deposit_authorized: boolean
   electronic_signature_agreed: boolean
@@ -2619,6 +2624,12 @@ export default function AdminDashboard() {
                                     <div className="space-y-1">
                                       <div>{submission.num_adults} Adult{submission.num_adults !== 1 ? 's' : ''}</div>
                                       <div>{submission.num_children} Child{submission.num_children !== 1 ? 'ren' : ''}</div>
+                                      {submission.additional_adults && submission.additional_adults.length > 0 && (
+                                        <div className="mt-1 text-xs text-gray-500">
+                                          <span className="font-medium">Additional:</span>{' '}
+                                          {submission.additional_adults.map(a => a.name).join(', ')}
+                                        </div>
+                                      )}
                                     </div>
                                   </td>
                                   <td className="px-4 py-3 text-sm text-gray-600">
