@@ -47,17 +47,72 @@ export const propertyData = {
 
   overview: {
     summary: "Designed to accommodate a maximum of 20 guests, Spellbound Haven ensures comfort and convenience for every guest. Located just 9 miles from Walt Disney World®, this property features magical custom-built kids-themed bedrooms, a Marvel themed arcade game room, private heated pool and spa, and free access to Windsor Island Resort amenities.",
-    highlights: [
-      "10 Bedrooms, 8 Bathrooms",
-      "5 King Master Suites",
-      "9 miles to Walt Disney World®",
-      "Custom-built kids-themed bedrooms",
-      "Private heated pool with hot tub",
-      "Marvel arcade game room",
-      "Windsor Island Resort amenities",
-      "Spectrum TV package with high-speed WiFi (990mbps)",
-      "Baby and kids friendly amenities",
-      "Free parking with resort pass for up to 3 vehicles"
+    featureGroups: [
+      {
+        title: "General",
+        icon: "Home",
+        items: [
+          "Smoke-free and pet-free for your comfort",
+          "Towels and linens provided",
+          "Fully equipped kitchen",
+          "Keyless entry",
+          "Spectrum TV package",
+          "High-speed WiFi (990mbps)",
+          "Free parking with resort pass for up to 3 vehicles",
+        ]
+      },
+      {
+        title: "Bedrooms",
+        icon: "Bed",
+        items: [
+          "King Master Suite 1 (Downstairs)",
+          "King Master Suite 2 (Upstairs)",
+          "King Master Suite 3 (Upstairs)",
+          "King Master Suite 4 (Upstairs)",
+          "King Master Suite 5 (Upstairs)",
+          "Two Queens Room (Downstairs)",
+          "Mario Bros Bunk Room (Upstairs)",
+          "Star Wars Bunk Room (Upstairs)",
+          "Encanto Twin Room (Upstairs)",
+          "Harry Potter Bunk Room (Upstairs)",
+        ]
+      },
+      {
+        title: "Pool Area",
+        icon: "Waves",
+        items: [
+          "Private heated pool with spa",
+          "Patio furniture",
+        ]
+      },
+      {
+        title: "Game Room",
+        icon: "Gamepad2",
+        items: [
+          "Marvel themed arcade",
+          "Basketball machine",
+          "Fast and Furious racing game",
+          "Skeeball machine",
+          "Air hockey table",
+        ]
+      },
+      {
+        title: "Children's Equipment",
+        icon: "Baby",
+        items: [
+          "Pack n play",
+          "High chair",
+          "Stroller",
+        ]
+      },
+      {
+        title: "Laundry",
+        icon: "WashingMachine",
+        items: [
+          "Full-size washer and dryer",
+          "Ironing board and iron",
+        ]
+      },
     ],
     images: [
       {

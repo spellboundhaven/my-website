@@ -1,8 +1,12 @@
 'use client'
 
 import Image from 'next/image'
-import { CheckCircle, Users, Bed, Bath, Wifi, Car, Waves } from 'lucide-react'
+import { Users, Bed, Bath, Waves, Home, Gamepad2, Baby, WashingMachine } from 'lucide-react'
 import { propertyData } from '@/data/property'
+
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  Home, Bed, Waves, Gamepad2, Baby, WashingMachine,
+}
 
 export default function PropertyOverview() {
   return (
@@ -76,18 +80,31 @@ export default function PropertyOverview() {
         </div>
 
         {/* Key Features */}
-        <div className="bg-white rounded-lg shadow-sm p-8">
-          <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center font-serif">
-            Key Features
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {propertyData.overview.highlights.map((feature, index) => (
-              <div key={index} className="flex items-center space-x-3">
-                <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                <span className="text-gray-700">{feature}</span>
+        <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center font-serif">
+          Key Features
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {propertyData.overview.featureGroups.map((group) => {
+            const Icon = iconMap[group.icon] || Home
+            return (
+              <div key={group.title} className="bg-white rounded-lg shadow-sm p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-full bg-primary-50 flex items-center justify-center flex-shrink-0">
+                    <Icon className="w-5 h-5 text-primary-600" />
+                  </div>
+                  <h4 className="font-bold text-gray-900">{group.title}</h4>
+                </div>
+                <ul className="space-y-2">
+                  {group.items.map((item, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                      <span className="text-primary-400 mt-1">•</span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
               </div>
-            ))}
-          </div>
+            )
+          })}
         </div>
       </div>
     </section>
