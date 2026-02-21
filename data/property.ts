@@ -80,7 +80,7 @@ export const propertyData = {
         ]
       },
       {
-        title: "Children's Equipment",
+        title: "Baby Friendly Amenities",
         icon: "Baby",
         items: [
           "Plastic dinnerware",
@@ -94,7 +94,6 @@ export const propertyData = {
         title: "Game Room",
         icon: "Gamepad2",
         items: [
-          "Marvel themed arcade",
           "Basketball machine",
           "Fast and Furious racing game",
           "Skeeball machine",
