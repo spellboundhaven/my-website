@@ -52,9 +52,10 @@ export const propertyData = {
         title: "General",
         icon: "Home",
         items: [
-          "Smoke-free and pet-free for your comfort",
+          "10BR 8BA 4500 sqft",
           "Towels and linens provided",
           "Fully equipped kitchen",
+          "12-seat dining table with breakfast bar for 4",
           "Keyless entry",
           "Spectrum TV package",
           "High-speed WiFi (990mbps)",
@@ -78,11 +79,14 @@ export const propertyData = {
         ]
       },
       {
-        title: "Pool Area",
-        icon: "Waves",
+        title: "Children's Equipment",
+        icon: "Baby",
         items: [
-          "Private heated pool with spa",
-          "Patio furniture",
+          "Plastic dinnerware",
+          "Pack 'n play",
+          "Strollers",
+          "Baby bath",
+          "High chair",
         ]
       },
       {
@@ -97,12 +101,11 @@ export const propertyData = {
         ]
       },
       {
-        title: "Children's Equipment",
-        icon: "Baby",
+        title: "Pool Area",
+        icon: "Waves",
         items: [
-          "Pack n play",
-          "High chair",
-          "Stroller",
+          "Private heated pool with spa",
+          "Patio furniture",
         ]
       },
       {
