@@ -38,7 +38,7 @@ export default function Top10ThingsWindsorIslandResort() {
 
           <div className="prose prose-lg max-w-none">
             <p className="lead text-xl text-gray-700 mb-6">
-              Staying at <strong>Windsor Island Resort</strong> means you have access to world-class amenities right in your vacation community. While Disney World is just 9 miles away, many families find themselves spending entire days enjoying everything the resort has to offer. Here are the top 10 things you absolutely must do during your <strong>Windsor Island Resort vacation</strong>.
+              Staying at <strong>Windsor Island Resort</strong> means you have access to world-class amenities right in your vacation community. While Walt Disney World® is just 9 miles away, many families find themselves spending entire days enjoying everything the resort has to offer. Here are the top 10 things you absolutely must do during your <strong>Windsor Island Resort vacation</strong>.
             </p>
 
             <h2 className="text-3xl font-bold text-gray-900 mt-8 mb-4">1. Splash in the Resort-Style Pool</h2>
@@ -149,7 +149,7 @@ export default function Top10ThingsWindsorIslandResort() {
 
             <h2 className="text-3xl font-bold text-gray-900 mt-8 mb-4">9. Relax in the Hot Tub</h2>
             <p className="text-gray-700 mb-4">
-              After walking 10+ miles at Disney World, your feet and legs will thank you for spending time in the resort hot tub. The heated jets provide therapeutic relief for sore muscles.
+              After walking 10+ miles at Walt Disney World®, your feet and legs will thank you for spending time in the resort hot tub. The heated jets provide therapeutic relief for sore muscles.
             </p>
             <ul className="list-disc pl-6 mb-6 text-gray-700 space-y-2">
               <li><strong>Adults-only:</strong> Peaceful retreat from kids</li>

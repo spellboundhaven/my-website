@@ -36,7 +36,7 @@ export interface Pricing {
 export const propertyData = {
   name: "Spellbound Haven",
   tagline: "Where Magic Meets Luxury",
-  description: "Embark on an enchanting Disney adventure by reserving your stay at Spellbound Haven, where the magic never ends! Our luxurious 10-bedroom, 8-bathroom home, located in the heart of Windsor Island Resort, promises an unforgettable getaway just 9 miles from Disney World.",
+  description: "Embark on an enchanting Disney adventure by reserving your stay at Spellbound Haven, where the magic never ends! Our luxurious 10-bedroom, 8-bathroom home, located in the heart of Windsor Island Resort, promises an unforgettable getaway just 9 miles from Walt Disney World®.",
   
   hero: {
     title: "Welcome to Spellbound Haven",
@@ -50,7 +50,7 @@ export const propertyData = {
     highlights: [
       "10 Bedrooms, 8 Bathrooms",
       "5 King Master Suites",
-      "9 miles to Disney World",
+      "9 miles to Walt Disney World®",
       "Custom-built kids-themed bedrooms",
       "Private heated pool with hot tub",
       "Marvel arcade game room",

@@ -43,7 +43,7 @@ export default function WindsorIslandResortGuide() {
 
             <h2 className="text-3xl font-bold text-gray-900 mt-8 mb-4">What Makes Windsor Island Resort Special?</h2>
             <p className="text-gray-700 mb-4">
-              <strong>Windsor Island Resort Orlando</strong> is a gated vacation home community designed specifically for families visiting Disney World. Unlike traditional hotels or isolated vacation rentals, Windsor Island offers the best of both worlds: private villa accommodations with full resort amenities.
+              <strong>Windsor Island Resort Orlando</strong> is a gated vacation home community designed specifically for families visiting Walt Disney World®. Unlike traditional hotels or isolated vacation rentals, Windsor Island offers the best of both worlds: private villa accommodations with full resort amenities.
             </p>
 
             <h3 className="text-2xl font-bold text-gray-900 mt-6 mb-3">Prime Location</h3>
@@ -51,7 +51,7 @@ export default function WindsorIslandResortGuide() {
               Located in Davenport, Florida, Windsor Island Resort is strategically positioned for theme park access:
             </p>
             <ul className="list-disc pl-6 mb-6 text-gray-700 space-y-2">
-              <li><strong>9 miles to Disney World:</strong> Approximately 15 minutes drive to Magic Kingdom</li>
+              <li><strong>9 miles to Walt Disney World®:</strong> Approximately 15 minutes drive to Magic Kingdom</li>
               <li><strong>Close to all Disney parks:</strong> EPCOT, Hollywood Studios, Animal Kingdom all within 20 minutes</li>
               <li><strong>20 minutes to Universal Studios:</strong> Easy access to both Universal parks</li>
               <li><strong>Grocery stores nearby:</strong> Walmart, Publix, Target within 5 minutes</li>

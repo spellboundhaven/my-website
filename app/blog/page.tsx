@@ -36,7 +36,7 @@ const blogPosts = [
   {
     id: 'windsor-island-resort-guide',
     title: 'Why Windsor Island Resort is Perfect for Large Family Gatherings',
-    excerpt: 'Discover why Windsor Island Resort in Orlando has become the top choice for families visiting Disney World. Learn about amenities, location benefits, and more.',
+    excerpt: 'Discover why Windsor Island Resort in Orlando has become the top choice for families visiting Walt Disney World®. Learn about amenities, location benefits, and more.',
     date: 'January 8, 2025',
     readTime: '6 min read',
     category: 'Resort Guide',

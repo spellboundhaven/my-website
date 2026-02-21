@@ -222,7 +222,7 @@ export default function MultigenerationalDisneyTripPlanning() {
               <li>Private heated pool and spa for family time</li>
               <li>Game room and loft lounge for entertainment</li>
               <li>Fully equipped kitchen for family meals</li>
-              <li>Only 9 miles from Disney World</li>
+              <li>Only 9 miles from Walt Disney World®</li>
             </ul>
 
             <div className="bg-primary-50 border-l-4 border-primary-600 p-6 my-8">

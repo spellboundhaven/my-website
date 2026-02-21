@@ -3,9 +3,9 @@ import './globals.css'
 import StructuredData from '@/components/StructuredData'
 
 export const metadata: Metadata = {
-  title: 'Spellbound Haven | Windsor Island Resort Vacation Rental Near Disney World | Orlando Family Villa',
-  description: 'Luxury 10-bedroom Disney vacation rental at Windsor Island Resort, Orlando. Perfect for family gatherings & multigenerational trips. Sleeps 20. Private pool, themed bedrooms, 9 miles from Disney World.',
-  keywords: 'Windsor Island Resort, Disney family vacation, Disney family gathering, Orlando vacation rental, Disney area vacation home, multigenerational Disney trip, large family vacation rental Orlando, Windsor Island vacation home, Disney World vacation rental, themed bedrooms Orlando, private pool vacation rental, Orlando family reunion house',
+  title: 'Spellbound Haven | Windsor Island Resort Vacation Rental Near Walt Disney World® | Orlando Family Villa',
+  description: 'Luxury 10-bedroom Disney vacation rental at Windsor Island Resort, Orlando. Perfect for family gatherings & multigenerational trips. Sleeps 20. Private pool, themed bedrooms, 9 miles from Walt Disney World®.',
+  keywords: 'Windsor Island Resort, Disney family vacation, Disney family gathering, Orlando vacation rental, Disney area vacation home, multigenerational Disney trip, large family vacation rental Orlando, Windsor Island vacation home, Walt Disney World vacation rental, themed bedrooms Orlando, private pool vacation rental, Orlando family reunion house',
   authors: [{ name: 'Spellbound Haven' }],
   viewport: {
     width: 'device-width',

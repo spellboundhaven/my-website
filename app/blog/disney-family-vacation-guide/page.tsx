@@ -43,7 +43,7 @@ export default function DisneyFamilyVacationGuide() {
 
             <h2 className="text-3xl font-bold text-gray-900 mt-8 mb-4">Why Choose Windsor Island Resort for Your Disney Family Vacation</h2>
             <p className="text-gray-700 mb-4">
-              Located just 9 miles from Disney World, <strong>Windsor Island Resort</strong> offers the perfect blend of proximity and privacy for large families. Unlike cramped hotel rooms, a vacation rental like Spellbound Haven gives your family the space to spread out while staying together.
+              Located just 9 miles from Walt Disney World®, <strong>Windsor Island Resort</strong> offers the perfect blend of proximity and privacy for large families. Unlike cramped hotel rooms, a vacation rental like Spellbound Haven gives your family the space to spread out while staying together.
             </p>
 
             <h3 className="text-2xl font-bold text-gray-900 mt-6 mb-3">Benefits of Staying at Windsor Island Resort:</h3>
@@ -124,7 +124,7 @@ export default function DisneyFamilyVacationGuide() {
             </p>
 
             <p className="text-gray-700 mb-6">
-              Our themed bedrooms delight kids, the private pool and spa let you relax after park days, and the Marvel arcade game room provides entertainment for all ages. Located just 9 miles from Disney World, you'll spend less time driving and more time making magical memories.
+              Our themed bedrooms delight kids, the private pool and spa let you relax after park days, and the Marvel arcade game room provides entertainment for all ages. Located just 9 miles from Walt Disney World®, you'll spend less time driving and more time making magical memories.
             </p>
 
             <div className="bg-primary-50 border-l-4 border-primary-600 p-6 my-8">
