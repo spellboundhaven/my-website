@@ -18,9 +18,9 @@ export default function Home() {
       <PropertyOverview />
       <Gallery />
       <Amenities />
+      <Location />
       <AvailabilityCalendar />
       <Reviews />
-      <Location />
       <Footer />
     </main>
   )
