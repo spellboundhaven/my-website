@@ -336,6 +336,14 @@ export async function deleteAllAirbnbBlocks(): Promise<number> {
   return result.rowCount || 0;
 }
 
+export async function deleteBufferBlocks(): Promise<number> {
+  const result = await sql`
+    DELETE FROM date_blocks
+    WHERE reason ILIKE '%not available%' OR reason ILIKE '%blocked%'
+  `;
+  return result.rowCount || 0;
+}
+
 export async function cleanupPastDateBlocks(): Promise<number> {
   const today = getCurrentESTDate();
   const result = await sql`

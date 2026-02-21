@@ -45,6 +45,14 @@ export async function GET(request: NextRequest) {
         
         for (const event of Object.values(events)) {
           if (event.type === 'VEVENT' && event.start && event.end) {
+            const summary = (event.summary || '').toLowerCase();
+
+            // Skip platform buffer/turnaround blocks (not real bookings)
+            if (summary.includes('not available') || summary.includes('blocked')) {
+              console.log(`[CRON] Skipping ${source.toUpperCase()} buffer block: "${event.summary}"`);
+              continue;
+            }
+
             const start = new Date(event.start);
             const end = new Date(event.end);
             

@@ -28,6 +28,14 @@ export async function POST(request: NextRequest) {
     
     for (const event of Object.values(events)) {
       if (event.type === 'VEVENT' && event.start && event.end) {
+        const summary = (event.summary || '').toLowerCase();
+
+        // Skip platform buffer/turnaround blocks (not real bookings)
+        if (summary.includes('not available') || summary.includes('blocked')) {
+          console.log(`[${sourceName.toUpperCase()}] Skipping buffer block: "${event.summary}"`);
+          continue;
+        }
+
         const startDate = new Date(event.start);
         const endDate = new Date(event.end);
         

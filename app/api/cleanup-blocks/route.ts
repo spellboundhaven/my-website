@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { 
   cleanupPastDateBlocks, 
   removeDuplicateDateBlocks,
-  deleteAllAirbnbBlocks 
+  deleteAllAirbnbBlocks,
+  deleteBufferBlocks 
 } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
@@ -57,16 +58,27 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    if (action === 'clear-buffers') {
+      const count = await deleteBufferBlocks();
+      return NextResponse.json({
+        success: true,
+        message: `Cleared ${count} buffer/turnaround blocks`,
+        count
+      });
+    }
+
     if (action === 'full-cleanup') {
+      const buffers = await deleteBufferBlocks();
       const duplicates = await removeDuplicateDateBlocks();
       const past = await cleanupPastDateBlocks();
       
       return NextResponse.json({
         success: true,
-        message: `Full cleanup complete: ${duplicates} duplicates + ${past} past blocks removed`,
+        message: `Full cleanup complete: ${buffers} buffers + ${duplicates} duplicates + ${past} past blocks removed`,
+        buffers,
         duplicates,
         past,
-        total: duplicates + past
+        total: buffers + duplicates + past
       });
     }
 
