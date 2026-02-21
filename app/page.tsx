@@ -5,7 +5,7 @@ import Gallery from '@/components/Gallery'
 import Amenities from '@/components/Amenities'
 import AvailabilityCalendar from '@/components/AvailabilityCalendar'
 import Reviews from '@/components/Reviews'
-import Contact from '@/components/Contact'
+import Location from '@/components/Location'
 import Footer from '@/components/Footer'
 import Navigation from '@/components/Navigation'
 
@@ -20,7 +20,7 @@ export default function Home() {
       <Amenities />
       <AvailabilityCalendar />
       <Reviews />
-      <Contact />
+      <Location />
       <Footer />
     </main>
   )

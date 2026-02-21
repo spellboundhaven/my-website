@@ -14,7 +14,7 @@ export default function Navigation() {
     { name: 'Amenities', href: '#amenities' },
     { name: 'Availability', href: '#availability' },
     { name: 'Reviews', href: '#reviews' },
-    { name: 'Contact', href: '#contact' },
+    { name: 'Location', href: '#location' },
   ]
 
   return (

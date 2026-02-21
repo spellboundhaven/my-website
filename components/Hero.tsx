@@ -62,7 +62,7 @@ export default function Hero() {
           </div>
           <div className="text-center">
             <MapPin className="w-5 h-5 sm:w-6 sm:h-6 mx-auto mb-2" />
-            <p className="text-xs sm:text-sm font-medium">Near Disney</p>
+            <p className="text-xs sm:text-sm font-medium">9 Miles to Disney</p>
           </div>
           <div className="text-center">
             <div className="text-xl sm:text-2xl font-bold mb-1">20</div>
