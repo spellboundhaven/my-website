@@ -6,22 +6,26 @@ const themedBedrooms = [
   {
     name: "Mario Bros",
     image: "/images/rooms/themed/70.jpg",
-    description: "Classic Nintendo adventure awaits"
+    description: "Classic Nintendo adventure awaits",
+    galleryId: "mario-bros",
   },
   {
     name: "Star Wars",
     image: "/images/rooms/themed/60.jpg", 
-    description: "May the Force be with your dreams"
+    description: "May the Force be with your dreams",
+    galleryId: "star-wars",
   },
   {
     name: "Encanto",
     image: "/images/rooms/themed/44.jpg",
-    description: "Magical Colombian-inspired wonderland"
+    description: "Magical Colombian-inspired wonderland",
+    galleryId: "encanto",
   },
   {
     name: "Harry Potter",
     image: "/images/rooms/themed/30.jpg",
-    description: "Wizarding world magic comes alive"
+    description: "Wizarding world magic comes alive",
+    galleryId: "harry-potter",
   }
 ]
 
@@ -40,9 +44,15 @@ export default function ThemedBedroomsShowcase() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           {themedBedrooms.map((bedroom) => (
-            <div
+            <a
               key={bedroom.name}
-              className="group cursor-pointer"
+              href={`#gallery?room=${bedroom.galleryId}`}
+              className="group cursor-pointer block"
+              onClick={(e) => {
+                e.preventDefault()
+                window.dispatchEvent(new CustomEvent('navigate-gallery', { detail: bedroom.galleryId }))
+                document.getElementById('gallery')?.scrollIntoView({ behavior: 'smooth' })
+              }}
             >
               <div className="relative overflow-hidden rounded-lg shadow-lg">
                 <Image
@@ -62,7 +72,7 @@ export default function ThemedBedroomsShowcase() {
                   </p>
                 </div>
               </div>
-            </div>
+            </a>
           ))}
         </div>
 

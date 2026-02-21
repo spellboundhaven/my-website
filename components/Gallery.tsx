@@ -1,9 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import { X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { propertyData } from '@/data/property'
+
+const ROOM_ID_MAP: Record<string, string> = {
+  'mario-bros': 'Mario Bros',
+  'star-wars': 'Star Wars',
+  'encanto': 'Encanto',
+  'harry-potter': 'Harry Potter',
+}
 
 export default function Gallery() {
   const [selectedRoom, setSelectedRoom] = useState(0)
@@ -18,6 +25,25 @@ export default function Gallery() {
   const outdoorAreas = roomsWithoutResort.filter(room => room.name.includes('Outdoor') || room.name.includes('Pool'))
   const firstFloorRooms = roomsWithoutResort.filter(room => room.name.includes('First Floor') && !room.name.includes('Outdoor') && !room.name.includes('Pool'))
   const secondFloorRooms = roomsWithoutResort.filter(room => room.name.includes('Second Floor'))
+
+  const navigateToRoom = useCallback((roomId: string) => {
+    const roomName = ROOM_ID_MAP[roomId]
+    if (!roomName) return
+    const roomIndex = secondFloorRooms.findIndex(r => r.name.includes(roomName))
+    if (roomIndex === -1) return
+    setSelectedFloor('second')
+    setSelectedRoom(roomIndex)
+    setSelectedImage(0)
+  }, [secondFloorRooms])
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<string>).detail
+      navigateToRoom(detail)
+    }
+    window.addEventListener('navigate-gallery', handler)
+    return () => window.removeEventListener('navigate-gallery', handler)
+  }, [navigateToRoom])
   
   const getFilteredRooms = () => {
     switch(selectedFloor) {
