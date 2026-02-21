@@ -396,7 +396,7 @@ export const propertyData = {
     },
     {
       name: "Windsor Island Resort Amenities",
-      description: "Exclusive resort facilities including resort-style pool, lazy river, water slides, kids playground, sports courts, and more.",
+      description: "Unlimited Free Access to Resort Amenities including resort-style pool, lazy river, water slides, kids playground, sports courts, and more.",
       images: [
         {
           src: "/images/rooms/resort/121.jpeg",

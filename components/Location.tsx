@@ -6,7 +6,7 @@ const distances = [
   { name: 'Walt Disney World®', distance: '9 miles', icon: Castle },
   { name: 'Universal Studios®', distance: '22 miles', icon: Clapperboard },
   { name: 'SeaWorld®', distance: '17 miles', icon: Fish },
-  { name: 'Shopping Outlet', distance: '12 miles', icon: ShoppingBag },
+  { name: 'Shopping Outlet', distance: '14 miles', icon: ShoppingBag },
   { name: 'Orlando Airport', distance: '29 miles', icon: Plane },
   { name: 'Supermarket', distance: '½ mile', icon: ShoppingCart },
 ]

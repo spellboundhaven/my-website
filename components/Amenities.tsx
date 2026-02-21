@@ -112,10 +112,6 @@ export default function Amenities() {
             ))}
           </div>
 
-          {/* Keyboard Instructions */}
-          <p className="text-center text-sm text-gray-500 mt-6">
-            Use arrow buttons or swipe to navigate through resort amenities
-          </p>
         </div>
       </div>
     </section>
