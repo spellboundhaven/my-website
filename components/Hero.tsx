@@ -46,7 +46,7 @@ export default function Hero() {
 
         {/* Quick Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 md:gap-8 max-w-3xl mx-auto">
-          <div className="text-center">
+          <a href="#reviews" className="text-center hover:scale-105 transition-transform duration-200">
             <div className="flex justify-center mb-2">
               <Star className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-yellow-400 fill-current" />
               <Star className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-yellow-400 fill-current" />
@@ -55,19 +55,19 @@ export default function Hero() {
               <Star className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-yellow-400 fill-current" />
             </div>
             <p className="text-xs sm:text-sm font-medium">5.0 Rating</p>
-          </div>
-          <div className="text-center">
+          </a>
+          <a href="#availability" className="text-center hover:scale-105 transition-transform duration-200">
             <Calendar className="w-5 h-5 sm:w-6 sm:h-6 mx-auto mb-2" />
             <p className="text-xs sm:text-sm font-medium">Year-Round</p>
-          </div>
-          <div className="text-center">
+          </a>
+          <a href="#location" className="text-center hover:scale-105 transition-transform duration-200">
             <MapPin className="w-5 h-5 sm:w-6 sm:h-6 mx-auto mb-2" />
             <p className="text-xs sm:text-sm font-medium">9 Miles to Disney</p>
-          </div>
-          <div className="text-center">
+          </a>
+          <a href="#overview" className="text-center hover:scale-105 transition-transform duration-200">
             <div className="text-xl sm:text-2xl font-bold mb-1">20</div>
             <p className="text-xs sm:text-sm font-medium">Sleeps Up To</p>
-          </div>
+          </a>
         </div>
       </div>
 
