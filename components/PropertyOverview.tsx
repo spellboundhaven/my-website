@@ -44,7 +44,18 @@ export default function PropertyOverview() {
         {/* Property Images */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
           {propertyData.overview.images.map((image, index) => (
-            <div key={index} className="group cursor-pointer">
+            <a
+              key={index}
+              href="#gallery"
+              className="group cursor-pointer block"
+              onClick={(e) => {
+                e.preventDefault()
+                if (image.galleryId) {
+                  window.dispatchEvent(new CustomEvent('navigate-gallery', { detail: image.galleryId }))
+                }
+                document.getElementById('gallery')?.scrollIntoView({ behavior: 'smooth' })
+              }}
+            >
               <div className="relative overflow-hidden rounded-lg shadow-lg">
                 <Image
                   src={image.src}
@@ -60,7 +71,7 @@ export default function PropertyOverview() {
                   {image.caption}
                 </p>
               )}
-            </div>
+            </a>
           ))}
         </div>
 

@@ -5,11 +5,14 @@ import Image from 'next/image'
 import { X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { propertyData } from '@/data/property'
 
-const ROOM_ID_MAP: Record<string, string> = {
-  'mario-bros': 'Mario Bros',
-  'star-wars': 'Star Wars',
-  'encanto': 'Encanto',
-  'harry-potter': 'Harry Potter',
+const ROOM_ID_MAP: Record<string, { floor: string; search: string }> = {
+  'mario-bros': { floor: 'second', search: 'Mario Bros' },
+  'star-wars': { floor: 'second', search: 'Star Wars' },
+  'encanto': { floor: 'second', search: 'Encanto' },
+  'harry-potter': { floor: 'second', search: 'Harry Potter' },
+  'living-room': { floor: 'first', search: 'Living Room' },
+  'game-room': { floor: 'first', search: 'Game Room' },
+  'entertainment-loft': { floor: 'second', search: 'Entertainment Loft' },
 }
 
 export default function Gallery() {
@@ -27,14 +30,15 @@ export default function Gallery() {
   const secondFloorRooms = roomsWithoutResort.filter(room => room.name.includes('Second Floor'))
 
   const navigateToRoom = useCallback((roomId: string) => {
-    const roomName = ROOM_ID_MAP[roomId]
-    if (!roomName) return
-    const roomIndex = secondFloorRooms.findIndex(r => r.name.includes(roomName))
+    const mapping = ROOM_ID_MAP[roomId]
+    if (!mapping) return
+    const floorRooms = mapping.floor === 'first' ? firstFloorRooms : secondFloorRooms
+    const roomIndex = floorRooms.findIndex(r => r.name.includes(mapping.search))
     if (roomIndex === -1) return
-    setSelectedFloor('second')
+    setSelectedFloor(mapping.floor)
     setSelectedRoom(roomIndex)
     setSelectedImage(0)
-  }, [secondFloorRooms])
+  }, [firstFloorRooms, secondFloorRooms])
 
   useEffect(() => {
     const handler = (e: Event) => {
