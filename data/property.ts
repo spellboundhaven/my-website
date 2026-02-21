@@ -46,13 +46,13 @@ export const propertyData = {
   },
 
   overview: {
-    summary: "Luxury 10-bedroom villa just 9 miles from Walt Disney World® — themed bedrooms, private heated pool and spa, Marvel arcade game room, and free resort amenities.",
+    summary: "Luxury 10-bedroom villa just 9 miles from Walt Disney World® with themed bedrooms, private heated pool and spa, Marvel arcade game room, and free resort amenities.",
     featureGroups: [
       {
         title: "General",
         icon: "Home",
         items: [
-          "10BR 8BA 4500 sqft",
+          "4500 sqft",
           "Towels and linens provided",
           "Fully equipped gourmet kitchen",
           "12-seat dining table with breakfast bar for 4",
@@ -107,6 +107,7 @@ export const propertyData = {
         items: [
           "Private heated pool with spa",
           "Patio furniture",
+          "Outdoor dining set",
         ]
       },
       {
