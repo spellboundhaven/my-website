@@ -11,9 +11,9 @@ export default function Footer() {
     { name: 'Overview', href: '#overview' },
     { name: 'Gallery', href: '#gallery' },
     { name: 'Amenities', href: '#amenities' },
+    { name: 'Location', href: '#location' },
     { name: 'Availability', href: '#availability' },
     { name: 'Reviews', href: '#reviews' },
-    { name: 'Contact', href: '#contact' },
   ]
 
   const policies = [
