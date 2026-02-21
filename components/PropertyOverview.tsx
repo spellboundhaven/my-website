@@ -1,11 +1,11 @@
 'use client'
 
 import Image from 'next/image'
-import { Users, Bed, Bath, Waves, Home, Gamepad2, Baby, WashingMachine } from 'lucide-react'
+import { Users, Bed, Bath, Waves, Home, Gamepad2, Baby, Shirt } from 'lucide-react'
 import { propertyData } from '@/data/property'
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-  Home, Bed, Waves, Gamepad2, Baby, WashingMachine,
+  Home, Bed, Waves, Gamepad2, Baby, WashingMachine: Shirt,
 }
 
 export default function PropertyOverview() {
