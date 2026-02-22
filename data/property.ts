@@ -80,6 +80,18 @@ export const propertyData = {
         ]
       },
       {
+        title: "Game Room",
+        icon: "Gamepad2",
+        items: [
+          "Basketball machine",
+          "Fast and Furious racing game",
+          "Skeeball machine",
+          "Air hockey table",
+          "Pool table",
+          "Shuffleboard table",
+        ]
+      },
+      {
         title: "Baby Friendly Amenities",
         icon: "Baby",
         items: [
@@ -88,16 +100,6 @@ export const propertyData = {
           "Strollers",
           "Baby bath",
           "High chair",
-        ]
-      },
-      {
-        title: "Game Room",
-        icon: "Gamepad2",
-        items: [
-          "Basketball machine",
-          "Fast and Furious racing game",
-          "Skeeball machine",
-          "Air hockey table",
         ]
       },
       {
