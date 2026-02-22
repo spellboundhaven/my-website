@@ -18,7 +18,7 @@ export default function Hero() {
 
       {/* Content */}
       <div className="relative z-10 text-center text-white px-4 sm:px-6 max-w-4xl mx-auto">
-        <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold mb-4 sm:mb-6 font-serif leading-tight">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 font-serif leading-tight whitespace-nowrap">
           {propertyData.hero.title}
         </h1>
         <p className="text-lg sm:text-xl md:text-2xl mb-6 sm:mb-8 text-gray-200">
