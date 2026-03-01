@@ -92,7 +92,7 @@ export default function ViewRentalSubmission() {
     )
   }
 
-  if (error || !submission || !agreement) {
+  if (error || !submission) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
@@ -118,7 +118,7 @@ export default function ViewRentalSubmission() {
               <h1 className="text-3xl font-bold text-gray-800">Signed Rental Agreement</h1>
               <p className="text-gray-600 mt-2">Submitted on {new Date(submission.submitted_at).toLocaleString()}</p>
             </div>
-            {agreement.logo && (
+            {agreement?.logo && (
               <div className="ml-4">
                 <img 
                   src={agreement.logo} 
@@ -133,11 +133,11 @@ export default function ViewRentalSubmission() {
           <div className="bg-indigo-50 rounded-lg p-6 mb-6">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Property Information</h2>
             <div className="space-y-2">
-              <p><span className="font-medium">Property:</span> {agreement.property_name}</p>
-              <p><span className="font-medium">Address:</span> {agreement.property_address}</p>
-              <p><span className="font-medium">Check-in:</span> {formatDateForDisplay(submission.check_in_date || agreement.check_in_date)}</p>
-              <p><span className="font-medium">Check-out:</span> {formatDateForDisplay(submission.check_out_date || agreement.check_out_date)}</p>
-              {agreement.total_amount && (
+              <p><span className="font-medium">Property:</span> {agreement?.property_name || 'Spellbound Haven'}</p>
+              <p><span className="font-medium">Address:</span> {agreement?.property_address || '4449 Kaipo Rd, Davenport, FL 33897'}</p>
+              <p><span className="font-medium">Check-in:</span> {formatDateForDisplay(submission.check_in_date || agreement?.check_in_date)}</p>
+              <p><span className="font-medium">Check-out:</span> {formatDateForDisplay(submission.check_out_date || agreement?.check_out_date)}</p>
+              {agreement?.total_amount && (
                 <p><span className="font-medium">Total Amount:</span> {agreement.total_amount}</p>
               )}
             </div>
@@ -189,7 +189,7 @@ export default function ViewRentalSubmission() {
           </div>
 
           {/* Rental Terms */}
-          {agreement.rental_terms && (
+          {agreement?.rental_terms && (
             <div className="bg-yellow-50 rounded-lg p-6 mb-6">
               <h2 className="text-xl font-semibold text-gray-800 mb-4">Rental Terms & Conditions</h2>
               <RichTextContent html={agreement.rental_terms} className="text-sm text-gray-700" />
@@ -200,7 +200,7 @@ export default function ViewRentalSubmission() {
           <div className="bg-blue-50 rounded-lg p-6 mb-6">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Authorizations</h2>
             <div className="space-y-2">
-              {agreement.security_deposit && (
+              {agreement?.security_deposit && (
                 <p>
                   <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
                     submission.security_deposit_authorized ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'

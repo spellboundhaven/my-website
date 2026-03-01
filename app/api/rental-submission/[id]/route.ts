@@ -17,19 +17,12 @@ export async function GET(
       );
     }
 
-    // Fetch the associated agreement
+    // Fetch the associated agreement (may be null if the link was deleted)
     const agreement = await getRentalAgreement(submission.agreement_id);
-
-    if (!agreement) {
-      return NextResponse.json(
-        { error: 'Associated rental agreement not found' },
-        { status: 404 }
-      );
-    }
 
     return NextResponse.json({
       submission,
-      agreement,
+      agreement: agreement || null,
     });
   } catch (error) {
     console.error('Error fetching rental submission:', error);

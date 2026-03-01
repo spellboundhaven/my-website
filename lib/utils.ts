@@ -1,5 +1,5 @@
 // Utility function to format dates without timezone issues
-export const formatDateForDisplay = (dateString: string): string => {
+export const formatDateForDisplay = (dateString?: string): string => {
   if (!dateString) return '';
   
   // Parse the date as a local date (YYYY-MM-DD format)
