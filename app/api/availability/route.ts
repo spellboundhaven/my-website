@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAvailabilityForRange } from '@/lib/db';
 
-// Cache availability data for 24 hours (86400 seconds)
-// This matches the daily Airbnb sync at midnight
-export const revalidate = 86400;
+// Revalidate availability data every 60 seconds so manual blocks appear quickly
+export const revalidate = 60;
 
 export async function GET(request: NextRequest) {
   try {
@@ -27,7 +26,7 @@ export async function GET(request: NextRequest) {
       },
       {
         headers: {
-          'Cache-Control': 'public, s-maxage=86400, stale-while-revalidate=43200'
+          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=30'
         }
       }
     );

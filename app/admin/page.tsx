@@ -338,7 +338,8 @@ export default function AdminDashboard() {
 
   const handleCreateBlock = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const formData = new FormData(e.currentTarget)
+    const form = e.currentTarget
+    const formData = new FormData(form)
     
     setLoading(true)
     try {
@@ -364,7 +365,7 @@ export default function AdminDashboard() {
       if (data.success) {
         alert('Date block created successfully!')
         fetchAdminData()
-        e.currentTarget.reset()
+        form.reset()
       }
     } catch (error) {
       console.error('Error creating block:', error)
