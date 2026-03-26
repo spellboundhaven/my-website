@@ -17,18 +17,10 @@ export default function AvailabilityCalendar() {
   const [availability, setAvailability] = useState<Record<string, AvailabilityDate>>({})
   const [loading, setLoading] = useState(false)
   
-  // Initialize both today and currentMonth together to ensure they're in sync
-  const [today] = useState<Date>(() => {
-    const now = new Date()
-    now.setHours(0, 0, 0, 0)
-    return now
-  })
-  
-  const [currentMonth, setCurrentMonth] = useState<Date>(() => {
-    const now = new Date()
-    now.setHours(0, 0, 0, 0)
-    return now
-  })
+  // Defer date initialization to client-side only to avoid SSR/static-generation
+  // baking in a stale build-time date that doesn't match the visitor's actual "today"
+  const [today, setToday] = useState<Date | null>(null)
+  const [currentMonth, setCurrentMonth] = useState<Date | null>(null)
 
   // Inquiry form state
   const [formData, setFormData] = useState({
@@ -42,9 +34,19 @@ export default function AvailabilityCalendar() {
     notes: ''
   })
 
-  // Fetch availability for the current month
+  // Set the real date on the client after mount
   useEffect(() => {
-    fetchAvailability(currentMonth)
+    const now = new Date()
+    now.setHours(0, 0, 0, 0)
+    setToday(now)
+    setCurrentMonth(now)
+  }, [])
+
+  // Fetch availability whenever the displayed month changes
+  useEffect(() => {
+    if (currentMonth) {
+      fetchAvailability(currentMonth)
+    }
   }, [currentMonth])
 
   const fetchAvailability = async (date: Date) => {
@@ -126,13 +128,14 @@ export default function AvailabilityCalendar() {
   }
 
   const tileClassName = ({ date }: { date: Date }) => {
+    if (!today) return ''
+    
     const compareDate = new Date(date)
     compareDate.setHours(0, 0, 0, 0)
     
     const isToday = compareDate.getTime() === today.getTime()
     
     // Today is ALWAYS blocked (grey) with red border
-    // Use default react-calendar text colors (grey for weekday, red for weekend)
     if (isToday) {
       return 'bg-gray-100 cursor-not-allowed today-highlight'
     }
@@ -318,18 +321,23 @@ export default function AvailabilityCalendar() {
             </h3>
             
             <div className="mb-6">
-              <Calendar
-                defaultActiveStartDate={today}
-                activeStartDate={currentMonth}
-                tileClassName={tileClassName}
-                onActiveStartDateChange={({ activeStartDate }) => {
-                  if (activeStartDate) {
-                    setCurrentMonth(activeStartDate)
-                  }
-                }}
-                calendarType="US"
-                className="w-full"
-              />
+              {today && currentMonth ? (
+                <Calendar
+                  activeStartDate={currentMonth}
+                  tileClassName={tileClassName}
+                  onActiveStartDateChange={({ activeStartDate }) => {
+                    if (activeStartDate) {
+                      setCurrentMonth(activeStartDate)
+                    }
+                  }}
+                  calendarType="US"
+                  className="w-full"
+                />
+              ) : (
+                <div className="flex items-center justify-center py-20">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                </div>
+              )}
             </div>
 
             {/* Legend */}
