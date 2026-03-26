@@ -801,6 +801,7 @@ export interface RentalAgreement {
   rental_terms: string;
   total_amount?: string;
   security_deposit?: string;
+  damage_insurance_fee?: string;
   host_email?: string;
   logo?: string;
   created_at: string;
@@ -830,6 +831,7 @@ export interface RentalSubmission {
   additional_adults?: AdditionalAdult[];
   vehicles?: Vehicle[];
   security_deposit_authorized: boolean;
+  damage_protection_choice?: string;
   electronic_signature_agreed: boolean;
   signature_data: string;
   check_in_date?: string;
@@ -920,6 +922,26 @@ export async function initRentalAgreementTables() {
       console.log('Note: security_deposit column may already exist');
     }
 
+    // Add damage_insurance_fee column to rental_agreements
+    try {
+      await sql`
+        ALTER TABLE rental_agreements 
+        ADD COLUMN IF NOT EXISTS damage_insurance_fee TEXT
+      `;
+    } catch (alterError) {
+      console.log('Note: damage_insurance_fee column may already exist');
+    }
+
+    // Add damage_protection_choice column to rental_submissions
+    try {
+      await sql`
+        ALTER TABLE rental_submissions 
+        ADD COLUMN IF NOT EXISTS damage_protection_choice TEXT
+      `;
+    } catch (alterError) {
+      console.log('Note: damage_protection_choice column may already exist');
+    }
+
     console.log('Rental agreement database tables initialized successfully');
   } catch (error) {
     console.error('Error initializing rental agreement database tables:', error);
@@ -932,7 +954,7 @@ export async function createRentalAgreement(agreement: RentalAgreement): Promise
   const result = await sql`
     INSERT INTO rental_agreements (
       id, property_name, property_address, check_in_date, check_out_date,
-      rental_terms, total_amount, security_deposit, host_email, logo, created_at, link_expires_at
+      rental_terms, total_amount, security_deposit, damage_insurance_fee, host_email, logo, created_at, link_expires_at
     )
     VALUES (
       ${agreement.id},
@@ -943,6 +965,7 @@ export async function createRentalAgreement(agreement: RentalAgreement): Promise
       ${agreement.rental_terms || ''},
       ${agreement.total_amount || null},
       ${agreement.security_deposit || null},
+      ${agreement.damage_insurance_fee || null},
       ${agreement.host_email || null},
       ${agreement.logo || null},
       ${agreement.created_at},
@@ -983,7 +1006,7 @@ export async function createRentalSubmission(submission: RentalSubmission): Prom
     INSERT INTO rental_submissions (
       agreement_id, guest_name, guest_email, guest_phone, guest_address,
       num_adults, num_children, additional_adults, vehicles, security_deposit_authorized,
-      electronic_signature_agreed, signature_data, check_in_date, check_out_date, view_token, submitted_at
+      damage_protection_choice, electronic_signature_agreed, signature_data, check_in_date, check_out_date, view_token, submitted_at
     )
     VALUES (
       ${submission.agreement_id},
@@ -996,6 +1019,7 @@ export async function createRentalSubmission(submission: RentalSubmission): Prom
       ${JSON.stringify(submission.additional_adults || [])},
       ${JSON.stringify(submission.vehicles || [])},
       ${submission.security_deposit_authorized || false},
+      ${submission.damage_protection_choice || null},
       ${submission.electronic_signature_agreed || false},
       ${submission.signature_data},
       ${submission.check_in_date || null},

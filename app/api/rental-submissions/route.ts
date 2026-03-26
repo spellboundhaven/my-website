@@ -17,6 +17,7 @@ export async function POST(request: NextRequest) {
       additional_adults,
       vehicles,
       security_deposit_authorized,
+      damage_protection_choice,
       electronic_signature_agreed,
       signature_data,
       check_in_date,
@@ -41,6 +42,7 @@ export async function POST(request: NextRequest) {
       additional_adults: additional_adults || [],
       vehicles: vehicles || [],
       security_deposit_authorized: security_deposit_authorized || false,
+      damage_protection_choice: damage_protection_choice || undefined,
       electronic_signature_agreed: electronic_signature_agreed || false,
       signature_data,
       check_in_date,
@@ -95,6 +97,15 @@ export async function POST(request: NextRequest) {
                 <p><strong>Guests:</strong> ${num_adults || 0} Adult(s), ${num_children || 0} Child(ren)</p>
                 <p><strong>Vehicles:</strong> ${vehicleInfo}</p>
               </div>
+              
+              ${damage_protection_choice ? `
+              <div style="background-color: #eff6ff; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+                <h2 style="color: #1e40af; margin-top: 0;">Damage Protection</h2>
+                <p><strong>Selected:</strong> ${damage_protection_choice === 'security_deposit' 
+                  ? `Refundable Security Deposit — $${agreement.security_deposit || '500'}` 
+                  : `Non-refundable Damage Insurance — $${agreement.damage_insurance_fee || '39'}`}</p>
+              </div>
+              ` : ''}
               
               ${agreement.rental_terms ? `
               <div style="background-color: #fffbeb; border-radius: 8px; padding: 20px; margin-bottom: 20px;">

@@ -13,6 +13,7 @@ interface Agreement {
   rental_terms: string
   total_amount?: string
   security_deposit?: string
+  damage_insurance_fee?: string
   logo?: string
 }
 
@@ -39,6 +40,7 @@ interface Submission {
   additional_adults?: AdditionalAdult[]
   vehicles?: Vehicle[]
   security_deposit_authorized: boolean
+  damage_protection_choice?: string
   electronic_signature_agreed: boolean
   signature_data: string
   check_in_date?: string
@@ -200,15 +202,25 @@ export default function ViewRentalSubmission() {
           <div className="bg-blue-50 rounded-lg p-6 mb-6">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Authorizations</h2>
             <div className="space-y-2">
-              {agreement?.security_deposit && (
+              {submission.damage_protection_choice === 'security_deposit' && agreement?.security_deposit ? (
                 <p>
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                    submission.security_deposit_authorized ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                  }`}>
-                    {submission.security_deposit_authorized ? '✓' : '✗'} Security Deposit Authorized (${agreement.security_deposit})
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                    ✓ Refundable Security Deposit — ${agreement.security_deposit}
                   </span>
                 </p>
-              )}
+              ) : submission.damage_protection_choice === 'insurance_fee' && agreement?.damage_insurance_fee ? (
+                <p>
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                    ✓ Non-refundable Damage Insurance — ${agreement.damage_insurance_fee}
+                  </span>
+                </p>
+              ) : submission.security_deposit_authorized && agreement?.security_deposit ? (
+                <p>
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                    ✓ Security Deposit Authorized (${agreement.security_deposit})
+                  </span>
+                </p>
+              ) : null}
               <p>
                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
                   submission.electronic_signature_agreed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'

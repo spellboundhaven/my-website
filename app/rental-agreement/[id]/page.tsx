@@ -15,6 +15,7 @@ interface Agreement {
   rental_terms: string
   total_amount?: string
   security_deposit?: string
+  damage_insurance_fee?: string
   logo?: string
 }
 
@@ -40,6 +41,7 @@ export default function RentalAgreementForm() {
     additional_adults: [{ first_name: '', last_name: '' }],
     vehicles: [{ license_plate: '', make: '', model: '', color: '' }],
     security_deposit_authorized: false,
+    damage_protection_choice: '' as '' | 'security_deposit' | 'insurance_fee',
     electronic_signature_agreed: false,
     signature: '',
   })
@@ -135,8 +137,9 @@ export default function RentalAgreementForm() {
       return
     }
 
-    if (agreement?.security_deposit && !formData.security_deposit_authorized) {
-      setError('Please authorize the security deposit to continue')
+    const hasDamageProtection = agreement?.security_deposit || agreement?.damage_insurance_fee
+    if (hasDamageProtection && !formData.damage_protection_choice) {
+      setError('Please select a damage protection option to continue')
       setSubmitting(false)
       return
     }
@@ -165,7 +168,8 @@ export default function RentalAgreementForm() {
             .filter(a => a.first_name.trim() || a.last_name.trim())
             .map(a => ({ name: `${a.first_name} ${a.last_name}`.trim() })),
           vehicles: formData.vehicles.filter(v => v.license_plate || v.make || v.model || v.color),
-          security_deposit_authorized: formData.security_deposit_authorized,
+          security_deposit_authorized: formData.damage_protection_choice === 'security_deposit',
+          damage_protection_choice: formData.damage_protection_choice || undefined,
           electronic_signature_agreed: formData.electronic_signature_agreed,
           signature_data: formData.signature,
           check_in_date: agreement?.check_in_date,
@@ -505,26 +509,58 @@ export default function RentalAgreementForm() {
               </div>
             </div>
 
-            {/* Security Deposit Authorization */}
-            {agreement?.security_deposit && (
+            {/* Damage Protection */}
+            {(agreement?.security_deposit || agreement?.damage_insurance_fee) && (
               <div>
-                <h2 className="text-xl font-semibold text-gray-800 mb-4">Security Deposit</h2>
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <label className="flex items-start cursor-pointer">
-                    <input
-                      type="checkbox"
-                      name="security_deposit_authorized"
-                      required
-                      checked={formData.security_deposit_authorized}
-                      onChange={(e) => setFormData(prev => ({ ...prev, security_deposit_authorized: e.target.checked }))}
-                      className="mt-1 h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                    />
-                    <span className="ml-3 text-gray-700">
-                      I authorize the host to hold a refundable <strong>${agreement.security_deposit} security deposit</strong>. 
-                      I understand this deposit will be refunded within <strong>5 days</strong> after checkout, 
-                      provided there is no damage to the property. *
-                    </span>
-                  </label>
+                <h2 className="text-xl font-semibold text-gray-800 mb-4">Damage Protection *</h2>
+                <p className="text-sm text-gray-600 mb-3">
+                  Please select one of the following options:
+                </p>
+                <div className="space-y-3">
+                  {agreement?.security_deposit && (
+                    <label className={`flex items-start cursor-pointer p-4 rounded-lg border-2 transition-colors ${
+                      formData.damage_protection_choice === 'security_deposit'
+                        ? 'border-indigo-500 bg-indigo-50'
+                        : 'border-gray-200 bg-white hover:border-gray-300'
+                    }`}>
+                      <input
+                        type="radio"
+                        name="damage_protection"
+                        value="security_deposit"
+                        checked={formData.damage_protection_choice === 'security_deposit'}
+                        onChange={() => setFormData(prev => ({ ...prev, damage_protection_choice: 'security_deposit', security_deposit_authorized: true }))}
+                        className="mt-0.5 h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                      />
+                      <div className="ml-3">
+                        <span className="font-semibold text-gray-800">Option A: Refundable Security Deposit — ${agreement.security_deposit}</span>
+                        <p className="text-sm text-gray-600 mt-1">
+                          I authorize the host to hold a refundable security deposit. This deposit will be refunded within 5 days after checkout, provided there is no damage to the property.
+                        </p>
+                      </div>
+                    </label>
+                  )}
+                  {agreement?.damage_insurance_fee && (
+                    <label className={`flex items-start cursor-pointer p-4 rounded-lg border-2 transition-colors ${
+                      formData.damage_protection_choice === 'insurance_fee'
+                        ? 'border-indigo-500 bg-indigo-50'
+                        : 'border-gray-200 bg-white hover:border-gray-300'
+                    }`}>
+                      <input
+                        type="radio"
+                        name="damage_protection"
+                        value="insurance_fee"
+                        checked={formData.damage_protection_choice === 'insurance_fee'}
+                        onChange={() => setFormData(prev => ({ ...prev, damage_protection_choice: 'insurance_fee', security_deposit_authorized: false }))}
+                        className="mt-0.5 h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                      />
+                      <div className="ml-3">
+                        <span className="font-semibold text-gray-800">Option B: Non-refundable Damage Insurance — ${agreement.damage_insurance_fee}</span>
+                        <p className="text-sm text-gray-600 mt-1">
+                          I agree to pay a non-refundable damage insurance fee. This fee covers accidental damage to the property and is not refundable.
+                        </p>
+                      </div>
+                    </label>
+                  )}
                 </div>
               </div>
             )}

@@ -119,6 +119,7 @@ interface RentalSubmission {
   additional_adults?: AdditionalAdult[]
   vehicles?: Vehicle[]
   security_deposit_authorized: boolean
+  damage_protection_choice?: string
   electronic_signature_agreed: boolean
   signature_data: string
   check_in_date?: string
@@ -156,6 +157,7 @@ export default function AdminDashboard() {
     rental_terms: '',
     total_amount: '',
     security_deposit: '',
+    damage_insurance_fee: '',
     host_email: 'spellboundhaven.disney@gmail.com',
     logo: '',
     expires_in_days: '30',
@@ -614,6 +616,7 @@ export default function AdminDashboard() {
           rental_terms: '',
           total_amount: '',
           security_deposit: '',
+          damage_insurance_fee: '',
           logo: '',
           expires_in_days: '30',
         })
@@ -732,9 +735,20 @@ export default function AdminDashboard() {
         yPosition += 6
       }
 
-      if (rentalFormData.security_deposit) {
-        doc.text(`Security Deposit: $${rentalFormData.security_deposit}`, margin, yPosition)
+      if (rentalFormData.security_deposit || rentalFormData.damage_insurance_fee) {
+        doc.setFont('helvetica', 'bold')
+        doc.text('Damage Protection (choose one):', margin, yPosition)
         yPosition += 6
+        doc.setFont('helvetica', 'normal')
+        if (rentalFormData.security_deposit) {
+          doc.text(`Option A: Refundable Security Deposit — $${rentalFormData.security_deposit}`, margin + 5, yPosition)
+          yPosition += 5
+        }
+        if (rentalFormData.damage_insurance_fee) {
+          doc.text(`Option B: Non-refundable Damage Insurance Fee — $${rentalFormData.damage_insurance_fee}`, margin + 5, yPosition)
+          yPosition += 5
+        }
+        yPosition += 1
       }
 
       yPosition += 10
@@ -2325,31 +2339,45 @@ export default function AdminDashboard() {
                         <label className="flex items-center cursor-pointer mb-2">
                           <input
                             type="checkbox"
-                            checked={rentalFormData.security_deposit !== ''}
-                            onChange={(e) => setRentalFormData(prev => ({ ...prev, security_deposit: e.target.checked ? '500' : '' }))}
+                            checked={rentalFormData.security_deposit !== '' || rentalFormData.damage_insurance_fee !== ''}
+                            onChange={(e) => setRentalFormData(prev => ({
+                              ...prev,
+                              security_deposit: e.target.checked ? '500' : '',
+                              damage_insurance_fee: e.target.checked ? '39' : '',
+                            }))}
                             className="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                           />
-                          <span className="ml-2 text-sm font-medium text-gray-700">Require Security Deposit</span>
+                          <span className="ml-2 text-sm font-medium text-gray-700">Require Damage Protection</span>
                         </label>
-                        {rentalFormData.security_deposit !== '' && (
-                          <div className="ml-7">
-                            <label className="block text-xs text-gray-500 mb-1">Amount ($)</label>
-                            <input
-                              type="text"
-                              name="security_deposit"
-                              value={rentalFormData.security_deposit}
-                              onChange={(e) => setRentalFormData(prev => ({ ...prev, security_deposit: e.target.value }))}
-                              placeholder="500"
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                            />
-                            <p className="mt-1 text-xs text-gray-500">
-                              Default: $500. Guest will be asked to authorize this refundable deposit.
+                        {(rentalFormData.security_deposit !== '' || rentalFormData.damage_insurance_fee !== '') ? (
+                          <div className="ml-7 space-y-3">
+                            <p className="text-xs text-gray-500">
+                              Guest will choose one of the following options:
                             </p>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-600 mb-1">Option A: Refundable Security Deposit ($)</label>
+                              <input
+                                type="text"
+                                value={rentalFormData.security_deposit}
+                                onChange={(e) => setRentalFormData(prev => ({ ...prev, security_deposit: e.target.value }))}
+                                placeholder="500"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-600 mb-1">Option B: Non-refundable Damage Insurance Fee ($)</label>
+                              <input
+                                type="text"
+                                value={rentalFormData.damage_insurance_fee}
+                                onChange={(e) => setRentalFormData(prev => ({ ...prev, damage_insurance_fee: e.target.value }))}
+                                placeholder="39"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                              />
+                            </div>
                           </div>
-                        )}
-                        {rentalFormData.security_deposit === '' && (
+                        ) : (
                           <p className="ml-7 text-xs text-gray-500">
-                            No security deposit will be required (e.g., for VRBO guests)
+                            No damage protection will be required (e.g., for VRBO guests)
                           </p>
                         )}
                       </div>
@@ -2694,13 +2722,21 @@ export default function AdminDashboard() {
                                   <td className="px-4 py-3 text-sm text-gray-600">
                                     <div className="space-y-1">
                                       <div>
-                                        {submission.security_deposit_authorized ? (
+                                        {submission.damage_protection_choice === 'security_deposit' ? (
+                                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                            ✓ Deposit
+                                          </span>
+                                        ) : submission.damage_protection_choice === 'insurance_fee' ? (
+                                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                            ✓ Insurance
+                                          </span>
+                                        ) : submission.security_deposit_authorized ? (
                                           <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
                                             ✓ Deposit
                                           </span>
                                         ) : (
-                                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
-                                            ✗ Deposit
+                                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">
+                                            — N/A
                                           </span>
                                         )}
                                       </div>
