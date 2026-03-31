@@ -556,7 +556,7 @@ export default function RentalAgreementForm() {
                       <div className="ml-3">
                         <span className="font-semibold text-gray-800">Option B: Non-refundable Damage Insurance — ${agreement.damage_insurance_fee}</span>
                         <p className="text-sm text-gray-600 mt-1">
-                          I agree to pay a non-refundable damage insurance fee. This fee covers accidental damage to the property and is not refundable.
+                          I agree to pay a non-refundable damage protection fee. This fee covers accidental damage to the property up to $1,500, in accordance with the terms of the protection plan, and is non-refundable.
                         </p>
                       </div>
                     </label>
