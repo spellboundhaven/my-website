@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import * as ical from 'node-ical';
-import { createDateBlock, hasOverlappingDateBlock, updateCalendarSync, getLastCalendarSync, getAllCalendarSyncs, initDatabase } from '@/lib/db';
+import { createDateBlock, hasOverlappingDateBlock, updateCalendarSync, getLastCalendarSync, getAllCalendarSyncs, getDateBlocksBySource, deleteDateBlock, initDatabase } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 
 export async function POST(request: NextRequest) {
@@ -23,8 +23,8 @@ export async function POST(request: NextRequest) {
     // Fetch and parse iCal feed
     const events = await ical.async.fromURL(icalUrl);
     
-    // Extract booked dates from iCal
-    const bookedDates: Array<{ start: string; end: string; summary: string }> = [];
+    // Build set of current iCal date ranges for comparison
+    const icalRanges: Array<{ start: string; end: string; summary: string }> = [];
     
     for (const event of Object.values(events)) {
       if (event.type === 'VEVENT' && event.start && event.end) {
@@ -39,40 +39,51 @@ export async function POST(request: NextRequest) {
         const startDate = new Date(event.start);
         const endDate = new Date(event.end);
         
-        // Format dates as YYYY-MM-DD
         const start = startDate.toISOString().split('T')[0];
         const end = endDate.toISOString().split('T')[0];
         
-        // Check if this range overlaps with any existing block
-        const hasOverlap = await hasOverlappingDateBlock(start, end);
-        
-        // Only add if no overlap found
-        if (!hasOverlap) {
-          bookedDates.push({
-            start,
-            end,
-            summary: event.summary || `${sourceName} booking`
-          });
-        }
+        icalRanges.push({
+          start,
+          end,
+          summary: event.summary || `${sourceName} booking`
+        });
       }
     }
 
-    // Create date blocks for new bookings
+    // Remove stale blocks: existing DB blocks for this source that are no longer in the iCal feed
+    const existingBlocks = await getDateBlocksBySource(sourceName);
+    let removedCount = 0;
+    for (const block of existingBlocks) {
+      const blockStart = new Date(block.start_date).toISOString().split('T')[0];
+      const blockEnd = new Date(block.end_date).toISOString().split('T')[0];
+      
+      const stillInFeed = icalRanges.some(r => r.start === blockStart && r.end === blockEnd);
+      if (!stillInFeed) {
+        await deleteDateBlock(block.id);
+        removedCount++;
+        console.log(`[${sourceName.toUpperCase()}] Removed cancelled block: ${blockStart} to ${blockEnd}`);
+      }
+    }
+
+    // Add new blocks that don't already exist
     let syncedCount = 0;
-    for (const booking of bookedDates) {
-      try {
-        await createDateBlock({
-          start_date: booking.start,
-          end_date: booking.end,
-          reason: `${sourceName.charAt(0).toUpperCase() + sourceName.slice(1)}: ${booking.summary}`
-        });
-        syncedCount++;
-      } catch (error) {
-        console.error(`[${sourceName.toUpperCase()}] Error creating date block:`, error);
+    for (const booking of icalRanges) {
+      const hasOverlap = await hasOverlappingDateBlock(booking.start, booking.end);
+      if (!hasOverlap) {
+        try {
+          await createDateBlock({
+            start_date: booking.start,
+            end_date: booking.end,
+            reason: `${sourceName.charAt(0).toUpperCase() + sourceName.slice(1)}: ${booking.summary}`
+          });
+          syncedCount++;
+        } catch (error) {
+          console.error(`[${sourceName.toUpperCase()}] Error creating date block:`, error);
+        }
       }
     }
     
-    console.log(`[${sourceName.toUpperCase()}] Created ${syncedCount} new blocks`);
+    console.log(`[${sourceName.toUpperCase()}] Added ${syncedCount} new, removed ${removedCount} cancelled blocks`);
 
     // Update sync record
     await updateCalendarSync(sourceName, icalUrl, 'success', syncedCount);
@@ -83,8 +94,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: `Synced ${syncedCount} ${sourceName} bookings`,
-      bookedDates
+      message: `Synced ${syncedCount} new, removed ${removedCount} cancelled ${sourceName} bookings`,
+      added: syncedCount,
+      removed: removedCount,
     });
   } catch (error) {
     console.error('[SYNC] Error:', error);

@@ -336,6 +336,14 @@ export async function deleteAllAirbnbBlocks(): Promise<number> {
   return result.rowCount || 0;
 }
 
+export async function getDateBlocksBySource(source: string): Promise<DateBlock[]> {
+  const pattern = `${source.charAt(0).toUpperCase() + source.slice(1)}:%`;
+  const result = await sql`
+    SELECT * FROM date_blocks WHERE reason LIKE ${pattern} ORDER BY start_date ASC
+  `;
+  return result.rows as DateBlock[];
+}
+
 export async function deleteBufferBlocks(): Promise<number> {
   const result = await sql`
     DELETE FROM date_blocks
