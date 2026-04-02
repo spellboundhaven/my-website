@@ -322,17 +322,27 @@ export default function AvailabilityCalendar() {
             
             <div className="mb-6">
               {today && currentMonth ? (
-                <Calendar
-                  activeStartDate={currentMonth}
-                  tileClassName={tileClassName}
-                  onActiveStartDateChange={({ activeStartDate }) => {
-                    if (activeStartDate) {
-                      setCurrentMonth(activeStartDate)
-                    }
-                  }}
-                  calendarType="US"
-                  className="w-full"
-                />
+                <>
+                  <Calendar
+                    activeStartDate={currentMonth}
+                    tileClassName={tileClassName}
+                    onActiveStartDateChange={({ activeStartDate }) => {
+                      if (activeStartDate) {
+                        setCurrentMonth(activeStartDate)
+                      }
+                    }}
+                    calendarType="US"
+                    className="w-full"
+                  />
+                  {(currentMonth.getMonth() !== today.getMonth() || currentMonth.getFullYear() !== today.getFullYear()) && (
+                    <button
+                      onClick={() => setCurrentMonth(new Date(today))}
+                      className="mt-3 w-full py-2 text-sm font-medium text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 rounded-lg transition-colors"
+                    >
+                      ← Back to Today
+                    </button>
+                  )}
+                </>
               ) : (
                 <div className="flex items-center justify-center py-20">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
