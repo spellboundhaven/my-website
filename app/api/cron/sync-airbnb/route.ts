@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
           
           const stillInFeed = icalRanges.some(r => r.start === blockStart && r.end === blockEnd);
           if (!stillInFeed) {
-            await deleteDateBlock(block.id);
+            await deleteDateBlock(block.id!);
             removedCount++;
             console.log(`[CRON] Removed cancelled ${source.toUpperCase()} block: ${blockStart} to ${blockEnd}`);
           }
