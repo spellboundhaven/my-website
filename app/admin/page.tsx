@@ -1228,7 +1228,7 @@ export default function AdminDashboard() {
             <div className="flex justify-between items-center">
               <div>
                 <h1 className="text-3xl font-bold">Spellbound Haven Admin</h1>
-                <p className="text-purple-100 mt-1">Manage bookings, availability, and inquiries</p>
+                <p className="text-purple-100 mt-1">Manage bookings, availability, maintenance, and more</p>
               </div>
               <button
                 onClick={handleLogout}
