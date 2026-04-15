@@ -1160,7 +1160,7 @@ export interface MaintenanceTask {
   name: string;
   frequency_months: number;
   last_serviced: string | null;
-  next_due: string | null;
+  next_due?: string | null;
   notes?: string;
   created_at?: string;
 }
