@@ -3058,11 +3058,10 @@ export default function AdminDashboard() {
                               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                             >
                               <option value="">Select a task</option>
-                              {[...new Set([
+                              {Array.from(new Set([
                                 'HVAC Maintenance', 'Pool Filter Change', 'Fridge Filter Change',
                                 'AC Filter Change', 'Power Wash', 'Deep Clean', 'Grout Line Clean',
-                                ...maintenanceTasks.map(t => t.name)
-                              ])].sort().map(name => (
+                              ].concat(maintenanceTasks.map(t => t.name)))).sort().map(name => (
                                 <option key={name} value={name}>{name}</option>
                               ))}
                               <option value="__custom__">+ Add custom task...</option>
