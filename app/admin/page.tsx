@@ -164,6 +164,7 @@ export default function AdminDashboard() {
     notes: '',
   })
   const [editingTaskId, setEditingTaskId] = useState<number | null>(null)
+  const [customTaskMode, setCustomTaskMode] = useState(false)
   const [completingTaskId, setCompletingTaskId] = useState<number | null>(null)
   const [completeDate, setCompleteDate] = useState('')
   const [completeNotes, setCompleteNotes] = useState('')
@@ -624,6 +625,7 @@ export default function AdminDashboard() {
       if (data.success) {
         fetchMaintenanceTasks()
         setMaintenanceForm({ name: '', frequency_months: '', last_serviced: '', notes: '' })
+        setCustomTaskMode(false)
         form.reset()
       }
     } catch (error) {
@@ -3014,14 +3016,58 @@ export default function AdminDashboard() {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Task Name *</label>
-                          <input
-                            type="text"
-                            required
-                            value={maintenanceForm.name}
-                            onChange={(e) => setMaintenanceForm(prev => ({ ...prev, name: e.target.value }))}
-                            placeholder="e.g., HVAC Maintenance"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                          />
+                          {editingTaskId ? (
+                            <input
+                              type="text"
+                              required
+                              value={maintenanceForm.name}
+                              onChange={(e) => setMaintenanceForm(prev => ({ ...prev, name: e.target.value }))}
+                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                            />
+                          ) : customTaskMode ? (
+                            <div className="flex gap-2">
+                              <input
+                                type="text"
+                                required
+                                value={maintenanceForm.name}
+                                onChange={(e) => setMaintenanceForm(prev => ({ ...prev, name: e.target.value }))}
+                                placeholder="Enter custom task name"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                autoFocus
+                              />
+                              <button
+                                type="button"
+                                onClick={() => { setCustomTaskMode(false); setMaintenanceForm(prev => ({ ...prev, name: '' })) }}
+                                className="px-3 py-2 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50"
+                              >
+                                Back
+                              </button>
+                            </div>
+                          ) : (
+                            <select
+                              value={maintenanceForm.name}
+                              onChange={(e) => {
+                                if (e.target.value === '__custom__') {
+                                  setCustomTaskMode(true)
+                                  setMaintenanceForm(prev => ({ ...prev, name: '' }))
+                                } else {
+                                  setMaintenanceForm(prev => ({ ...prev, name: e.target.value }))
+                                }
+                              }}
+                              required
+                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                            >
+                              <option value="">Select a task</option>
+                              {[...new Set([
+                                'HVAC Maintenance', 'Pool Filter Change', 'Fridge Filter Change',
+                                'AC Filter Change', 'Power Wash', 'Deep Clean', 'Grout Line Clean',
+                                ...maintenanceTasks.map(t => t.name)
+                              ])].sort().map(name => (
+                                <option key={name} value={name}>{name}</option>
+                              ))}
+                              <option value="__custom__">+ Add custom task...</option>
+                            </select>
+                          )}
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Frequency *</label>
