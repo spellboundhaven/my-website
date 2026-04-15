@@ -185,6 +185,9 @@ export async function initDatabase() {
     // Initialize rental agreement tables
     await initRentalAgreementTables();
 
+    // Initialize maintenance tables
+    await initMaintenanceTables();
+
     console.log('Database tables initialized successfully');
   } catch (error) {
     console.error('Error initializing database:', error);
@@ -1148,4 +1151,147 @@ export async function deleteRentalTemplate(id: string): Promise<boolean> {
   return result.rowCount ? result.rowCount > 0 : false;
 }
 
+// ============================================
+// MAINTENANCE SCHEDULE TYPES AND FUNCTIONS
+// ============================================
 
+export interface MaintenanceTask {
+  id?: number;
+  name: string;
+  frequency_months: number;
+  last_serviced: string | null;
+  next_due: string | null;
+  notes?: string;
+  created_at?: string;
+}
+
+export interface MaintenanceLog {
+  id?: number;
+  task_id: number;
+  serviced_date: string;
+  notes?: string;
+  created_at?: string;
+}
+
+export async function initMaintenanceTables() {
+  try {
+    await sql`
+      CREATE TABLE IF NOT EXISTS maintenance_tasks (
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        frequency_months INTEGER NOT NULL,
+        last_serviced DATE,
+        next_due DATE,
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS maintenance_logs (
+        id SERIAL PRIMARY KEY,
+        task_id INTEGER NOT NULL REFERENCES maintenance_tasks(id) ON DELETE CASCADE,
+        serviced_date DATE NOT NULL,
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    console.log('Maintenance tables initialized successfully');
+  } catch (error) {
+    console.error('Error initializing maintenance tables:', error);
+    throw error;
+  }
+}
+
+export async function getAllMaintenanceTasks(): Promise<MaintenanceTask[]> {
+  const result = await sql`
+    SELECT * FROM maintenance_tasks ORDER BY next_due ASC NULLS FIRST
+  `;
+  return result.rows as MaintenanceTask[];
+}
+
+export async function createMaintenanceTask(task: MaintenanceTask): Promise<MaintenanceTask> {
+  const nextDue = task.last_serviced
+    ? calculateNextDue(task.last_serviced, task.frequency_months)
+    : null;
+
+  const result = await sql`
+    INSERT INTO maintenance_tasks (name, frequency_months, last_serviced, next_due, notes)
+    VALUES (${task.name}, ${task.frequency_months}, ${task.last_serviced || null}, ${nextDue}, ${task.notes || null})
+    RETURNING *
+  `;
+  return result.rows[0] as MaintenanceTask;
+}
+
+export async function updateMaintenanceTask(id: number, updates: Partial<MaintenanceTask>): Promise<MaintenanceTask | undefined> {
+  const current = await sql`SELECT * FROM maintenance_tasks WHERE id = ${id}`;
+  if (current.rows.length === 0) return undefined;
+
+  const task = current.rows[0] as MaintenanceTask;
+  const name = updates.name ?? task.name;
+  const frequencyMonths = updates.frequency_months ?? task.frequency_months;
+  const lastServiced = updates.last_serviced !== undefined ? updates.last_serviced : task.last_serviced;
+  const notes = updates.notes !== undefined ? updates.notes : task.notes;
+  const nextDue = lastServiced ? calculateNextDue(lastServiced, frequencyMonths) : null;
+
+  const result = await sql`
+    UPDATE maintenance_tasks
+    SET name = ${name}, frequency_months = ${frequencyMonths}, last_serviced = ${lastServiced},
+        next_due = ${nextDue}, notes = ${notes}
+    WHERE id = ${id}
+    RETURNING *
+  `;
+  return result.rows[0] as MaintenanceTask;
+}
+
+export async function deleteMaintenanceTask(id: number): Promise<boolean> {
+  const result = await sql`DELETE FROM maintenance_tasks WHERE id = ${id}`;
+  return result.rowCount ? result.rowCount > 0 : false;
+}
+
+export async function markMaintenanceComplete(taskId: number, servicedDate: string, notes?: string): Promise<MaintenanceTask | undefined> {
+  await sql`
+    INSERT INTO maintenance_logs (task_id, serviced_date, notes)
+    VALUES (${taskId}, ${servicedDate}, ${notes || null})
+  `;
+
+  const current = await sql`SELECT * FROM maintenance_tasks WHERE id = ${taskId}`;
+  if (current.rows.length === 0) return undefined;
+
+  const task = current.rows[0] as MaintenanceTask;
+  const nextDue = calculateNextDue(servicedDate, task.frequency_months);
+
+  const result = await sql`
+    UPDATE maintenance_tasks
+    SET last_serviced = ${servicedDate}, next_due = ${nextDue}
+    WHERE id = ${taskId}
+    RETURNING *
+  `;
+  return result.rows[0] as MaintenanceTask;
+}
+
+export async function getMaintenanceLogsForTask(taskId: number): Promise<MaintenanceLog[]> {
+  const result = await sql`
+    SELECT * FROM maintenance_logs WHERE task_id = ${taskId} ORDER BY serviced_date DESC
+  `;
+  return result.rows as MaintenanceLog[];
+}
+
+export async function getTasksDueInMonth(year: number, month: number): Promise<MaintenanceTask[]> {
+  const startOfMonth = `${year}-${String(month).padStart(2, '0')}-01`;
+  const endOfMonth = new Date(year, month, 0).toISOString().split('T')[0];
+
+  const result = await sql`
+    SELECT * FROM maintenance_tasks
+    WHERE next_due >= ${startOfMonth} AND next_due <= ${endOfMonth}
+    ORDER BY next_due ASC
+  `;
+  return result.rows as MaintenanceTask[];
+}
+
+function calculateNextDue(lastServiced: string, frequencyMonths: number): string {
+  const date = new Date(lastServiced + 'T00:00:00');
+  date.setMonth(date.getMonth() + frequencyMonths);
+  return date.toISOString().split('T')[0];
+}

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { CalendarIcon, Users, Ban, Settings, Star, FileText, FileSignature, Download } from 'lucide-react'
+import { CalendarIcon, Users, Ban, Settings, Star, FileText, FileSignature, Download, Wrench } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import jsPDF from 'jspdf'
 import RichTextContent from '@/components/RichTextContent'
@@ -132,7 +132,7 @@ export default function AdminDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
   const [authError, setAuthError] = useState('')
-  const [activeTab, setActiveTab] = useState<'bookings' | 'calendar' | 'reviews' | 'invoices' | 'rental-agreements' | 'settings'>('bookings')
+  const [activeTab, setActiveTab] = useState<'bookings' | 'calendar' | 'reviews' | 'invoices' | 'rental-agreements' | 'maintenance' | 'settings'>('bookings')
   
   const [bookings, setBookings] = useState<Booking[]>([])
   const [dateBlocks, setDateBlocks] = useState<DateBlock[]>([])
@@ -146,6 +146,27 @@ export default function AdminDashboard() {
   const [vrboUrl, setVrboUrl] = useState('')
   const [lastSync, setLastSync] = useState<{ last_synced: string; ical_url: string } | null>(null)
   const [vrboLastSync, setVrboLastSync] = useState<{ last_synced: string; ical_url: string } | null>(null)
+
+  // Maintenance state
+  interface MaintenanceTask {
+    id: number
+    name: string
+    frequency_months: number
+    last_serviced: string | null
+    next_due: string | null
+    notes?: string
+  }
+  const [maintenanceTasks, setMaintenanceTasks] = useState<MaintenanceTask[]>([])
+  const [maintenanceForm, setMaintenanceForm] = useState({
+    name: '',
+    frequency_months: '',
+    last_serviced: '',
+    notes: '',
+  })
+  const [editingTaskId, setEditingTaskId] = useState<number | null>(null)
+  const [completingTaskId, setCompletingTaskId] = useState<number | null>(null)
+  const [completeDate, setCompleteDate] = useState('')
+  const [completeNotes, setCompleteNotes] = useState('')
 
   // Rental agreement state
   const [rentalAgreementTab, setRentalAgreementTab] = useState<'create' | 'view'>('create')
@@ -186,12 +207,14 @@ export default function AdminDashboard() {
         fetchRentalSubmissions()
         if (rentalAgreementTab === 'create') {
           loadRentalTemplates()
-          // Load saved logo from localStorage
           const savedLogo = localStorage.getItem('last_uploaded_logo')
           if (savedLogo && !rentalFormData.logo) {
             setRentalFormData(prev => ({ ...prev, logo: savedLogo }))
           }
         }
+      }
+      if (activeTab === 'maintenance') {
+        fetchMaintenanceTasks()
       }
     }
   }, [isAuthenticated, activeTab, rentalAgreementTab])
@@ -567,6 +590,118 @@ export default function AdminDashboard() {
       setRentalSubmissions(data.submissions || [])
     } catch (error) {
       console.error('Error fetching rental submissions:', error)
+    }
+  }
+
+  // Maintenance functions
+  const fetchMaintenanceTasks = async () => {
+    try {
+      const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123'
+      const response = await fetch('/api/maintenance', {
+        headers: { 'Authorization': `Bearer ${adminPassword}` }
+      })
+      const data = await response.json()
+      if (data.success) setMaintenanceTasks(data.tasks || [])
+    } catch (error) {
+      console.error('Error fetching maintenance tasks:', error)
+    }
+  }
+
+  const handleCreateMaintenanceTask = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const form = e.currentTarget
+    try {
+      const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123'
+      const response = await fetch('/api/maintenance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminPassword}` },
+        body: JSON.stringify({
+          action: 'create',
+          ...maintenanceForm,
+        }),
+      })
+      const data = await response.json()
+      if (data.success) {
+        fetchMaintenanceTasks()
+        setMaintenanceForm({ name: '', frequency_months: '', last_serviced: '', notes: '' })
+        form.reset()
+      }
+    } catch (error) {
+      console.error('Error creating maintenance task:', error)
+      alert('Failed to create task')
+    }
+  }
+
+  const handleUpdateMaintenanceTask = async () => {
+    if (!editingTaskId) return
+    try {
+      const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123'
+      const response = await fetch('/api/maintenance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminPassword}` },
+        body: JSON.stringify({
+          action: 'update',
+          id: editingTaskId,
+          ...maintenanceForm,
+          last_serviced: maintenanceForm.last_serviced || null,
+        }),
+      })
+      const data = await response.json()
+      if (data.success) {
+        fetchMaintenanceTasks()
+        setEditingTaskId(null)
+        setMaintenanceForm({ name: '', frequency_months: '', last_serviced: '', notes: '' })
+      }
+    } catch (error) {
+      console.error('Error updating maintenance task:', error)
+      alert('Failed to update task')
+    }
+  }
+
+  const handleCompleteMaintenanceTask = async (taskId: number) => {
+    if (!completeDate) {
+      alert('Please enter the service date')
+      return
+    }
+    try {
+      const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123'
+      const response = await fetch('/api/maintenance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminPassword}` },
+        body: JSON.stringify({
+          action: 'complete',
+          task_id: taskId,
+          serviced_date: completeDate,
+          notes: completeNotes,
+        }),
+      })
+      const data = await response.json()
+      if (data.success) {
+        fetchMaintenanceTasks()
+        setCompletingTaskId(null)
+        setCompleteDate('')
+        setCompleteNotes('')
+      }
+    } catch (error) {
+      console.error('Error completing maintenance task:', error)
+      alert('Failed to mark as complete')
+    }
+  }
+
+  const handleDeleteMaintenanceTask = async (id: number) => {
+    if (!confirm('Delete this maintenance task?')) return
+    try {
+      const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123'
+      const response = await fetch('/api/maintenance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminPassword}` },
+        body: JSON.stringify({ action: 'delete', id }),
+      })
+      const data = await response.json()
+      if (data.success) fetchMaintenanceTasks()
+    } catch (error) {
+      console.error('Error deleting maintenance task:', error)
+      alert('Failed to delete task')
     }
   }
 
@@ -1169,6 +1304,18 @@ export default function AdminDashboard() {
                 <span className="hidden sm:inline">Rental Agreements</span>
                 <span className="sm:hidden">Rentals</span>
                 <span className="hidden sm:inline">({rentalAgreements.length})</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('maintenance')}
+                className={`px-3 sm:px-6 py-3 font-medium transition-colors flex items-center gap-1 sm:gap-2 whitespace-nowrap text-sm sm:text-base ${
+                  activeTab === 'maintenance'
+                    ? 'border-b-2 border-purple-600 text-purple-600'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <Wrench className="w-4 h-4" />
+                <span className="hidden sm:inline">Maintenance</span>
+                <span className="sm:hidden">Maint.</span>
               </button>
               <button
                 onClick={() => setActiveTab('settings')}
@@ -2795,6 +2942,272 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Maintenance Tab */}
+            {activeTab === 'maintenance' && (
+              <div className="space-y-8">
+                <div>
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-2xl font-bold text-gray-800">Maintenance Schedule</h2>
+                    {maintenanceTasks.length === 0 && (
+                      <button
+                        onClick={async () => {
+                          try {
+                            const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123'
+                            const response = await fetch('/api/maintenance/seed', {
+                              method: 'POST',
+                              headers: { 'Authorization': `Bearer ${adminPassword}` }
+                            })
+                            const data = await response.json()
+                            if (data.success) {
+                              fetchMaintenanceTasks()
+                              alert(`Loaded ${data.created} default tasks!`)
+                            }
+                          } catch (error) {
+                            alert('Failed to load default tasks')
+                          }
+                        }}
+                        className="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg text-sm hover:bg-indigo-200 font-medium"
+                      >
+                        Load Default Tasks
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Summary Cards */}
+                  {(() => {
+                    const todayStr = new Date().toISOString().split('T')[0]
+                    const overdue = maintenanceTasks.filter(t => t.next_due && t.next_due < todayStr)
+                    const dueSoon = maintenanceTasks.filter(t => {
+                      if (!t.next_due || t.next_due < todayStr) return false
+                      const dueDate = new Date(t.next_due + 'T00:00:00')
+                      const thirtyDays = new Date()
+                      thirtyDays.setDate(thirtyDays.getDate() + 30)
+                      return dueDate <= thirtyDays
+                    })
+                    return (
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+                          <div className="text-2xl font-bold text-red-600">{overdue.length}</div>
+                          <div className="text-sm text-red-700">Overdue</div>
+                        </div>
+                        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-center">
+                          <div className="text-2xl font-bold text-amber-600">{dueSoon.length}</div>
+                          <div className="text-sm text-amber-700">Due Within 30 Days</div>
+                        </div>
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+                          <div className="text-2xl font-bold text-green-600">{maintenanceTasks.length}</div>
+                          <div className="text-sm text-green-700">Total Tasks</div>
+                        </div>
+                      </div>
+                    )
+                  })()}
+
+                  {/* Add / Edit Task Form */}
+                  <div className="bg-gray-50 rounded-lg p-6 mb-6">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                      {editingTaskId ? 'Edit Task' : 'Add New Task'}
+                    </h3>
+                    <form onSubmit={editingTaskId ? (e) => { e.preventDefault(); handleUpdateMaintenanceTask() } : handleCreateMaintenanceTask} className="space-y-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Task Name *</label>
+                          <input
+                            type="text"
+                            required
+                            value={maintenanceForm.name}
+                            onChange={(e) => setMaintenanceForm(prev => ({ ...prev, name: e.target.value }))}
+                            placeholder="e.g., HVAC Maintenance"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Frequency *</label>
+                          <select
+                            required
+                            value={maintenanceForm.frequency_months}
+                            onChange={(e) => setMaintenanceForm(prev => ({ ...prev, frequency_months: e.target.value }))}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                          >
+                            <option value="">Select frequency</option>
+                            <option value="1">Every month</option>
+                            <option value="2">Every 2 months</option>
+                            <option value="3">Every 3 months</option>
+                            <option value="4">Every 4 months</option>
+                            <option value="6">Every 6 months</option>
+                            <option value="12">Once a year</option>
+                            <option value="24">Every 2 years</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Last Serviced Date</label>
+                          <input
+                            type="date"
+                            value={maintenanceForm.last_serviced}
+                            onChange={(e) => setMaintenanceForm(prev => ({ ...prev, last_serviced: e.target.value }))}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                          />
+                          <p className="mt-1 text-xs text-gray-500">Leave blank if unknown — task will show as overdue</p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                          <input
+                            type="text"
+                            value={maintenanceForm.notes}
+                            onChange={(e) => setMaintenanceForm(prev => ({ ...prev, notes: e.target.value }))}
+                            placeholder="Optional notes"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          type="submit"
+                          className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-medium"
+                        >
+                          {editingTaskId ? 'Update Task' : 'Add Task'}
+                        </button>
+                        {editingTaskId && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingTaskId(null)
+                              setMaintenanceForm({ name: '', frequency_months: '', last_serviced: '', notes: '' })
+                            }}
+                            className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-medium"
+                          >
+                            Cancel
+                          </button>
+                        )}
+                      </div>
+                    </form>
+                  </div>
+
+                  {/* Task List */}
+                  <div className="space-y-3">
+                    {maintenanceTasks.length === 0 ? (
+                      <p className="text-gray-500 text-center py-8">No maintenance tasks yet. Add your first task above.</p>
+                    ) : (
+                      maintenanceTasks.map((task) => {
+                        const todayStr = new Date().toISOString().split('T')[0]
+                        const isOverdue = task.next_due && task.next_due < todayStr
+                        const isDueSoon = task.next_due && !isOverdue && (() => {
+                          const dueDate = new Date(task.next_due + 'T00:00:00')
+                          const thirtyDays = new Date()
+                          thirtyDays.setDate(thirtyDays.getDate() + 30)
+                          return dueDate <= thirtyDays
+                        })()
+
+                        const formatDisplayDate = (d: string) => {
+                          const [y, m, day] = d.split('T')[0].split('-')
+                          return new Date(parseInt(y), parseInt(m) - 1, parseInt(day)).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                        }
+
+                        const freqLabel = task.frequency_months === 1 ? 'Monthly'
+                          : task.frequency_months === 12 ? 'Yearly'
+                          : `Every ${task.frequency_months} months`
+
+                        return (
+                          <div
+                            key={task.id}
+                            className={`border rounded-lg p-4 ${
+                              isOverdue ? 'border-red-300 bg-red-50'
+                              : isDueSoon ? 'border-amber-300 bg-amber-50'
+                              : 'border-gray-200 bg-white'
+                            }`}
+                          >
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-semibold text-gray-900">{task.name}</span>
+                                  <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">{freqLabel}</span>
+                                  {isOverdue && (
+                                    <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium">Overdue</span>
+                                  )}
+                                  {isDueSoon && (
+                                    <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">Due Soon</span>
+                                  )}
+                                </div>
+                                <div className="text-sm text-gray-600 mt-1 space-x-4">
+                                  <span>Last: {task.last_serviced ? formatDisplayDate(task.last_serviced) : 'Never'}</span>
+                                  <span>Next: {task.next_due ? formatDisplayDate(task.next_due) : 'N/A'}</span>
+                                </div>
+                                {task.notes && <p className="text-xs text-gray-500 mt-1">{task.notes}</p>}
+                              </div>
+                              <div className="flex gap-2 flex-shrink-0">
+                                {completingTaskId === task.id ? (
+                                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                                    <input
+                                      type="date"
+                                      value={completeDate}
+                                      onChange={(e) => setCompleteDate(e.target.value)}
+                                      className="px-2 py-1 border border-gray-300 rounded text-sm"
+                                    />
+                                    <input
+                                      type="text"
+                                      value={completeNotes}
+                                      onChange={(e) => setCompleteNotes(e.target.value)}
+                                      placeholder="Notes (optional)"
+                                      className="px-2 py-1 border border-gray-300 rounded text-sm"
+                                    />
+                                    <button
+                                      onClick={() => handleCompleteMaintenanceTask(task.id)}
+                                      className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700"
+                                    >
+                                      Save
+                                    </button>
+                                    <button
+                                      onClick={() => { setCompletingTaskId(null); setCompleteDate(''); setCompleteNotes('') }}
+                                      className="px-3 py-1 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300"
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <>
+                                    <button
+                                      onClick={() => {
+                                        setCompletingTaskId(task.id)
+                                        setCompleteDate(new Date().toISOString().split('T')[0])
+                                      }}
+                                      className="px-3 py-1.5 bg-green-100 text-green-700 rounded-lg text-sm hover:bg-green-200 font-medium"
+                                    >
+                                      ✓ Done
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        setEditingTaskId(task.id)
+                                        setMaintenanceForm({
+                                          name: task.name,
+                                          frequency_months: String(task.frequency_months),
+                                          last_serviced: task.last_serviced ? task.last_serviced.split('T')[0] : '',
+                                          notes: task.notes || '',
+                                        })
+                                      }}
+                                      className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg text-sm hover:bg-blue-200 font-medium"
+                                    >
+                                      Edit
+                                    </button>
+                                    <button
+                                      onClick={() => handleDeleteMaintenanceTask(task.id)}
+                                      className="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-sm hover:bg-red-200 font-medium"
+                                    >
+                                      Delete
+                                    </button>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })
+                    )}
+                  </div>
+                </div>
               </div>
             )}
 
