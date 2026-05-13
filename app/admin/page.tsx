@@ -1322,103 +1322,98 @@ export default function AdminDashboard() {
 
           {/* Tabs */}
           <div className="border-b border-gray-200 overflow-x-auto scrollbar-hide">
-            <div className="flex min-w-max">
+            <div className="flex">
               <button
                 onClick={() => setActiveTab('bookings')}
-                className={`px-3 sm:px-6 py-3 font-medium transition-colors flex items-center gap-1 sm:gap-2 whitespace-nowrap text-sm sm:text-base ${
+                className={`px-2 sm:px-3 lg:px-4 py-3 font-medium transition-colors flex items-center gap-1 whitespace-nowrap text-xs sm:text-sm ${
                   activeTab === 'bookings'
                     ? 'border-b-2 border-purple-600 text-purple-600'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                <Users className="w-4 h-4" />
-                <span className="hidden xs:inline">Inquiries</span>
-                <span className="xs:hidden">Inq.</span>
-                <span className="hidden sm:inline">({bookings.length})</span>
+                <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Inquiries</span>
+                <span className="sm:hidden">Inq.</span>
               </button>
               <button
                 onClick={() => setActiveTab('calendar')}
-                className={`px-3 sm:px-6 py-3 font-medium transition-colors flex items-center gap-1 sm:gap-2 whitespace-nowrap text-sm sm:text-base ${
+                className={`px-2 sm:px-3 lg:px-4 py-3 font-medium transition-colors flex items-center gap-1 whitespace-nowrap text-xs sm:text-sm ${
                   activeTab === 'calendar'
                     ? 'border-b-2 border-purple-600 text-purple-600'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                <Ban className="w-4 h-4" />
-                <span className="hidden xs:inline">Date Blocks</span>
-                <span className="xs:hidden">Dates</span>
-                <span className="hidden sm:inline">({dateBlocks.length})</span>
+                <Ban className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Date Blocks</span>
+                <span className="sm:hidden">Dates</span>
               </button>
               <button
                 onClick={() => setActiveTab('reviews')}
-                className={`px-3 sm:px-6 py-3 font-medium transition-colors flex items-center gap-1 sm:gap-2 whitespace-nowrap text-sm sm:text-base ${
+                className={`px-2 sm:px-3 lg:px-4 py-3 font-medium transition-colors flex items-center gap-1 whitespace-nowrap text-xs sm:text-sm ${
                   activeTab === 'reviews'
                     ? 'border-b-2 border-purple-600 text-purple-600'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                <Star className="w-4 h-4" />
+                <Star className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 <span>Reviews</span>
-                <span className="hidden sm:inline">({reviews.length})</span>
               </button>
               <button
                 onClick={() => setActiveTab('invoices')}
-                className={`px-3 sm:px-6 py-3 font-medium transition-colors flex items-center gap-1 sm:gap-2 whitespace-nowrap text-sm sm:text-base ${
+                className={`px-2 sm:px-3 lg:px-4 py-3 font-medium transition-colors flex items-center gap-1 whitespace-nowrap text-xs sm:text-sm ${
                   activeTab === 'invoices'
                     ? 'border-b-2 border-purple-600 text-purple-600'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                <FileText className="w-4 h-4" />
+                <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 <span>Invoices</span>
-                <span className="hidden sm:inline">({invoices.length})</span>
               </button>
               <button
                 onClick={() => setActiveTab('rental-agreements')}
-                className={`px-3 sm:px-6 py-3 font-medium transition-colors flex items-center gap-1 sm:gap-2 whitespace-nowrap text-sm sm:text-base ${
+                className={`px-2 sm:px-3 lg:px-4 py-3 font-medium transition-colors flex items-center gap-1 whitespace-nowrap text-xs sm:text-sm ${
                   activeTab === 'rental-agreements'
                     ? 'border-b-2 border-purple-600 text-purple-600'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                <FileSignature className="w-4 h-4" />
-                <span className="hidden sm:inline">Rental Agreements</span>
-                <span className="sm:hidden">Rentals</span>
-                <span className="hidden sm:inline">({rentalAgreements.length})</span>
+                <FileSignature className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Rentals</span>
+                <span className="sm:hidden">Rent.</span>
               </button>
               <button
                 onClick={() => setActiveTab('maintenance')}
-                className={`px-3 sm:px-6 py-3 font-medium transition-colors flex items-center gap-1 sm:gap-2 whitespace-nowrap text-sm sm:text-base ${
+                className={`px-2 sm:px-3 lg:px-4 py-3 font-medium transition-colors flex items-center gap-1 whitespace-nowrap text-xs sm:text-sm ${
                   activeTab === 'maintenance'
                     ? 'border-b-2 border-purple-600 text-purple-600'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                <Wrench className="w-4 h-4" />
-                <span className="hidden sm:inline">Maintenance</span>
-                <span className="sm:hidden">Maint.</span>
+                <Wrench className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Maint.</span>
+                <span className="sm:hidden">Mnt.</span>
               </button>
               <button
                 onClick={() => setActiveTab('occupancy')}
-                className={`px-3 sm:px-6 py-3 font-medium transition-colors flex items-center gap-1 sm:gap-2 whitespace-nowrap text-sm sm:text-base ${
+                className={`px-2 sm:px-3 lg:px-4 py-3 font-medium transition-colors flex items-center gap-1 whitespace-nowrap text-xs sm:text-sm ${
                   activeTab === 'occupancy'
                     ? 'border-b-2 border-purple-600 text-purple-600'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                <BarChart3 className="w-4 h-4" />
+                <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 <span className="hidden sm:inline">Occupancy</span>
                 <span className="sm:hidden">Occ.</span>
               </button>
               <button
                 onClick={() => setActiveTab('settings')}
-                className={`px-3 sm:px-6 py-3 font-medium transition-colors flex items-center gap-1 sm:gap-2 whitespace-nowrap text-sm sm:text-base ${
+                className={`px-2 sm:px-3 lg:px-4 py-3 font-medium transition-colors flex items-center gap-1 whitespace-nowrap text-xs sm:text-sm ${
                   activeTab === 'settings'
                     ? 'border-b-2 border-purple-600 text-purple-600'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                <Settings className="w-4 h-4" />
+                <Settings className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 <span>Settings</span>
               </button>
             </div>
