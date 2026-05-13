@@ -84,11 +84,35 @@ export async function GET(request: NextRequest) {
   const totalDays = monthlyData.reduce((sum, m) => sum + m.daysInMonth, 0);
   const totalOccupied = monthlyData.reduce((sum, m) => sum + m.occupiedDays, 0);
 
+  // Calculate remaining open nights from today through end of year
+  let remainingDays = 0;
+  let remainingBooked = 0;
+  const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+  if (year === today.getFullYear()) {
+    const yearEndDate = new Date(year, 11, 31);
+    remainingDays = Math.ceil((yearEndDate.getTime() - todayDate.getTime()) / (1000 * 60 * 60 * 24));
+
+    for (const block of blocks) {
+      const blockStart = new Date(block.start_date);
+      const blockEnd = new Date(block.end_date);
+      remainingBooked += countOccupiedDays(blockStart, blockEnd, todayDate, new Date(year + 1, 0, 1));
+    }
+    remainingBooked = Math.min(remainingBooked, remainingDays);
+  } else if (year > today.getFullYear()) {
+    remainingDays = totalDays;
+    remainingBooked = totalOccupied;
+  }
+
+  const remainingOpenNights = Math.max(0, remainingDays - remainingBooked);
+
   return NextResponse.json({
     year,
     months: monthlyData,
     yearlyOccupancyRate: Math.round((totalOccupied / totalDays) * 100),
     totalOccupiedDays: totalOccupied,
     totalDays,
+    remainingOpenNights,
+    remainingDays,
   });
 }

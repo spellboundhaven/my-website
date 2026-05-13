@@ -226,6 +226,8 @@ export default function AdminDashboard() {
     yearlyOccupancyRate: number
     totalOccupiedDays: number
     totalDays: number
+    remainingOpenNights: number
+    remainingDays: number
   }
   const [occupancyData, setOccupancyData] = useState<OccupancyData | null>(null)
   const [occupancyYear, setOccupancyYear] = useState(new Date().getFullYear())
@@ -3341,7 +3343,7 @@ export default function AdminDashboard() {
                     </div>
                   ) : (
                     <>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+                      <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-8">
                         <div className="bg-purple-50 rounded-xl p-4 text-center">
                           <div className="text-3xl font-bold text-purple-700">{occupancyData.yearlyOccupancyRate}%</div>
                           <div className="text-sm text-purple-600 mt-1">Yearly Average</div>
@@ -3353,6 +3355,10 @@ export default function AdminDashboard() {
                         <div className="bg-green-50 rounded-xl p-4 text-center">
                           <div className="text-3xl font-bold text-green-700">{occupancyData.totalDays - occupancyData.totalOccupiedDays}</div>
                           <div className="text-sm text-green-600 mt-1">Nights Available</div>
+                        </div>
+                        <div className="bg-rose-50 rounded-xl p-4 text-center">
+                          <div className="text-3xl font-bold text-rose-700">{occupancyData.remainingOpenNights}</div>
+                          <div className="text-sm text-rose-600 mt-1">Remaining Open</div>
                         </div>
                         <div className="bg-amber-50 rounded-xl p-4 text-center">
                           <div className="text-3xl font-bold text-amber-700">
