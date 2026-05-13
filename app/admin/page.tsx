@@ -1378,8 +1378,8 @@ export default function AdminDashboard() {
                 }`}
               >
                 <FileSignature className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline">Rentals</span>
-                <span className="sm:hidden">Rent.</span>
+                <span className="hidden sm:inline">Rental Agreements</span>
+                <span className="sm:hidden">Rentals</span>
               </button>
               <button
                 onClick={() => setActiveTab('maintenance')}
@@ -1390,8 +1390,8 @@ export default function AdminDashboard() {
                 }`}
               >
                 <Wrench className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline">Maint.</span>
-                <span className="sm:hidden">Mnt.</span>
+                <span className="hidden sm:inline">Maintenance</span>
+                <span className="sm:hidden">Maint.</span>
               </button>
               <button
                 onClick={() => setActiveTab('occupancy')}
