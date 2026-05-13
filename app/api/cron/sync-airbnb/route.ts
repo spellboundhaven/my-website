@@ -67,12 +67,16 @@ export async function GET(request: NextRequest) {
           }
         }
 
-        // Remove stale blocks: existing DB blocks for this source no longer in the iCal feed
+        // Remove stale FUTURE blocks: existing DB blocks for this source no longer in
+        // the iCal feed (cancelled bookings). Past blocks are kept as historical records.
         const existingBlocks = await getDateBlocksBySource(source);
+        const todayStr = new Date().toISOString().split('T')[0];
         let removedCount = 0;
         for (const block of existingBlocks) {
           const blockStart = new Date(block.start_date).toISOString().split('T')[0];
           const blockEnd = new Date(block.end_date).toISOString().split('T')[0];
+          
+          if (blockEnd < todayStr) continue;
           
           const stillInFeed = icalRanges.some(r => r.start === blockStart && r.end === blockEnd);
           if (!stillInFeed) {

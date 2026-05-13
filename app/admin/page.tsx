@@ -1,12 +1,54 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { CalendarIcon, Users, Ban, Settings, Star, FileText, FileSignature, Download, Wrench } from 'lucide-react'
+import { CalendarIcon, Users, Ban, Settings, Star, FileText, FileSignature, Download, Wrench, BarChart3 } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import jsPDF from 'jspdf'
 import RichTextContent from '@/components/RichTextContent'
 
 const RichTextEditor = dynamic(() => import('@/components/RichTextEditor'), { ssr: false })
+
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ReferenceLine,
+} from 'recharts'
+
+function OccupancyChart({ data }: { data: { monthName: string; occupancyRate: number; isFuture: boolean; occupiedDays: number; daysInMonth: number }[] }) {
+  return (
+    <div className="w-full h-[300px] sm:h-[350px]">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+          <XAxis dataKey="monthName" tick={{ fontSize: 12, fill: '#6b7280' }} />
+          <YAxis domain={[0, 100]} tick={{ fontSize: 12, fill: '#6b7280' }} tickFormatter={(v) => `${v}%`} />
+          <Tooltip
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            formatter={(value: any, _name: any, props: any) => [
+              `${value}% (${props.payload.occupiedDays}/${props.payload.daysInMonth} nights)`,
+              'Occupancy',
+            ]}
+            contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '13px' }}
+          />
+          <ReferenceLine y={50} stroke="#d1d5db" strokeDasharray="4 4" label={{ value: '50%', position: 'right', fontSize: 11, fill: '#9ca3af' }} />
+          <Line
+            type="monotone"
+            dataKey="occupancyRate"
+            stroke="#7c3aed"
+            strokeWidth={2.5}
+            dot={{ r: 5, fill: '#7c3aed', stroke: '#fff', strokeWidth: 2 }}
+            activeDot={{ r: 7, fill: '#7c3aed', stroke: '#fff', strokeWidth: 2 }}
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  )
+}
 
 // Helper function to format dates consistently (EST timezone, YYYY-MM-DD format)
 function formatDateForDisplay(date: string | Date): string {
@@ -132,7 +174,7 @@ export default function AdminDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
   const [authError, setAuthError] = useState('')
-  const [activeTab, setActiveTab] = useState<'bookings' | 'calendar' | 'reviews' | 'invoices' | 'rental-agreements' | 'maintenance' | 'settings'>('bookings')
+  const [activeTab, setActiveTab] = useState<'bookings' | 'calendar' | 'reviews' | 'invoices' | 'rental-agreements' | 'maintenance' | 'occupancy' | 'settings'>('bookings')
   
   const [bookings, setBookings] = useState<Booking[]>([])
   const [dateBlocks, setDateBlocks] = useState<DateBlock[]>([])
@@ -168,6 +210,25 @@ export default function AdminDashboard() {
   const [completingTaskId, setCompletingTaskId] = useState<number | null>(null)
   const [completeDate, setCompleteDate] = useState('')
   const [completeNotes, setCompleteNotes] = useState('')
+
+  // Occupancy state
+  interface OccupancyMonth {
+    month: number
+    monthName: string
+    daysInMonth: number
+    occupiedDays: number
+    occupancyRate: number
+    isFuture: boolean
+  }
+  interface OccupancyData {
+    year: number
+    months: OccupancyMonth[]
+    yearlyOccupancyRate: number
+    totalOccupiedDays: number
+    totalDays: number
+  }
+  const [occupancyData, setOccupancyData] = useState<OccupancyData | null>(null)
+  const [occupancyYear, setOccupancyYear] = useState(new Date().getFullYear())
 
   // Rental agreement state
   const [rentalAgreementTab, setRentalAgreementTab] = useState<'create' | 'view'>('create')
@@ -217,8 +278,11 @@ export default function AdminDashboard() {
       if (activeTab === 'maintenance') {
         fetchMaintenanceTasks()
       }
+      if (activeTab === 'occupancy') {
+        fetchOccupancyData(occupancyYear)
+      }
     }
-  }, [isAuthenticated, activeTab, rentalAgreementTab])
+  }, [isAuthenticated, activeTab, rentalAgreementTab, occupancyYear])
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
@@ -605,6 +669,19 @@ export default function AdminDashboard() {
       if (data.success) setMaintenanceTasks(data.tasks || [])
     } catch (error) {
       console.error('Error fetching maintenance tasks:', error)
+    }
+  }
+
+  const fetchOccupancyData = async (year: number) => {
+    try {
+      const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123'
+      const response = await fetch(`/api/occupancy?year=${year}`, {
+        headers: { 'Authorization': `Bearer ${adminPassword}` }
+      })
+      const data = await response.json()
+      setOccupancyData(data)
+    } catch (error) {
+      console.error('Error fetching occupancy data:', error)
     }
   }
 
@@ -1320,6 +1397,18 @@ export default function AdminDashboard() {
                 <span className="sm:hidden">Maint.</span>
               </button>
               <button
+                onClick={() => setActiveTab('occupancy')}
+                className={`px-3 sm:px-6 py-3 font-medium transition-colors flex items-center gap-1 sm:gap-2 whitespace-nowrap text-sm sm:text-base ${
+                  activeTab === 'occupancy'
+                    ? 'border-b-2 border-purple-600 text-purple-600'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <BarChart3 className="w-4 h-4" />
+                <span className="hidden sm:inline">Occupancy</span>
+                <span className="sm:hidden">Occ.</span>
+              </button>
+              <button
                 onClick={() => setActiveTab('settings')}
                 className={`px-3 sm:px-6 py-3 font-medium transition-colors flex items-center gap-1 sm:gap-2 whitespace-nowrap text-sm sm:text-base ${
                   activeTab === 'settings'
@@ -1435,7 +1524,7 @@ export default function AdminDashboard() {
                       </button>
                       <button
                         onClick={async () => {
-                          if (!confirm('Clean up all past date blocks?')) return;
+                          if (!confirm('Remove duplicate and buffer blocks?')) return;
                           try {
                             setLoading(true);
                             const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123';
@@ -1445,7 +1534,7 @@ export default function AdminDashboard() {
                                 'Content-Type': 'application/json',
                                 'Authorization': `Bearer ${adminPassword}`
                               },
-                              body: JSON.stringify({ action: 'cleanup-past' })
+                              body: JSON.stringify({ action: 'clear-buffers' })
                             });
                             const result = await response.json();
                             if (result.success) {
@@ -1456,7 +1545,7 @@ export default function AdminDashboard() {
                             }
                           } catch (error) {
                             console.error('Error:', error);
-                            alert('Failed to cleanup past blocks');
+                            alert('Failed to clean up buffers');
                           } finally {
                             setLoading(false);
                           }
@@ -1464,40 +1553,7 @@ export default function AdminDashboard() {
                         disabled={loading}
                         className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm rounded-lg font-medium transition disabled:bg-gray-400"
                       >
-                        Clean Up Past
-                      </button>
-                      <button
-                        onClick={async () => {
-                          if (!confirm('Full cleanup: Remove duplicates AND past blocks?')) return;
-                          try {
-                            setLoading(true);
-                            const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123';
-                            const response = await fetch('/api/cleanup-blocks', {
-                              method: 'POST',
-                              headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${adminPassword}`
-                              },
-                              body: JSON.stringify({ action: 'full-cleanup' })
-                            });
-                            const result = await response.json();
-                            if (result.success) {
-                              alert(result.message);
-                              fetchAdminData();
-                            } else {
-                              alert('Error: ' + result.error);
-                            }
-                          } catch (error) {
-                            console.error('Error:', error);
-                            alert('Failed to run full cleanup');
-                          } finally {
-                            setLoading(false);
-                          }
-                        }}
-                        disabled={loading}
-                        className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg font-medium transition disabled:bg-gray-400"
-                      >
-                        Full Cleanup
+                        Remove Buffers
                       </button>
                     </div>
                   </div>
@@ -3252,6 +3308,114 @@ export default function AdminDashboard() {
                       })
                     )}
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* Occupancy Tab */}
+            {activeTab === 'occupancy' && (
+              <div className="space-y-8">
+                <div>
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <h2 className="text-2xl font-bold text-gray-800">Occupancy Dashboard</h2>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setOccupancyYear(prev => prev - 1)}
+                        className="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 rounded-lg font-medium text-sm transition"
+                      >
+                        &larr;
+                      </button>
+                      <span className="text-lg font-bold text-gray-800 min-w-[60px] text-center">{occupancyYear}</span>
+                      <button
+                        onClick={() => setOccupancyYear(prev => prev + 1)}
+                        className="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 rounded-lg font-medium text-sm transition"
+                      >
+                        &rarr;
+                      </button>
+                    </div>
+                  </div>
+
+                  {!occupancyData ? (
+                    <div className="flex justify-center py-12">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600" />
+                    </div>
+                  ) : (
+                    <>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+                        <div className="bg-purple-50 rounded-xl p-4 text-center">
+                          <div className="text-3xl font-bold text-purple-700">{occupancyData.yearlyOccupancyRate}%</div>
+                          <div className="text-sm text-purple-600 mt-1">Yearly Average</div>
+                        </div>
+                        <div className="bg-blue-50 rounded-xl p-4 text-center">
+                          <div className="text-3xl font-bold text-blue-700">{occupancyData.totalOccupiedDays}</div>
+                          <div className="text-sm text-blue-600 mt-1">Nights Booked</div>
+                        </div>
+                        <div className="bg-green-50 rounded-xl p-4 text-center">
+                          <div className="text-3xl font-bold text-green-700">{occupancyData.totalDays - occupancyData.totalOccupiedDays}</div>
+                          <div className="text-sm text-green-600 mt-1">Nights Available</div>
+                        </div>
+                        <div className="bg-amber-50 rounded-xl p-4 text-center">
+                          <div className="text-3xl font-bold text-amber-700">
+                            {occupancyData.months.filter(m => m.occupancyRate > 0).length}
+                          </div>
+                          <div className="text-sm text-amber-600 mt-1">Active Months</div>
+                        </div>
+                      </div>
+
+                      <div className="bg-white border rounded-xl p-4 sm:p-6 mb-8">
+                        <h3 className="text-lg font-semibold text-gray-700 mb-4">Monthly Occupancy Rate</h3>
+                        <OccupancyChart data={occupancyData.months} />
+                      </div>
+
+                      <div className="bg-white border rounded-xl overflow-hidden">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="bg-gray-50 border-b">
+                              <th className="text-left px-4 py-3 font-semibold text-gray-700">Month</th>
+                              <th className="text-center px-4 py-3 font-semibold text-gray-700">Days</th>
+                              <th className="text-center px-4 py-3 font-semibold text-gray-700">Booked</th>
+                              <th className="text-center px-4 py-3 font-semibold text-gray-700">Rate</th>
+                              <th className="text-center px-4 py-3 font-semibold text-gray-700 hidden sm:table-cell">Bar</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {occupancyData.months.map((m) => (
+                              <tr key={m.month} className={`border-b last:border-b-0 ${m.isFuture ? 'text-gray-400' : ''}`}>
+                                <td className="px-4 py-3 font-medium">{m.monthName}</td>
+                                <td className="px-4 py-3 text-center">{m.daysInMonth}</td>
+                                <td className="px-4 py-3 text-center">{m.occupiedDays}</td>
+                                <td className="px-4 py-3 text-center">
+                                  <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-bold ${
+                                    m.occupancyRate >= 75 ? 'bg-green-100 text-green-700' :
+                                    m.occupancyRate >= 50 ? 'bg-blue-100 text-blue-700' :
+                                    m.occupancyRate >= 25 ? 'bg-amber-100 text-amber-700' :
+                                    m.occupancyRate > 0 ? 'bg-orange-100 text-orange-700' :
+                                    'bg-gray-100 text-gray-500'
+                                  }`}>
+                                    {m.occupancyRate}%
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3 hidden sm:table-cell">
+                                  <div className="w-full bg-gray-100 rounded-full h-3">
+                                    <div
+                                      className={`h-3 rounded-full transition-all ${
+                                        m.occupancyRate >= 75 ? 'bg-green-500' :
+                                        m.occupancyRate >= 50 ? 'bg-blue-500' :
+                                        m.occupancyRate >= 25 ? 'bg-amber-500' :
+                                        m.occupancyRate > 0 ? 'bg-orange-500' :
+                                        'bg-gray-300'
+                                      }`}
+                                      style={{ width: `${m.occupancyRate}%` }}
+                                    />
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             )}
