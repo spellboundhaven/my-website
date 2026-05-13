@@ -3343,7 +3343,7 @@ export default function AdminDashboard() {
                     </div>
                   ) : (
                     <>
-                      <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-8">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
                         <div className="bg-purple-50 rounded-xl p-4 text-center">
                           <div className="text-3xl font-bold text-purple-700">{occupancyData.yearlyOccupancyRate}%</div>
                           <div className="text-sm text-purple-600 mt-1">Yearly Average</div>
@@ -3359,12 +3359,6 @@ export default function AdminDashboard() {
                         <div className="bg-rose-50 rounded-xl p-4 text-center">
                           <div className="text-3xl font-bold text-rose-700">{occupancyData.remainingOpenNights}</div>
                           <div className="text-sm text-rose-600 mt-1">Remaining Open</div>
-                        </div>
-                        <div className="bg-amber-50 rounded-xl p-4 text-center">
-                          <div className="text-3xl font-bold text-amber-700">
-                            {occupancyData.months.filter(m => m.occupancyRate > 0).length}
-                          </div>
-                          <div className="text-sm text-amber-600 mt-1">Active Months</div>
                         </div>
                       </div>
 
