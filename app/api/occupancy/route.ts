@@ -50,8 +50,20 @@ export async function GET(request: NextRequest) {
 
   const blocks = result.rows;
 
+  function classifySource(reason: string): 'airbnb' | 'vrbo' | 'direct' {
+    const r = reason.toLowerCase();
+    if (r.startsWith('airbnb')) return 'airbnb';
+    if (r.startsWith('vrbo')) return 'vrbo';
+    return 'direct';
+  }
+
   const monthlyData = [];
   const today = new Date();
+
+  const sourceTotals = { airbnb: 0, vrbo: 0, direct: 0 };
+  const sourceBookings = { airbnb: 0, vrbo: 0, direct: 0 };
+
+  const countedBookings = new Set<string>();
 
   for (let month = 1; month <= 12; month++) {
     const daysInMonth = getDaysInMonth(year, month);
@@ -59,14 +71,30 @@ export async function GET(request: NextRequest) {
     const monthEnd = new Date(year, month, 1);
 
     let occupiedDays = 0;
+    const monthSources = { airbnb: 0, vrbo: 0, direct: 0 };
 
     for (const block of blocks) {
       const blockStart = new Date(block.start_date);
       const blockEnd = new Date(block.end_date);
-      occupiedDays += countOccupiedDays(blockStart, blockEnd, monthStart, monthEnd);
+      const days = countOccupiedDays(blockStart, blockEnd, monthStart, monthEnd);
+      if (days > 0) {
+        const source = classifySource(block.reason);
+        monthSources[source] += days;
+        occupiedDays += days;
+
+        const blockKey = `${block.start_date}-${block.end_date}-${block.reason}`;
+        if (!countedBookings.has(blockKey)) {
+          countedBookings.add(blockKey);
+          sourceBookings[source]++;
+        }
+      }
     }
 
     occupiedDays = Math.min(occupiedDays, daysInMonth);
+
+    sourceTotals.airbnb += monthSources.airbnb;
+    sourceTotals.vrbo += monthSources.vrbo;
+    sourceTotals.direct += monthSources.direct;
 
     const isFutureMonth = year > today.getFullYear() ||
       (year === today.getFullYear() && month > today.getMonth() + 1);
@@ -78,6 +106,9 @@ export async function GET(request: NextRequest) {
       occupiedDays,
       occupancyRate: Math.round((occupiedDays / daysInMonth) * 100),
       isFuture: isFutureMonth,
+      airbnb: monthSources.airbnb,
+      vrbo: monthSources.vrbo,
+      direct: monthSources.direct,
     });
   }
 
@@ -114,5 +145,9 @@ export async function GET(request: NextRequest) {
     totalDays,
     remainingOpenNights,
     remainingDays,
+    bySource: {
+      nights: sourceTotals,
+      bookings: sourceBookings,
+    },
   });
 }

@@ -19,7 +19,7 @@ import {
   ReferenceLine,
 } from 'recharts'
 
-function OccupancyChart({ data }: { data: { monthName: string; occupancyRate: number; isFuture: boolean; occupiedDays: number; daysInMonth: number }[] }) {
+function OccupancyChart({ data }: { data: { monthName: string; occupancyRate: number; isFuture: boolean; occupiedDays: number; daysInMonth: number; airbnb: number; vrbo: number; direct: number }[] }) {
   return (
     <div className="w-full h-[300px] sm:h-[350px]">
       <ResponsiveContainer width="100%" height="100%">
@@ -29,10 +29,13 @@ function OccupancyChart({ data }: { data: { monthName: string; occupancyRate: nu
           <YAxis domain={[0, 100]} tick={{ fontSize: 12, fill: '#6b7280' }} tickFormatter={(v) => `${v}%`} />
           <Tooltip
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            formatter={(value: any, _name: any, props: any) => [
-              `${value}% (${props.payload.occupiedDays}/${props.payload.daysInMonth} nights)`,
-              'Occupancy',
-            ]}
+            formatter={(value: any, name: any, props: any) => {
+              if (name === 'occupancyRate') return [`${value}% (${props.payload.occupiedDays}/${props.payload.daysInMonth} nights)`, 'Total']
+              if (name === 'airbnb') return [`${value} nights`, 'Airbnb']
+              if (name === 'vrbo') return [`${value} nights`, 'VRBO']
+              if (name === 'direct') return [`${value} nights`, 'Direct']
+              return [value, name]
+            }}
             contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '13px' }}
           />
           <ReferenceLine y={50} stroke="#d1d5db" strokeDasharray="4 4" label={{ value: '50%', position: 'right', fontSize: 11, fill: '#9ca3af' }} />
@@ -219,6 +222,9 @@ export default function AdminDashboard() {
     occupiedDays: number
     occupancyRate: number
     isFuture: boolean
+    airbnb: number
+    vrbo: number
+    direct: number
   }
   interface OccupancyData {
     year: number
@@ -228,6 +234,10 @@ export default function AdminDashboard() {
     totalDays: number
     remainingOpenNights: number
     remainingDays: number
+    bySource: {
+      nights: { airbnb: number; vrbo: number; direct: number }
+      bookings: { airbnb: number; vrbo: number; direct: number }
+    }
   }
   const [occupancyData, setOccupancyData] = useState<OccupancyData | null>(null)
   const [occupancyYear, setOccupancyYear] = useState(new Date().getFullYear())
@@ -3360,6 +3370,89 @@ export default function AdminDashboard() {
                       <div className="bg-white border rounded-xl p-4 sm:p-6 mb-8">
                         <h3 className="text-lg font-semibold text-gray-700 mb-4">Monthly Occupancy Rate</h3>
                         <OccupancyChart data={occupancyData.months} />
+                      </div>
+
+                      {/* Channel Breakdown */}
+                      <div className="bg-white border rounded-xl p-5 mb-8">
+                        <h3 className="text-lg font-semibold text-gray-700 mb-5">Channel Breakdown</h3>
+                        {(() => {
+                          const { nights: s, bookings: b } = occupancyData.bySource;
+                          const totalNights = s.airbnb + s.vrbo + s.direct;
+                          const totalBookings = b.airbnb + b.vrbo + b.direct;
+                          if (totalNights === 0 && totalBookings === 0) return <p className="text-gray-400 text-sm">No booking data yet.</p>;
+                          const channels = [
+                            { label: 'Airbnb', nights: s.airbnb, bookings: b.airbnb, color: '#ef4444', bg: 'bg-red-50', text: 'text-red-700', dot: 'bg-red-500' },
+                            { label: 'VRBO', nights: s.vrbo, bookings: b.vrbo, color: '#3b82f6', bg: 'bg-blue-50', text: 'text-blue-700', dot: 'bg-blue-500' },
+                            { label: 'Direct', nights: s.direct, bookings: b.direct, color: '#10b981', bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500' },
+                          ];
+                          return (
+                            <div className="space-y-6">
+                              <div className="grid grid-cols-3 gap-3 sm:gap-4">
+                                {channels.map(ch => (
+                                  <div key={ch.label} className={`${ch.bg} rounded-xl p-4`}>
+                                    <div className="flex items-center gap-2 mb-3">
+                                      <div className={`w-2.5 h-2.5 rounded-full ${ch.dot}`} />
+                                      <span className={`font-semibold text-sm ${ch.text}`}>{ch.label}</span>
+                                    </div>
+                                    <div className="space-y-1">
+                                      <div className="flex justify-between items-baseline">
+                                        <span className="text-xs text-gray-500">Bookings</span>
+                                        <span className={`text-xl font-bold ${ch.text}`}>{ch.bookings}</span>
+                                      </div>
+                                      <div className="flex justify-between items-baseline">
+                                        <span className="text-xs text-gray-500">Nights</span>
+                                        <span className={`text-xl font-bold ${ch.text}`}>{ch.nights}</span>
+                                      </div>
+                                      <div className="flex justify-between items-baseline">
+                                        <span className="text-xs text-gray-500">Avg stay</span>
+                                        <span className={`text-sm font-semibold ${ch.text}`}>{ch.bookings > 0 ? (ch.nights / ch.bookings).toFixed(1) : '—'} nights</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+
+                              {totalNights > 0 && (
+                                <div>
+                                  <div className="flex justify-between text-xs text-gray-500 mb-1.5">
+                                    <span>Nights share</span>
+                                    <span>{totalNights} total</span>
+                                  </div>
+                                  <div className="w-full h-4 bg-gray-100 rounded-full overflow-hidden flex">
+                                    {channels.map(ch => {
+                                      const pct = (ch.nights / totalNights) * 100;
+                                      if (pct === 0) return null;
+                                      return <div key={ch.label} className="h-full" style={{ width: `${pct}%`, backgroundColor: ch.color }} title={`${ch.label}: ${ch.nights} nights (${Math.round(pct)}%)`} />;
+                                    })}
+                                  </div>
+                                  <div className="flex gap-4 mt-2">
+                                    {channels.map(ch => {
+                                      const pct = totalNights > 0 ? Math.round((ch.nights / totalNights) * 100) : 0;
+                                      if (pct === 0) return null;
+                                      return (
+                                        <div key={ch.label} className="flex items-center gap-1.5 text-xs text-gray-600">
+                                          <div className={`w-2 h-2 rounded-full ${ch.dot}`} />
+                                          <span>{ch.label} {pct}%</span>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              )}
+
+                              <div className="pt-3 border-t grid grid-cols-2 gap-4 text-center">
+                                <div>
+                                  <div className="text-2xl font-bold text-gray-800">{totalBookings}</div>
+                                  <div className="text-xs text-gray-500">Total Bookings</div>
+                                </div>
+                                <div>
+                                  <div className="text-2xl font-bold text-gray-800">{totalBookings > 0 ? (totalNights / totalBookings).toFixed(1) : '—'}</div>
+                                  <div className="text-xs text-gray-500">Avg Stay (nights)</div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </div>
 
                       <div className="bg-white border rounded-xl overflow-hidden">
