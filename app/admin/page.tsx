@@ -3339,29 +3339,6 @@ export default function AdminDashboard() {
                                     >
                                       Edit
                                     </button>
-                                    {task.alert_enabled && (
-                                      <button
-                                        onClick={async () => {
-                                          try {
-                                            const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123'
-                                            const response = await fetch('/api/maintenance', {
-                                              method: 'POST',
-                                              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminPassword}` },
-                                              body: JSON.stringify({ action: 'test-alert', task_id: task.id }),
-                                            })
-                                            const data = await response.json()
-                                            if (data.success) alert(data.message)
-                                            else alert('Error: ' + (data.error || 'Failed to send test') + (data.details ? '\n' + data.details : ''))
-                                          } catch (error) {
-                                            console.error('Error sending test alert:', error)
-                                            alert('Failed to send test alert')
-                                          }
-                                        }}
-                                        className="px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-sm hover:bg-indigo-200 font-medium"
-                                      >
-                                        🔔 Test
-                                      </button>
-                                    )}
                                     <button
                                       onClick={() => handleDeleteMaintenanceTask(task.id)}
                                       className="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-sm hover:bg-red-200 font-medium"
