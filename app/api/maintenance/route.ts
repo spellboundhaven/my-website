@@ -89,10 +89,9 @@ export async function POST(request: NextRequest) {
       }
 
       const hostEmail = process.env.HOST_EMAIL || 'spellboundhaven.disney@gmail.com';
-      const formatDate = (d: string) => {
-        const parts = d.split('T')[0].split('-');
-        return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]))
-          .toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      const formatDate = (d: string | Date) => {
+        const date = d instanceof Date ? d : new Date(d);
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
       };
 
       const emailHtml = `
