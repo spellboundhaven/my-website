@@ -80,7 +80,8 @@ export async function POST(request: NextRequest) {
       if (!task_id) return NextResponse.json({ error: 'Task ID required' }, { status: 400 });
 
       const tasks = await getAllMaintenanceTasks();
-      const task = tasks.find((t: MaintenanceTask) => t.id === task_id);
+      const taskIdNum = Number(task_id);
+      const task = tasks.find((t: MaintenanceTask) => Number(t.id) === taskIdNum);
       if (!task) return NextResponse.json({ error: 'Task not found' }, { status: 404 });
 
       if (!process.env.RESEND_API_KEY) {
@@ -89,8 +90,8 @@ export async function POST(request: NextRequest) {
 
       const hostEmail = process.env.HOST_EMAIL || 'spellboundhaven.disney@gmail.com';
       const formatDate = (d: string) => {
-        const [y, m, day] = d.split('T')[0].split('-');
-        return new Date(parseInt(y), parseInt(m) - 1, parseInt(day))
+        const parts = d.split('T')[0].split('-');
+        return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]))
           .toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
       };
 
@@ -160,6 +161,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
   } catch (error) {
     console.error('Error processing maintenance action:', error);
-    return NextResponse.json({ error: 'Failed to process request' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to process request', details: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }

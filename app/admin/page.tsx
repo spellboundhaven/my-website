@@ -3351,7 +3351,7 @@ export default function AdminDashboard() {
                                             })
                                             const data = await response.json()
                                             if (data.success) alert(data.message)
-                                            else alert('Error: ' + (data.error || 'Failed to send test'))
+                                            else alert('Error: ' + (data.error || 'Failed to send test') + (data.details ? '\n' + data.details : ''))
                                           } catch (error) {
                                             console.error('Error sending test alert:', error)
                                             alert('Failed to send test alert')
