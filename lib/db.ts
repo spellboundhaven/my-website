@@ -1162,6 +1162,8 @@ export interface MaintenanceTask {
   last_serviced: string | null;
   next_due?: string | null;
   notes?: string;
+  alert_enabled?: boolean;
+  alert_days_before?: number;
   created_at?: string;
 }
 
@@ -1186,6 +1188,9 @@ export async function initMaintenanceTables() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `;
+
+    await sql`ALTER TABLE maintenance_tasks ADD COLUMN IF NOT EXISTS alert_enabled BOOLEAN DEFAULT false`;
+    await sql`ALTER TABLE maintenance_tasks ADD COLUMN IF NOT EXISTS alert_days_before INTEGER DEFAULT 14`;
 
     await sql`
       CREATE TABLE IF NOT EXISTS maintenance_logs (
@@ -1217,8 +1222,8 @@ export async function createMaintenanceTask(task: MaintenanceTask): Promise<Main
     : null;
 
   const result = await sql`
-    INSERT INTO maintenance_tasks (name, frequency_months, last_serviced, next_due, notes)
-    VALUES (${task.name}, ${task.frequency_months}, ${task.last_serviced || null}, ${nextDue}, ${task.notes || null})
+    INSERT INTO maintenance_tasks (name, frequency_months, last_serviced, next_due, notes, alert_enabled, alert_days_before)
+    VALUES (${task.name}, ${task.frequency_months}, ${task.last_serviced || null}, ${nextDue}, ${task.notes || null}, ${task.alert_enabled ?? false}, ${task.alert_days_before ?? 14})
     RETURNING *
   `;
   return result.rows[0] as MaintenanceTask;
@@ -1233,12 +1238,14 @@ export async function updateMaintenanceTask(id: number, updates: Partial<Mainten
   const frequencyMonths = updates.frequency_months ?? task.frequency_months;
   const lastServiced = updates.last_serviced !== undefined ? updates.last_serviced : task.last_serviced;
   const notes = updates.notes !== undefined ? updates.notes : task.notes;
+  const alertEnabled = updates.alert_enabled !== undefined ? updates.alert_enabled : (task.alert_enabled ?? false);
+  const alertDaysBefore = updates.alert_days_before !== undefined ? updates.alert_days_before : (task.alert_days_before ?? 14);
   const nextDue = lastServiced ? calculateNextDue(lastServiced, frequencyMonths) : null;
 
   const result = await sql`
     UPDATE maintenance_tasks
     SET name = ${name}, frequency_months = ${frequencyMonths}, last_serviced = ${lastServiced},
-        next_due = ${nextDue}, notes = ${notes}
+        next_due = ${nextDue}, notes = ${notes}, alert_enabled = ${alertEnabled}, alert_days_before = ${alertDaysBefore}
     WHERE id = ${id}
     RETURNING *
   `;

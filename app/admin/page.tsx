@@ -200,6 +200,8 @@ export default function AdminDashboard() {
     last_serviced: string | null
     next_due: string | null
     notes?: string
+    alert_enabled?: boolean
+    alert_days_before?: number
   }
   const [maintenanceTasks, setMaintenanceTasks] = useState<MaintenanceTask[]>([])
   const [maintenanceForm, setMaintenanceForm] = useState({
@@ -207,6 +209,8 @@ export default function AdminDashboard() {
     frequency_months: '',
     last_serviced: '',
     notes: '',
+    alert_enabled: false,
+    alert_days_before: '14',
   })
   const [editingTaskId, setEditingTaskId] = useState<number | null>(null)
   const [customTaskMode, setCustomTaskMode] = useState(false)
@@ -713,7 +717,7 @@ export default function AdminDashboard() {
       const data = await response.json()
       if (data.success) {
         fetchMaintenanceTasks()
-        setMaintenanceForm({ name: '', frequency_months: '', last_serviced: '', notes: '' })
+        setMaintenanceForm({ name: '', frequency_months: '', last_serviced: '', notes: '', alert_enabled: false, alert_days_before: '14' })
         setCustomTaskMode(false)
         form.reset()
       }
@@ -741,7 +745,7 @@ export default function AdminDashboard() {
       if (data.success) {
         fetchMaintenanceTasks()
         setEditingTaskId(null)
-        setMaintenanceForm({ name: '', frequency_months: '', last_serviced: '', notes: '' })
+        setMaintenanceForm({ name: '', frequency_months: '', last_serviced: '', notes: '', alert_enabled: false, alert_days_before: '14' })
       }
     } catch (error) {
       console.error('Error updating maintenance task:', error)
@@ -3172,6 +3176,34 @@ export default function AdminDashboard() {
                           />
                         </div>
                       </div>
+                      <div className="flex items-center gap-4 bg-gray-50 rounded-lg p-3">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={maintenanceForm.alert_enabled}
+                            onChange={(e) => setMaintenanceForm(prev => ({ ...prev, alert_enabled: e.target.checked }))}
+                            className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                          />
+                          <span className="text-sm font-medium text-gray-700">Email alert</span>
+                        </label>
+                        {maintenanceForm.alert_enabled && (
+                          <div className="flex items-center gap-2">
+                            <select
+                              value={maintenanceForm.alert_days_before}
+                              onChange={(e) => setMaintenanceForm(prev => ({ ...prev, alert_days_before: e.target.value }))}
+                              className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                            >
+                              <option value="7">7 days</option>
+                              <option value="14">14 days</option>
+                              <option value="21">21 days</option>
+                              <option value="30">30 days</option>
+                              <option value="45">45 days</option>
+                              <option value="60">60 days</option>
+                            </select>
+                            <span className="text-sm text-gray-500">before due date</span>
+                          </div>
+                        )}
+                      </div>
                       <div className="flex gap-2">
                         <button
                           type="submit"
@@ -3184,7 +3216,7 @@ export default function AdminDashboard() {
                             type="button"
                             onClick={() => {
                               setEditingTaskId(null)
-                              setMaintenanceForm({ name: '', frequency_months: '', last_serviced: '', notes: '' })
+                              setMaintenanceForm({ name: '', frequency_months: '', last_serviced: '', notes: '', alert_enabled: false, alert_days_before: '14' })
                             }}
                             className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-medium"
                           >
@@ -3245,8 +3277,13 @@ export default function AdminDashboard() {
                                   <span>Next: {task.next_due ? formatDisplayDate(task.next_due) : 'N/A'}</span>
                                 </div>
                                 {task.notes && <p className="text-xs text-gray-500 mt-1">{task.notes}</p>}
+                                {task.alert_enabled && (
+                                  <div className="text-xs text-indigo-600 mt-1 flex items-center gap-1">
+                                    <span>🔔</span> Alert {task.alert_days_before ?? 14} days before
+                                  </div>
+                                )}
                               </div>
-                              <div className="flex gap-2 flex-shrink-0">
+                              <div className="flex gap-2 flex-shrink-0 flex-wrap">
                                 {completingTaskId === task.id ? (
                                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
                                     <input
@@ -3294,12 +3331,37 @@ export default function AdminDashboard() {
                                           frequency_months: String(task.frequency_months),
                                           last_serviced: task.last_serviced ? task.last_serviced.split('T')[0] : '',
                                           notes: task.notes || '',
+                                          alert_enabled: task.alert_enabled ?? false,
+                                          alert_days_before: String(task.alert_days_before ?? 14),
                                         })
                                       }}
                                       className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg text-sm hover:bg-blue-200 font-medium"
                                     >
                                       Edit
                                     </button>
+                                    {task.alert_enabled && (
+                                      <button
+                                        onClick={async () => {
+                                          try {
+                                            const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123'
+                                            const response = await fetch('/api/maintenance', {
+                                              method: 'POST',
+                                              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminPassword}` },
+                                              body: JSON.stringify({ action: 'test-alert', task_id: task.id }),
+                                            })
+                                            const data = await response.json()
+                                            if (data.success) alert(data.message)
+                                            else alert('Error: ' + (data.error || 'Failed to send test'))
+                                          } catch (error) {
+                                            console.error('Error sending test alert:', error)
+                                            alert('Failed to send test alert')
+                                          }
+                                        }}
+                                        className="px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-sm hover:bg-indigo-200 font-medium"
+                                      >
+                                        🔔 Test
+                                      </button>
+                                    )}
                                     <button
                                       onClick={() => handleDeleteMaintenanceTask(task.id)}
                                       className="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-sm hover:bg-red-200 font-medium"
