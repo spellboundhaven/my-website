@@ -1437,7 +1437,32 @@ export default function AdminDashboard() {
             {/* Bookings Tab */}
             {activeTab === 'bookings' && (
               <div>
-                <h2 className="text-2xl font-bold text-gray-800 mb-6">All Inquiries</h2>
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
+                  <h2 className="text-2xl font-bold text-gray-800">All Inquiries</h2>
+                  {bookings.length > 0 && (
+                    <button
+                      onClick={() => {
+                        const header = 'Name\tEmail\tPhone\tCheck-in\tCheck-out\tGuests\tNotes'
+                        const rows = bookings.map(b =>
+                          `${b.guest_name}\t${b.guest_email}\t${b.guest_phone}\t${formatDateForDisplay(b.check_in_date)}\t${formatDateForDisplay(b.check_out_date)}\t${b.guests_count}\t${b.notes || ''}`
+                        )
+                        const text = [header, ...rows].join('\n')
+                        navigator.clipboard.writeText(text).then(() => {
+                          alert(`Copied ${bookings.length} inquiry contact(s) to clipboard!\n\nPaste into Google Sheets with Ctrl+V / Cmd+V.\n\nWould you like to clear the list?`)
+                          if (confirm('Clear inquiries from the dashboard? (Records stay in the database)')) {
+                            setBookings([])
+                          }
+                        }).catch(() => {
+                          alert('Failed to copy to clipboard')
+                        })
+                      }}
+                      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded-lg font-medium transition flex items-center gap-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
+                      Export & Copy
+                    </button>
+                  )}
+                </div>
                 <div className="overflow-x-auto">
                   {loading ? (
                     <p className="text-gray-500 text-center py-8">Loading inquiries...</p>
