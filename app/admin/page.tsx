@@ -1448,16 +1448,36 @@ export default function AdminDashboard() {
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
                   <h2 className="text-2xl font-bold text-gray-800">All Inquiries</h2>
                   {bookings.length > 0 && (
-                    <button
-                      onClick={() => {
-                        const header = 'Name\tEmail\tPhone\tCheck-in\tCheck-out\tGuests'
-                        const rows = bookings.map(b =>
-                          `${b.guest_name}\t${b.guest_email}\t${b.guest_phone}\t${formatDateForDisplay(b.check_in_date)}\t${formatDateForDisplay(b.check_out_date)}\t${b.guests_count}`
-                        )
-                        const text = [header, ...rows].join('\n')
-                        navigator.clipboard.writeText(text).then(async () => {
-                          alert(`Copied ${bookings.length} inquiry contact(s) to clipboard!\n\nPaste into Google Sheets with Ctrl+V / Cmd+V.`)
-                          if (confirm('Clear inquiries from the dashboard? (Records stay in the database)')) {
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          const header = 'Name\tEmail\tPhone\tCheck-in\tCheck-out\tGuests'
+                          const rows = bookings.map(b =>
+                            `${b.guest_name}\t${b.guest_email}\t${b.guest_phone}\t${formatDateForDisplay(b.check_in_date)}\t${formatDateForDisplay(b.check_out_date)}\t${b.guests_count}`
+                          )
+                          const text = [header, ...rows].join('\n')
+                          navigator.clipboard.writeText(text).then(async () => {
+                            alert(`Copied ${bookings.length} inquiry contact(s) to clipboard!\n\nPaste into Google Sheets with Ctrl+V / Cmd+V.`)
+                            if (confirm('Clear inquiries from the dashboard? (Records stay in the database)')) {
+                              await fetch('/api/admin', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${password}` },
+                                body: JSON.stringify({ action: 'hideBookings' })
+                              })
+                              setBookings([])
+                            }
+                          }).catch(() => {
+                            alert('Failed to copy to clipboard')
+                          })
+                        }}
+                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded-lg font-medium transition flex items-center gap-2"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
+                        Export & Copy
+                      </button>
+                      <button
+                        onClick={async () => {
+                          if (confirm('Clear all inquiries from the dashboard? (Records stay in the database)')) {
                             await fetch('/api/admin', {
                               method: 'POST',
                               headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${password}` },
@@ -1465,15 +1485,13 @@ export default function AdminDashboard() {
                             })
                             setBookings([])
                           }
-                        }).catch(() => {
-                          alert('Failed to copy to clipboard')
-                        })
-                      }}
-                      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded-lg font-medium transition flex items-center gap-2"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
-                      Export & Copy
-                    </button>
+                        }}
+                        className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm rounded-lg font-medium transition flex items-center gap-2"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        Clear
+                      </button>
+                    </div>
                   )}
                 </div>
                 <div className="overflow-x-auto">
