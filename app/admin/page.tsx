@@ -3557,16 +3557,16 @@ export default function AdminDashboard() {
                                         <span className={`text-lg font-bold ${ch.text}`}>{ch.nights}</span>
                                       </div>
                                       <div className="flex justify-between items-baseline">
+                                        <span className="text-xs text-gray-500">Avg stay</span>
+                                        <span className={`text-sm font-semibold ${ch.text}`}>{ch.bookings > 0 ? (ch.nights / ch.bookings).toFixed(1) : '—'} nights</span>
+                                      </div>
+                                      <div className="flex justify-between items-baseline">
                                         <span className="text-xs text-gray-500">Avg/night</span>
                                         <span className={`text-sm font-semibold ${ch.text}`}>{ch.nights > 0 ? fmt(Math.round(ch.revenue / ch.nights)) : '—'}</span>
                                       </div>
                                       <div className="flex justify-between items-baseline">
                                         <span className="text-xs text-gray-500">Avg/booking</span>
                                         <span className={`text-sm font-semibold ${ch.text}`}>{ch.bookings > 0 ? fmt(Math.round(ch.revenue / ch.bookings)) : '—'}</span>
-                                      </div>
-                                      <div className="flex justify-between items-baseline">
-                                        <span className="text-xs text-gray-500">Avg stay</span>
-                                        <span className={`text-sm font-semibold ${ch.text}`}>{ch.bookings > 0 ? (ch.nights / ch.bookings).toFixed(1) : '—'} nights</span>
                                       </div>
                                     </div>
                                   </div>
