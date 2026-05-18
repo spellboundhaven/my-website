@@ -1471,9 +1471,10 @@ export default function AdminDashboard() {
                         onClick={async () => {
                           if (!confirm('Clear all inquiries from the dashboard? (Records stay in the database)')) return
                           try {
+                            const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123'
                             const res = await fetch('/api/admin', {
                               method: 'POST',
-                              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${password}` },
+                              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminPassword}` },
                               body: JSON.stringify({ action: 'hideBookings' })
                             })
                             const result = await res.json()
