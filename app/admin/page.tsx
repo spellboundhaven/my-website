@@ -21,12 +21,12 @@ import {
 
 function OccupancyChart({ data }: { data: { monthName: string; occupancyRate: number; isFuture: boolean; occupiedDays: number; daysInMonth: number; airbnb: number; vrbo: number; direct: number }[] }) {
   return (
-    <div className="w-full h-[300px] sm:h-[350px]">
+    <div className="w-full h-[220px] sm:h-[350px]">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+        <LineChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-          <XAxis dataKey="monthName" tick={{ fontSize: 12, fill: '#6b7280' }} />
-          <YAxis domain={[0, 100]} tick={{ fontSize: 12, fill: '#6b7280' }} tickFormatter={(v) => `${v}%`} />
+          <XAxis dataKey="monthName" tick={{ fontSize: 10, fill: '#6b7280' }} interval={0} />
+          <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: '#6b7280' }} tickFormatter={(v) => `${v}%`} width={35} />
           <Tooltip
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             formatter={(value: any, name: any, props: any) => {
@@ -36,16 +36,16 @@ function OccupancyChart({ data }: { data: { monthName: string; occupancyRate: nu
               if (name === 'direct') return [`${value} nights`, 'Direct']
               return [value, name]
             }}
-            contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '13px' }}
+            contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '12px' }}
           />
-          <ReferenceLine y={50} stroke="#d1d5db" strokeDasharray="4 4" label={{ value: '50%', position: 'right', fontSize: 11, fill: '#9ca3af' }} />
+          <ReferenceLine y={50} stroke="#d1d5db" strokeDasharray="4 4" label={{ value: '50%', position: 'right', fontSize: 10, fill: '#9ca3af' }} />
           <Line
             type="monotone"
             dataKey="occupancyRate"
             stroke="#7c3aed"
-            strokeWidth={2.5}
-            dot={{ r: 5, fill: '#7c3aed', stroke: '#fff', strokeWidth: 2 }}
-            activeDot={{ r: 7, fill: '#7c3aed', stroke: '#fff', strokeWidth: 2 }}
+            strokeWidth={2}
+            dot={{ r: 4, fill: '#7c3aed', stroke: '#fff', strokeWidth: 2 }}
+            activeDot={{ r: 6, fill: '#7c3aed', stroke: '#fff', strokeWidth: 2 }}
           />
         </LineChart>
       </ResponsiveContainer>
@@ -3496,37 +3496,37 @@ export default function AdminDashboard() {
                     </div>
                   ) : (
                     <>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
-                        <div className="bg-purple-50 rounded-xl p-4 text-center">
-                          <div className="text-2xl font-bold text-purple-700">{occupancyData.yearlyOccupancyRate}%</div>
-                          <div className="text-xs text-purple-600 mt-1">Occupancy Rate</div>
+                      <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4 mb-6 sm:mb-8">
+                        <div className="bg-purple-50 rounded-lg sm:rounded-xl p-2 sm:p-4 text-center">
+                          <div className="text-lg sm:text-2xl font-bold text-purple-700">{occupancyData.yearlyOccupancyRate}%</div>
+                          <div className="text-[10px] sm:text-xs text-purple-600 mt-0.5 sm:mt-1">Occupancy</div>
                         </div>
-                        <div className="bg-blue-50 rounded-xl p-4 text-center">
-                          <div className="text-2xl font-bold text-blue-700">{occupancyData.totalOccupiedDays}</div>
-                          <div className="text-xs text-blue-600 mt-1">Nights Booked</div>
+                        <div className="bg-blue-50 rounded-lg sm:rounded-xl p-2 sm:p-4 text-center">
+                          <div className="text-lg sm:text-2xl font-bold text-blue-700">{occupancyData.totalOccupiedDays}</div>
+                          <div className="text-[10px] sm:text-xs text-blue-600 mt-0.5 sm:mt-1">Booked</div>
                         </div>
-                        <div className="bg-green-50 rounded-xl p-4 text-center">
-                          <div className="text-2xl font-bold text-green-700">${occupancyData.totalRevenue.toLocaleString('en-US', { maximumFractionDigits: 0 })}</div>
-                          <div className="text-xs text-green-600 mt-1">Gross Revenue</div>
+                        <div className="bg-green-50 rounded-lg sm:rounded-xl p-2 sm:p-4 text-center">
+                          <div className="text-lg sm:text-2xl font-bold text-green-700">${occupancyData.totalRevenue.toLocaleString('en-US', { maximumFractionDigits: 0 })}</div>
+                          <div className="text-[10px] sm:text-xs text-green-600 mt-0.5 sm:mt-1">Revenue</div>
                         </div>
-                        <div className="bg-cyan-50 rounded-xl p-4 text-center">
-                          <div className="text-2xl font-bold text-cyan-700">{occupancyData.totalDays - occupancyData.totalOccupiedDays}</div>
-                          <div className="text-xs text-cyan-600 mt-1">Nights Available</div>
+                        <div className="bg-cyan-50 rounded-lg sm:rounded-xl p-2 sm:p-4 text-center">
+                          <div className="text-lg sm:text-2xl font-bold text-cyan-700">{occupancyData.totalDays - occupancyData.totalOccupiedDays}</div>
+                          <div className="text-[10px] sm:text-xs text-cyan-600 mt-0.5 sm:mt-1">Available</div>
                         </div>
-                        <div className="bg-rose-50 rounded-xl p-4 text-center">
-                          <div className="text-2xl font-bold text-rose-700">{occupancyData.remainingOpenNights}</div>
-                          <div className="text-xs text-rose-600 mt-1">Remaining Open</div>
+                        <div className="bg-rose-50 rounded-lg sm:rounded-xl p-2 sm:p-4 text-center col-span-1">
+                          <div className="text-lg sm:text-2xl font-bold text-rose-700">{occupancyData.remainingOpenNights}</div>
+                          <div className="text-[10px] sm:text-xs text-rose-600 mt-0.5 sm:mt-1">Open</div>
                         </div>
                       </div>
 
-                      <div className="bg-white border rounded-xl p-4 sm:p-6 mb-8">
-                        <h3 className="text-lg font-semibold text-gray-700 mb-4">Monthly Occupancy Rate</h3>
+                      <div className="bg-white border rounded-xl p-2 sm:p-6 mb-6 sm:mb-8">
+                        <h3 className="text-base sm:text-lg font-semibold text-gray-700 mb-3 sm:mb-4 px-1 sm:px-0">Monthly Occupancy Rate</h3>
                         <OccupancyChart data={occupancyData.months} />
                       </div>
 
                       {/* Channel Breakdown */}
-                      <div className="bg-white border rounded-xl p-5 mb-8">
-                        <h3 className="text-lg font-semibold text-gray-700 mb-5">Channel Breakdown</h3>
+                      <div className="bg-white border rounded-xl p-3 sm:p-5 mb-6 sm:mb-8">
+                        <h3 className="text-base sm:text-lg font-semibold text-gray-700 mb-4 sm:mb-5">Channel Breakdown</h3>
                         {(() => {
                           const { nights: s, bookings: b, revenue: r } = occupancyData.bySource;
                           const totalNights = s.airbnb + s.vrbo + s.direct;
@@ -3540,15 +3540,34 @@ export default function AdminDashboard() {
                             { label: 'Direct', nights: s.direct, bookings: b.direct, revenue: r.direct, color: '#10b981', bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500' },
                           ];
                           return (
-                            <div className="space-y-6">
-                              <div className="grid grid-cols-3 gap-3 sm:gap-4">
+                            <div className="space-y-4 sm:space-y-6">
+                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4">
                                 {channels.map(ch => (
-                                  <div key={ch.label} className={`${ch.bg} rounded-xl p-4`}>
-                                    <div className="flex items-center gap-2 mb-3">
+                                  <div key={ch.label} className={`${ch.bg} rounded-lg sm:rounded-xl p-3 sm:p-4`}>
+                                    <div className="flex items-center gap-2 mb-2 sm:mb-3">
                                       <div className={`w-2.5 h-2.5 rounded-full ${ch.dot}`} />
                                       <span className={`font-semibold text-sm ${ch.text}`}>{ch.label}</span>
                                     </div>
-                                    <div className="space-y-1">
+                                    <div className="grid grid-cols-3 gap-x-2 sm:hidden">
+                                      <div>
+                                        <div className={`text-base font-bold ${ch.text}`}>{fmt(ch.revenue)}</div>
+                                        <div className="text-[10px] text-gray-500">Revenue</div>
+                                      </div>
+                                      <div>
+                                        <div className={`text-base font-bold ${ch.text}`}>{ch.bookings}</div>
+                                        <div className="text-[10px] text-gray-500">Bookings</div>
+                                      </div>
+                                      <div>
+                                        <div className={`text-base font-bold ${ch.text}`}>{ch.nights}</div>
+                                        <div className="text-[10px] text-gray-500">Nights</div>
+                                      </div>
+                                    </div>
+                                    <div className="flex gap-3 mt-1 sm:hidden">
+                                      <span className="text-[10px] text-gray-500">Avg stay: <span className={`font-semibold ${ch.text}`}>{ch.bookings > 0 ? (ch.nights / ch.bookings).toFixed(1) : '—'}n</span></span>
+                                      <span className="text-[10px] text-gray-500">Avg/nt: <span className={`font-semibold ${ch.text}`}>{ch.nights > 0 ? fmt(Math.round(ch.revenue / ch.nights)) : '—'}</span></span>
+                                      <span className="text-[10px] text-gray-500">Avg/bk: <span className={`font-semibold ${ch.text}`}>{ch.bookings > 0 ? fmt(Math.round(ch.revenue / ch.bookings)) : '—'}</span></span>
+                                    </div>
+                                    <div className="hidden sm:block space-y-1">
                                       <div className="flex justify-between items-baseline">
                                         <span className="text-xs text-gray-500">Revenue</span>
                                         <span className={`text-lg font-bold ${ch.text}`}>{fmt(ch.revenue)}</span>
@@ -3621,18 +3640,18 @@ export default function AdminDashboard() {
                                 </div>
                               )}
 
-                              <div className="pt-3 border-t grid grid-cols-3 gap-4 text-center">
+                              <div className="pt-3 border-t grid grid-cols-3 gap-2 sm:gap-4 text-center">
                                 <div>
-                                  <div className="text-2xl font-bold text-gray-800">{totalBookings}</div>
-                                  <div className="text-xs text-gray-500">Total Bookings</div>
+                                  <div className="text-lg sm:text-2xl font-bold text-gray-800">{totalBookings}</div>
+                                  <div className="text-[10px] sm:text-xs text-gray-500">Total Bookings</div>
                                 </div>
                                 <div>
-                                  <div className="text-2xl font-bold text-gray-800">{totalBookings > 0 ? (totalNights / totalBookings).toFixed(1) : '—'}</div>
-                                  <div className="text-xs text-gray-500">Avg Stay (nights)</div>
+                                  <div className="text-lg sm:text-2xl font-bold text-gray-800">{totalBookings > 0 ? (totalNights / totalBookings).toFixed(1) : '—'}</div>
+                                  <div className="text-[10px] sm:text-xs text-gray-500">Avg Stay</div>
                                 </div>
                                 <div>
-                                  <div className="text-2xl font-bold text-gray-800">{totalNights > 0 ? fmt(Math.round(totalRev / totalNights)) : '—'}</div>
-                                  <div className="text-xs text-gray-500">Avg Nightly Rate</div>
+                                  <div className="text-lg sm:text-2xl font-bold text-gray-800">{totalNights > 0 ? fmt(Math.round(totalRev / totalNights)) : '—'}</div>
+                                  <div className="text-[10px] sm:text-xs text-gray-500">Avg Nightly Rate</div>
                                 </div>
                               </div>
                             </div>
@@ -3641,24 +3660,24 @@ export default function AdminDashboard() {
                       </div>
 
                       <div className="bg-white border rounded-xl overflow-hidden">
-                        <table className="w-full text-sm">
+                        <table className="w-full text-xs sm:text-sm">
                           <thead>
                             <tr className="bg-gray-50 border-b">
-                              <th className="text-left px-4 py-3 font-semibold text-gray-700">Month</th>
-                              <th className="text-center px-4 py-3 font-semibold text-gray-700">Booked</th>
-                              <th className="text-center px-4 py-3 font-semibold text-gray-700">Rate</th>
-                              <th className="text-right px-4 py-3 font-semibold text-gray-700">Revenue</th>
-                              <th className="text-right px-4 py-3 font-semibold text-gray-700 hidden sm:table-cell">Avg/Night</th>
-                              <th className="text-center px-4 py-3 font-semibold text-gray-700 hidden sm:table-cell">Bar</th>
+                              <th className="text-left px-2 sm:px-4 py-2 sm:py-3 font-semibold text-gray-700">Month</th>
+                              <th className="text-center px-1 sm:px-4 py-2 sm:py-3 font-semibold text-gray-700">Booked</th>
+                              <th className="text-center px-1 sm:px-4 py-2 sm:py-3 font-semibold text-gray-700">Rate</th>
+                              <th className="text-right px-2 sm:px-4 py-2 sm:py-3 font-semibold text-gray-700">Revenue</th>
+                              <th className="text-right px-2 sm:px-4 py-2 sm:py-3 font-semibold text-gray-700 hidden sm:table-cell">Avg/Night</th>
+                              <th className="text-center px-2 sm:px-4 py-2 sm:py-3 font-semibold text-gray-700 hidden md:table-cell">Bar</th>
                             </tr>
                           </thead>
                           <tbody>
                             {occupancyData.months.map((m) => (
                               <tr key={m.month} className={`border-b last:border-b-0 ${m.isFuture ? 'text-gray-400' : ''}`}>
-                                <td className="px-4 py-3 font-medium">{m.monthName}</td>
-                                <td className="px-4 py-3 text-center">{m.occupiedDays}/{m.daysInMonth}</td>
-                                <td className="px-4 py-3 text-center">
-                                  <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-bold ${
+                                <td className="px-2 sm:px-4 py-2 sm:py-3 font-medium">{m.monthName}</td>
+                                <td className="px-1 sm:px-4 py-2 sm:py-3 text-center">{m.occupiedDays}/{m.daysInMonth}</td>
+                                <td className="px-1 sm:px-4 py-2 sm:py-3 text-center">
+                                  <span className={`inline-block px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold ${
                                     m.occupancyRate >= 75 ? 'bg-green-100 text-green-700' :
                                     m.occupancyRate >= 50 ? 'bg-blue-100 text-blue-700' :
                                     m.occupancyRate >= 25 ? 'bg-amber-100 text-amber-700' :
@@ -3668,9 +3687,9 @@ export default function AdminDashboard() {
                                     {m.occupancyRate}%
                                   </span>
                                 </td>
-                                <td className="px-4 py-3 text-right font-medium">{m.revenue > 0 ? '$' + m.revenue.toLocaleString('en-US', { maximumFractionDigits: 0 }) : '—'}</td>
-                                <td className="px-4 py-3 text-right hidden sm:table-cell">{m.occupiedDays > 0 && m.revenue > 0 ? '$' + Math.round(m.revenue / m.occupiedDays).toLocaleString() : '—'}</td>
-                                <td className="px-4 py-3 hidden sm:table-cell">
+                                <td className="px-2 sm:px-4 py-2 sm:py-3 text-right font-medium">{m.revenue > 0 ? '$' + m.revenue.toLocaleString('en-US', { maximumFractionDigits: 0 }) : '—'}</td>
+                                <td className="px-2 sm:px-4 py-2 sm:py-3 text-right hidden sm:table-cell">{m.occupiedDays > 0 && m.revenue > 0 ? '$' + Math.round(m.revenue / m.occupiedDays).toLocaleString() : '—'}</td>
+                                <td className="px-2 sm:px-4 py-2 sm:py-3 hidden md:table-cell">
                                   <div className="w-full bg-gray-100 rounded-full h-3">
                                     <div
                                       className={`h-3 rounded-full transition-all ${
