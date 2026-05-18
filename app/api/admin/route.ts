@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
   getAllBookings,
+  hideAllBookings,
   getAllDateBlocks,
   createDateBlock,
   deleteDateBlock,
@@ -109,6 +110,11 @@ export async function POST(request: NextRequest) {
     if (action === 'updateBlockRevenue') {
       const block = await updateDateBlockRevenue(data.id, data.revenue);
       return NextResponse.json({ success: true, block });
+    }
+
+    if (action === 'hideBookings') {
+      await hideAllBookings();
+      return NextResponse.json({ success: true });
     }
 
     if (action === 'updateBooking') {

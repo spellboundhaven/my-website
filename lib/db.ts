@@ -117,6 +117,8 @@ export async function initDatabase() {
 
     await sql`ALTER TABLE date_blocks ADD COLUMN IF NOT EXISTS revenue DECIMAL(10, 2)`;
 
+    await sql`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS hidden BOOLEAN DEFAULT false`;
+
     // Create calendar_sync table for tracking syncs from multiple sources
     await sql`
       CREATE TABLE IF NOT EXISTS calendar_sync (
@@ -235,9 +237,13 @@ export async function getBooking(id: number): Promise<Booking | undefined> {
 
 export async function getAllBookings(): Promise<Booking[]> {
   const result = await sql`
-    SELECT * FROM bookings ORDER BY check_in_date DESC
+    SELECT * FROM bookings WHERE hidden IS NOT TRUE ORDER BY check_in_date DESC
   `;
   return result.rows as Booking[];
+}
+
+export async function hideAllBookings(): Promise<void> {
+  await sql`UPDATE bookings SET hidden = true WHERE hidden IS NOT TRUE`;
 }
 
 export async function getUpcomingBookings(): Promise<Booking[]> {

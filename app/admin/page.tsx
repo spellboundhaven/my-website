@@ -1455,9 +1455,14 @@ export default function AdminDashboard() {
                           `${b.guest_name}\t${b.guest_email}\t${b.guest_phone}\t${formatDateForDisplay(b.check_in_date)}\t${formatDateForDisplay(b.check_out_date)}\t${b.guests_count}`
                         )
                         const text = [header, ...rows].join('\n')
-                        navigator.clipboard.writeText(text).then(() => {
-                          alert(`Copied ${bookings.length} inquiry contact(s) to clipboard!\n\nPaste into Google Sheets with Ctrl+V / Cmd+V.\n\nWould you like to clear the list?`)
+                        navigator.clipboard.writeText(text).then(async () => {
+                          alert(`Copied ${bookings.length} inquiry contact(s) to clipboard!\n\nPaste into Google Sheets with Ctrl+V / Cmd+V.`)
                           if (confirm('Clear inquiries from the dashboard? (Records stay in the database)')) {
+                            await fetch('/api/admin', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${password}` },
+                              body: JSON.stringify({ action: 'hideBookings' })
+                            })
                             setBookings([])
                           }
                         }).catch(() => {
