@@ -1442,9 +1442,9 @@ export default function AdminDashboard() {
                   {bookings.length > 0 && (
                     <button
                       onClick={() => {
-                        const header = 'Name\tEmail\tPhone\tCheck-in\tCheck-out\tGuests\tNotes'
+                        const header = 'Name\tEmail\tPhone\tCheck-in\tCheck-out\tGuests'
                         const rows = bookings.map(b =>
-                          `${b.guest_name}\t${b.guest_email}\t${b.guest_phone}\t${formatDateForDisplay(b.check_in_date)}\t${formatDateForDisplay(b.check_out_date)}\t${b.guests_count}\t${b.notes || ''}`
+                          `${b.guest_name}\t${b.guest_email}\t${b.guest_phone}\t${formatDateForDisplay(b.check_in_date)}\t${formatDateForDisplay(b.check_out_date)}\t${b.guests_count}`
                         )
                         const text = [header, ...rows].join('\n')
                         navigator.clipboard.writeText(text).then(() => {
