@@ -233,6 +233,7 @@ export default function AdminDashboard() {
     airbnb: number
     vrbo: number
     direct: number
+    revenue: number
   }
   interface OccupancyData {
     year: number
@@ -242,9 +243,11 @@ export default function AdminDashboard() {
     totalDays: number
     remainingOpenNights: number
     remainingDays: number
+    totalRevenue: number
     bySource: {
       nights: { airbnb: number; vrbo: number; direct: number }
       bookings: { airbnb: number; vrbo: number; direct: number }
+      revenue: { airbnb: number; vrbo: number; direct: number }
     }
   }
   const [occupancyData, setOccupancyData] = useState<OccupancyData | null>(null)
@@ -3488,22 +3491,30 @@ export default function AdminDashboard() {
                     </div>
                   ) : (
                     <>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
                         <div className="bg-purple-50 rounded-xl p-4 text-center">
-                          <div className="text-3xl font-bold text-purple-700">{occupancyData.yearlyOccupancyRate}%</div>
-                          <div className="text-sm text-purple-600 mt-1">Yearly Average</div>
+                          <div className="text-2xl font-bold text-purple-700">{occupancyData.yearlyOccupancyRate}%</div>
+                          <div className="text-xs text-purple-600 mt-1">Occupancy Rate</div>
                         </div>
                         <div className="bg-blue-50 rounded-xl p-4 text-center">
-                          <div className="text-3xl font-bold text-blue-700">{occupancyData.totalOccupiedDays}</div>
-                          <div className="text-sm text-blue-600 mt-1">Nights Booked</div>
+                          <div className="text-2xl font-bold text-blue-700">{occupancyData.totalOccupiedDays}</div>
+                          <div className="text-xs text-blue-600 mt-1">Nights Booked</div>
                         </div>
                         <div className="bg-green-50 rounded-xl p-4 text-center">
-                          <div className="text-3xl font-bold text-green-700">{occupancyData.totalDays - occupancyData.totalOccupiedDays}</div>
-                          <div className="text-sm text-green-600 mt-1">Nights Available</div>
+                          <div className="text-2xl font-bold text-green-700">${occupancyData.totalRevenue.toLocaleString('en-US', { maximumFractionDigits: 0 })}</div>
+                          <div className="text-xs text-green-600 mt-1">Gross Revenue</div>
+                        </div>
+                        <div className="bg-amber-50 rounded-xl p-4 text-center">
+                          <div className="text-2xl font-bold text-amber-700">${occupancyData.totalOccupiedDays > 0 ? Math.round(occupancyData.totalRevenue / occupancyData.totalOccupiedDays).toLocaleString() : '—'}</div>
+                          <div className="text-xs text-amber-600 mt-1">Avg Nightly Rate</div>
+                        </div>
+                        <div className="bg-cyan-50 rounded-xl p-4 text-center">
+                          <div className="text-2xl font-bold text-cyan-700">{occupancyData.totalDays - occupancyData.totalOccupiedDays}</div>
+                          <div className="text-xs text-cyan-600 mt-1">Nights Available</div>
                         </div>
                         <div className="bg-rose-50 rounded-xl p-4 text-center">
-                          <div className="text-3xl font-bold text-rose-700">{occupancyData.remainingOpenNights}</div>
-                          <div className="text-sm text-rose-600 mt-1">Remaining Open</div>
+                          <div className="text-2xl font-bold text-rose-700">{occupancyData.remainingOpenNights}</div>
+                          <div className="text-xs text-rose-600 mt-1">Remaining Open</div>
                         </div>
                       </div>
 
@@ -3516,14 +3527,16 @@ export default function AdminDashboard() {
                       <div className="bg-white border rounded-xl p-5 mb-8">
                         <h3 className="text-lg font-semibold text-gray-700 mb-5">Channel Breakdown</h3>
                         {(() => {
-                          const { nights: s, bookings: b } = occupancyData.bySource;
+                          const { nights: s, bookings: b, revenue: r } = occupancyData.bySource;
                           const totalNights = s.airbnb + s.vrbo + s.direct;
                           const totalBookings = b.airbnb + b.vrbo + b.direct;
+                          const totalRev = r.airbnb + r.vrbo + r.direct;
+                          const fmt = (n: number) => '$' + n.toLocaleString('en-US', { maximumFractionDigits: 0 });
                           if (totalNights === 0 && totalBookings === 0) return <p className="text-gray-400 text-sm">No booking data yet.</p>;
                           const channels = [
-                            { label: 'Airbnb', nights: s.airbnb, bookings: b.airbnb, color: '#ef4444', bg: 'bg-red-50', text: 'text-red-700', dot: 'bg-red-500' },
-                            { label: 'VRBO', nights: s.vrbo, bookings: b.vrbo, color: '#3b82f6', bg: 'bg-blue-50', text: 'text-blue-700', dot: 'bg-blue-500' },
-                            { label: 'Direct', nights: s.direct, bookings: b.direct, color: '#10b981', bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500' },
+                            { label: 'Airbnb', nights: s.airbnb, bookings: b.airbnb, revenue: r.airbnb, color: '#ef4444', bg: 'bg-red-50', text: 'text-red-700', dot: 'bg-red-500' },
+                            { label: 'VRBO', nights: s.vrbo, bookings: b.vrbo, revenue: r.vrbo, color: '#3b82f6', bg: 'bg-blue-50', text: 'text-blue-700', dot: 'bg-blue-500' },
+                            { label: 'Direct', nights: s.direct, bookings: b.direct, revenue: r.direct, color: '#10b981', bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500' },
                           ];
                           return (
                             <div className="space-y-6">
@@ -3536,16 +3549,24 @@ export default function AdminDashboard() {
                                     </div>
                                     <div className="space-y-1">
                                       <div className="flex justify-between items-baseline">
+                                        <span className="text-xs text-gray-500">Revenue</span>
+                                        <span className={`text-lg font-bold ${ch.text}`}>{fmt(ch.revenue)}</span>
+                                      </div>
+                                      <div className="flex justify-between items-baseline">
                                         <span className="text-xs text-gray-500">Bookings</span>
-                                        <span className={`text-xl font-bold ${ch.text}`}>{ch.bookings}</span>
+                                        <span className={`text-lg font-bold ${ch.text}`}>{ch.bookings}</span>
                                       </div>
                                       <div className="flex justify-between items-baseline">
                                         <span className="text-xs text-gray-500">Nights</span>
-                                        <span className={`text-xl font-bold ${ch.text}`}>{ch.nights}</span>
+                                        <span className={`text-lg font-bold ${ch.text}`}>{ch.nights}</span>
                                       </div>
                                       <div className="flex justify-between items-baseline">
-                                        <span className="text-xs text-gray-500">Avg stay</span>
-                                        <span className={`text-sm font-semibold ${ch.text}`}>{ch.bookings > 0 ? (ch.nights / ch.bookings).toFixed(1) : '—'} nights</span>
+                                        <span className="text-xs text-gray-500">Avg/night</span>
+                                        <span className={`text-sm font-semibold ${ch.text}`}>{ch.nights > 0 ? fmt(Math.round(ch.revenue / ch.nights)) : '—'}</span>
+                                      </div>
+                                      <div className="flex justify-between items-baseline">
+                                        <span className="text-xs text-gray-500">Avg/booking</span>
+                                        <span className={`text-sm font-semibold ${ch.text}`}>{ch.bookings > 0 ? fmt(Math.round(ch.revenue / ch.bookings)) : '—'}</span>
                                       </div>
                                     </div>
                                   </div>
@@ -3553,26 +3574,41 @@ export default function AdminDashboard() {
                               </div>
 
                               {totalNights > 0 && (
-                                <div>
-                                  <div className="flex justify-between text-xs text-gray-500 mb-1.5">
-                                    <span>Nights share</span>
-                                    <span>{totalNights} total</span>
+                                <div className="space-y-3">
+                                  <div>
+                                    <div className="flex justify-between text-xs text-gray-500 mb-1.5">
+                                      <span>Revenue share</span>
+                                      <span>{fmt(totalRev)} total</span>
+                                    </div>
+                                    <div className="w-full h-4 bg-gray-100 rounded-full overflow-hidden flex">
+                                      {channels.map(ch => {
+                                        const pct = totalRev > 0 ? (ch.revenue / totalRev) * 100 : 0;
+                                        if (pct === 0) return null;
+                                        return <div key={ch.label + '-rev'} className="h-full" style={{ width: `${pct}%`, backgroundColor: ch.color }} title={`${ch.label}: ${fmt(ch.revenue)} (${Math.round(pct)}%)`} />;
+                                      })}
+                                    </div>
                                   </div>
-                                  <div className="w-full h-4 bg-gray-100 rounded-full overflow-hidden flex">
-                                    {channels.map(ch => {
-                                      const pct = (ch.nights / totalNights) * 100;
-                                      if (pct === 0) return null;
-                                      return <div key={ch.label} className="h-full" style={{ width: `${pct}%`, backgroundColor: ch.color }} title={`${ch.label}: ${ch.nights} nights (${Math.round(pct)}%)`} />;
-                                    })}
+                                  <div>
+                                    <div className="flex justify-between text-xs text-gray-500 mb-1.5">
+                                      <span>Nights share</span>
+                                      <span>{totalNights} total</span>
+                                    </div>
+                                    <div className="w-full h-4 bg-gray-100 rounded-full overflow-hidden flex">
+                                      {channels.map(ch => {
+                                        const pct = (ch.nights / totalNights) * 100;
+                                        if (pct === 0) return null;
+                                        return <div key={ch.label} className="h-full" style={{ width: `${pct}%`, backgroundColor: ch.color }} title={`${ch.label}: ${ch.nights} nights (${Math.round(pct)}%)`} />;
+                                      })}
+                                    </div>
                                   </div>
-                                  <div className="flex gap-4 mt-2">
+                                  <div className="flex gap-4">
                                     {channels.map(ch => {
-                                      const pct = totalNights > 0 ? Math.round((ch.nights / totalNights) * 100) : 0;
-                                      if (pct === 0) return null;
+                                      const pct = totalRev > 0 ? Math.round((ch.revenue / totalRev) * 100) : 0;
+                                      if (ch.revenue === 0 && ch.nights === 0) return null;
                                       return (
                                         <div key={ch.label} className="flex items-center gap-1.5 text-xs text-gray-600">
                                           <div className={`w-2 h-2 rounded-full ${ch.dot}`} />
-                                          <span>{ch.label} {pct}%</span>
+                                          <span>{ch.label}</span>
                                         </div>
                                       );
                                     })}
@@ -3580,7 +3616,7 @@ export default function AdminDashboard() {
                                 </div>
                               )}
 
-                              <div className="pt-3 border-t grid grid-cols-2 gap-4 text-center">
+                              <div className="pt-3 border-t grid grid-cols-3 gap-4 text-center">
                                 <div>
                                   <div className="text-2xl font-bold text-gray-800">{totalBookings}</div>
                                   <div className="text-xs text-gray-500">Total Bookings</div>
@@ -3588,6 +3624,10 @@ export default function AdminDashboard() {
                                 <div>
                                   <div className="text-2xl font-bold text-gray-800">{totalBookings > 0 ? (totalNights / totalBookings).toFixed(1) : '—'}</div>
                                   <div className="text-xs text-gray-500">Avg Stay (nights)</div>
+                                </div>
+                                <div>
+                                  <div className="text-2xl font-bold text-gray-800">{totalNights > 0 ? fmt(Math.round(totalRev / totalNights)) : '—'}</div>
+                                  <div className="text-xs text-gray-500">Avg Nightly Rate</div>
                                 </div>
                               </div>
                             </div>
@@ -3600,9 +3640,10 @@ export default function AdminDashboard() {
                           <thead>
                             <tr className="bg-gray-50 border-b">
                               <th className="text-left px-4 py-3 font-semibold text-gray-700">Month</th>
-                              <th className="text-center px-4 py-3 font-semibold text-gray-700">Days</th>
                               <th className="text-center px-4 py-3 font-semibold text-gray-700">Booked</th>
                               <th className="text-center px-4 py-3 font-semibold text-gray-700">Rate</th>
+                              <th className="text-right px-4 py-3 font-semibold text-gray-700">Revenue</th>
+                              <th className="text-right px-4 py-3 font-semibold text-gray-700 hidden sm:table-cell">Avg/Night</th>
                               <th className="text-center px-4 py-3 font-semibold text-gray-700 hidden sm:table-cell">Bar</th>
                             </tr>
                           </thead>
@@ -3610,8 +3651,7 @@ export default function AdminDashboard() {
                             {occupancyData.months.map((m) => (
                               <tr key={m.month} className={`border-b last:border-b-0 ${m.isFuture ? 'text-gray-400' : ''}`}>
                                 <td className="px-4 py-3 font-medium">{m.monthName}</td>
-                                <td className="px-4 py-3 text-center">{m.daysInMonth}</td>
-                                <td className="px-4 py-3 text-center">{m.occupiedDays}</td>
+                                <td className="px-4 py-3 text-center">{m.occupiedDays}/{m.daysInMonth}</td>
                                 <td className="px-4 py-3 text-center">
                                   <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-bold ${
                                     m.occupancyRate >= 75 ? 'bg-green-100 text-green-700' :
@@ -3623,6 +3663,8 @@ export default function AdminDashboard() {
                                     {m.occupancyRate}%
                                   </span>
                                 </td>
+                                <td className="px-4 py-3 text-right font-medium">{m.revenue > 0 ? '$' + m.revenue.toLocaleString('en-US', { maximumFractionDigits: 0 }) : '—'}</td>
+                                <td className="px-4 py-3 text-right hidden sm:table-cell">{m.occupiedDays > 0 && m.revenue > 0 ? '$' + Math.round(m.revenue / m.occupiedDays).toLocaleString() : '—'}</td>
                                 <td className="px-4 py-3 hidden sm:table-cell">
                                   <div className="w-full bg-gray-100 rounded-full h-3">
                                     <div

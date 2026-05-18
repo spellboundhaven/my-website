@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
   const yearEnd = `${year + 1}-01-01`;
 
   const result = await sql`
-    SELECT start_date, end_date, reason
+    SELECT start_date, end_date, reason, revenue
     FROM date_blocks
     WHERE end_date > ${yearStart}
       AND start_date < ${yearEnd}
@@ -62,6 +62,7 @@ export async function GET(request: NextRequest) {
 
   const sourceTotals = { airbnb: 0, vrbo: 0, direct: 0 };
   const sourceBookings = { airbnb: 0, vrbo: 0, direct: 0 };
+  const sourceRevenue = { airbnb: 0, vrbo: 0, direct: 0 };
 
   const countedBookings = new Set<string>();
 
@@ -71,6 +72,7 @@ export async function GET(request: NextRequest) {
     const monthEnd = new Date(year, month, 1);
 
     let occupiedDays = 0;
+    let monthRevenue = 0;
     const monthSources = { airbnb: 0, vrbo: 0, direct: 0 };
 
     for (const block of blocks) {
@@ -86,6 +88,15 @@ export async function GET(request: NextRequest) {
         if (!countedBookings.has(blockKey)) {
           countedBookings.add(blockKey);
           sourceBookings[source]++;
+          const rev = parseFloat(block.revenue) || 0;
+          sourceRevenue[source] += rev;
+        }
+
+        // Apportion revenue to this month based on nights overlap
+        const totalBlockDays = countOccupiedDays(blockStart, blockEnd, blockStart, blockEnd);
+        if (totalBlockDays > 0) {
+          const rev = parseFloat(block.revenue) || 0;
+          monthRevenue += (rev / totalBlockDays) * days;
         }
       }
     }
@@ -109,6 +120,7 @@ export async function GET(request: NextRequest) {
       airbnb: monthSources.airbnb,
       vrbo: monthSources.vrbo,
       direct: monthSources.direct,
+      revenue: Math.round(monthRevenue * 100) / 100,
     });
   }
 
@@ -148,6 +160,8 @@ export async function GET(request: NextRequest) {
     bySource: {
       nights: sourceTotals,
       bookings: sourceBookings,
+      revenue: sourceRevenue,
     },
+    totalRevenue: sourceRevenue.airbnb + sourceRevenue.vrbo + sourceRevenue.direct,
   });
 }
