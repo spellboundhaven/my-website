@@ -91,6 +91,7 @@ interface DateBlock {
   start_date: string
   end_date: string
   reason: string
+  revenue?: number
   created_at: string
 }
 
@@ -461,7 +462,8 @@ export default function AdminDashboard() {
           data: {
             start_date: formData.get('start_date'),
             end_date: formData.get('end_date'),
-            reason: formData.get('reason')
+            reason: formData.get('reason'),
+            revenue: formData.get('revenue') ? parseFloat(formData.get('revenue') as string) : null
           }
         })
       })
@@ -1594,7 +1596,7 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                   <form onSubmit={handleCreateBlock} className="bg-gray-50 rounded-lg p-6 mb-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Start Date
@@ -1625,7 +1627,20 @@ export default function AdminDashboard() {
                           type="text"
                           name="reason"
                           required
-                          placeholder="e.g., Maintenance"
+                          placeholder="e.g., Airbnb: John Smith"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Gross Revenue
+                        </label>
+                        <input
+                          type="number"
+                          name="revenue"
+                          step="0.01"
+                          min="0"
+                          placeholder="$0.00"
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                         />
                       </div>
@@ -1647,12 +1662,17 @@ export default function AdminDashboard() {
                     ) : (
                       dateBlocks.map((block) => (
                         <div key={block.id} className="bg-white border border-gray-200 rounded-lg p-4 flex justify-between items-center">
-                          <div>
+                          <div className="flex-1">
                             <div className="font-medium text-gray-900">
                               {formatDateForDisplay(block.start_date)} to {formatDateForDisplay(block.end_date)}
                             </div>
                             <div className="text-sm text-gray-600">{block.reason}</div>
                           </div>
+                          {block.revenue != null && Number(block.revenue) > 0 && (
+                            <div className="text-sm font-semibold text-green-700 mr-4">
+                              ${Number(block.revenue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </div>
+                          )}
                           <button
                             onClick={() => handleDeleteBlock(block.id)}
                             className="text-red-600 hover:text-red-800 font-medium text-sm"

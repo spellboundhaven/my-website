@@ -36,6 +36,7 @@ export interface DateBlock {
   start_date: string;
   end_date: string;
   reason: string;
+  revenue?: number;
   created_at?: string;
 }
 
@@ -113,6 +114,8 @@ export async function initDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `;
+
+    await sql`ALTER TABLE date_blocks ADD COLUMN IF NOT EXISTS revenue DECIMAL(10, 2)`;
 
     // Create calendar_sync table for tracking syncs from multiple sources
     await sql`
@@ -282,11 +285,12 @@ export async function deleteBooking(id: number): Promise<boolean> {
 // Date block operations
 export async function createDateBlock(block: DateBlock): Promise<DateBlock> {
   const result = await sql`
-    INSERT INTO date_blocks (start_date, end_date, reason, created_at)
+    INSERT INTO date_blocks (start_date, end_date, reason, revenue, created_at)
     VALUES (
       ${block.start_date},
       ${block.end_date},
       ${block.reason},
+      ${block.revenue ?? null},
       ${block.created_at || new Date().toISOString()}
     )
     RETURNING *
