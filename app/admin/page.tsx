@@ -188,6 +188,9 @@ export default function AdminDashboard() {
   const [rentalSubmissions, setRentalSubmissions] = useState<RentalSubmission[]>([])
   const [loading, setLoading] = useState(true)
   
+  const [editingBlockId, setEditingBlockId] = useState<number | null>(null)
+  const [editingRevenue, setEditingRevenue] = useState('')
+
   const [airbnbUrl, setAirbnbUrl] = useState('')
   const [vrboUrl, setVrboUrl] = useState('')
   const [lastSync, setLastSync] = useState<{ last_synced: string; ical_url: string } | null>(null)
@@ -1661,24 +1664,77 @@ export default function AdminDashboard() {
                       <p className="text-gray-500 text-center py-8">No date blocks</p>
                     ) : (
                       dateBlocks.map((block) => (
-                        <div key={block.id} className="bg-white border border-gray-200 rounded-lg p-4 flex justify-between items-center">
+                        <div key={block.id} className="bg-white border border-gray-200 rounded-lg p-4 flex flex-col sm:flex-row justify-between sm:items-center gap-2">
                           <div className="flex-1">
                             <div className="font-medium text-gray-900">
                               {formatDateForDisplay(block.start_date)} to {formatDateForDisplay(block.end_date)}
                             </div>
                             <div className="text-sm text-gray-600">{block.reason}</div>
                           </div>
-                          {block.revenue != null && Number(block.revenue) > 0 && (
-                            <div className="text-sm font-semibold text-green-700 mr-4">
-                              ${Number(block.revenue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                            </div>
-                          )}
-                          <button
-                            onClick={() => handleDeleteBlock(block.id)}
-                            className="text-red-600 hover:text-red-800 font-medium text-sm"
-                          >
-                            Delete
-                          </button>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            {editingBlockId === block.id ? (
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm text-gray-500">$</span>
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  min="0"
+                                  value={editingRevenue}
+                                  onChange={(e) => setEditingRevenue(e.target.value)}
+                                  className="w-28 px-2 py-1 border border-gray-300 rounded text-sm"
+                                  autoFocus
+                                />
+                                <button
+                                  onClick={async () => {
+                                    try {
+                                      const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123'
+                                      await fetch('/api/admin', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminPassword}` },
+                                        body: JSON.stringify({ action: 'updateBlockRevenue', data: { id: block.id, revenue: editingRevenue ? parseFloat(editingRevenue) : null } })
+                                      })
+                                      setEditingBlockId(null)
+                                      setEditingRevenue('')
+                                      fetchAdminData()
+                                    } catch (error) {
+                                      console.error('Error updating revenue:', error)
+                                      alert('Failed to update revenue')
+                                    }
+                                  }}
+                                  className="px-2 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700"
+                                >
+                                  Save
+                                </button>
+                                <button
+                                  onClick={() => { setEditingBlockId(null); setEditingRevenue('') }}
+                                  className="px-2 py-1 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            ) : (
+                              <>
+                                <button
+                                  onClick={() => {
+                                    setEditingBlockId(block.id)
+                                    setEditingRevenue(block.revenue != null && Number(block.revenue) > 0 ? String(block.revenue) : '')
+                                  }}
+                                  className="text-sm font-semibold text-green-700 hover:text-green-900 cursor-pointer"
+                                >
+                                  {block.revenue != null && Number(block.revenue) > 0
+                                    ? `$${Number(block.revenue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                    : <span className="text-gray-400 font-normal">+ Revenue</span>
+                                  }
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteBlock(block.id)}
+                                  className="text-red-600 hover:text-red-800 font-medium text-sm"
+                                >
+                                  Delete
+                                </button>
+                              </>
+                            )}
+                          </div>
                         </div>
                       ))
                     )}

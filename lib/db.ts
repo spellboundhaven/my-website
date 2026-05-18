@@ -329,6 +329,13 @@ export async function getActiveDateBlocks(): Promise<DateBlock[]> {
   return result.rows as DateBlock[];
 }
 
+export async function updateDateBlockRevenue(id: number, revenue: number | null): Promise<DateBlock> {
+  const result = await sql`
+    UPDATE date_blocks SET revenue = ${revenue} WHERE id = ${id} RETURNING *
+  `;
+  return result.rows[0] as DateBlock;
+}
+
 export async function deleteDateBlock(id: number): Promise<boolean> {
   const result = await sql`
     DELETE FROM date_blocks WHERE id = ${id}
