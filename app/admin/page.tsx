@@ -3491,7 +3491,7 @@ export default function AdminDashboard() {
                     </div>
                   ) : (
                     <>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
                         <div className="bg-purple-50 rounded-xl p-4 text-center">
                           <div className="text-2xl font-bold text-purple-700">{occupancyData.yearlyOccupancyRate}%</div>
                           <div className="text-xs text-purple-600 mt-1">Occupancy Rate</div>
@@ -3503,10 +3503,6 @@ export default function AdminDashboard() {
                         <div className="bg-green-50 rounded-xl p-4 text-center">
                           <div className="text-2xl font-bold text-green-700">${occupancyData.totalRevenue.toLocaleString('en-US', { maximumFractionDigits: 0 })}</div>
                           <div className="text-xs text-green-600 mt-1">Gross Revenue</div>
-                        </div>
-                        <div className="bg-amber-50 rounded-xl p-4 text-center">
-                          <div className="text-2xl font-bold text-amber-700">${occupancyData.totalOccupiedDays > 0 ? Math.round(occupancyData.totalRevenue / occupancyData.totalOccupiedDays).toLocaleString() : '—'}</div>
-                          <div className="text-xs text-amber-600 mt-1">Avg Nightly Rate</div>
                         </div>
                         <div className="bg-cyan-50 rounded-xl p-4 text-center">
                           <div className="text-2xl font-bold text-cyan-700">{occupancyData.totalDays - occupancyData.totalOccupiedDays}</div>
@@ -3567,6 +3563,10 @@ export default function AdminDashboard() {
                                       <div className="flex justify-between items-baseline">
                                         <span className="text-xs text-gray-500">Avg/booking</span>
                                         <span className={`text-sm font-semibold ${ch.text}`}>{ch.bookings > 0 ? fmt(Math.round(ch.revenue / ch.bookings)) : '—'}</span>
+                                      </div>
+                                      <div className="flex justify-between items-baseline">
+                                        <span className="text-xs text-gray-500">Avg stay</span>
+                                        <span className={`text-sm font-semibold ${ch.text}`}>{ch.bookings > 0 ? (ch.nights / ch.bookings).toFixed(1) : '—'} nights</span>
                                       </div>
                                     </div>
                                   </div>
