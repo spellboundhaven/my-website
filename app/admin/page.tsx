@@ -1456,16 +1456,8 @@ export default function AdminDashboard() {
                             `${b.guest_name}\t${b.guest_email}\t${b.guest_phone}\t${formatDateForDisplay(b.check_in_date)}\t${formatDateForDisplay(b.check_out_date)}\t${b.guests_count}`
                           )
                           const text = [header, ...rows].join('\n')
-                          navigator.clipboard.writeText(text).then(async () => {
+                          navigator.clipboard.writeText(text).then(() => {
                             alert(`Copied ${bookings.length} inquiry contact(s) to clipboard!\n\nPaste into Google Sheets with Ctrl+V / Cmd+V.`)
-                            if (confirm('Clear inquiries from the dashboard? (Records stay in the database)')) {
-                              await fetch('/api/admin', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${password}` },
-                                body: JSON.stringify({ action: 'hideBookings' })
-                              })
-                              setBookings([])
-                            }
                           }).catch(() => {
                             alert('Failed to copy to clipboard')
                           })
@@ -1473,17 +1465,26 @@ export default function AdminDashboard() {
                         className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded-lg font-medium transition flex items-center gap-2"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
-                        Export & Copy
+                        Copy
                       </button>
                       <button
                         onClick={async () => {
-                          if (confirm('Clear all inquiries from the dashboard? (Records stay in the database)')) {
-                            await fetch('/api/admin', {
+                          if (!confirm('Clear all inquiries from the dashboard? (Records stay in the database)')) return
+                          try {
+                            const res = await fetch('/api/admin', {
                               method: 'POST',
                               headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${password}` },
                               body: JSON.stringify({ action: 'hideBookings' })
                             })
-                            setBookings([])
+                            const result = await res.json()
+                            if (result.success) {
+                              setBookings([])
+                              alert('Inquiries cleared successfully.')
+                            } else {
+                              alert('Failed to clear: ' + JSON.stringify(result))
+                            }
+                          } catch (err) {
+                            alert('Error clearing inquiries: ' + err)
                           }
                         }}
                         className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm rounded-lg font-medium transition flex items-center gap-2"
