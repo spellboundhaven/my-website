@@ -3621,17 +3621,23 @@ export default function AdminDashboard() {
                               </div>
 
                               {totalNights > 0 && (
-                                <div className="space-y-3">
+                                <div className="space-y-4">
                                   <div>
                                     <div className="flex justify-between text-xs text-gray-500 mb-1.5">
                                       <span>Revenue share</span>
                                       <span>{fmt(totalRev)} total</span>
                                     </div>
-                                    <div className="w-full h-4 bg-gray-100 rounded-full overflow-hidden flex">
+                                    <div className="w-full bg-gray-100 rounded-full overflow-hidden flex h-7">
                                       {channels.map(ch => {
                                         const pct = totalRev > 0 ? (ch.revenue / totalRev) * 100 : 0;
                                         if (pct === 0) return null;
-                                        return <div key={ch.label + '-rev'} className="h-full" style={{ width: `${pct}%`, backgroundColor: ch.color }} title={`${ch.label}: ${fmt(ch.revenue)} (${Math.round(pct)}%)`} />;
+                                        return (
+                                          <div key={ch.label + '-rev'} className="h-full flex items-center justify-center overflow-hidden" style={{ width: `${pct}%`, backgroundColor: ch.color }}>
+                                            <span className="text-white text-[10px] sm:text-xs font-bold px-1 truncate">
+                                              {pct >= 15 ? `${ch.label} ${Math.round(pct)}%` : `${Math.round(pct)}%`}
+                                            </span>
+                                          </div>
+                                        );
                                       })}
                                     </div>
                                   </div>
@@ -3640,25 +3646,19 @@ export default function AdminDashboard() {
                                       <span>Nights share</span>
                                       <span>{totalNights} total</span>
                                     </div>
-                                    <div className="w-full h-4 bg-gray-100 rounded-full overflow-hidden flex">
+                                    <div className="w-full bg-gray-100 rounded-full overflow-hidden flex h-7">
                                       {channels.map(ch => {
                                         const pct = (ch.nights / totalNights) * 100;
                                         if (pct === 0) return null;
-                                        return <div key={ch.label} className="h-full" style={{ width: `${pct}%`, backgroundColor: ch.color }} title={`${ch.label}: ${ch.nights} nights (${Math.round(pct)}%)`} />;
+                                        return (
+                                          <div key={ch.label} className="h-full flex items-center justify-center overflow-hidden" style={{ width: `${pct}%`, backgroundColor: ch.color }}>
+                                            <span className="text-white text-[10px] sm:text-xs font-bold px-1 truncate">
+                                              {pct >= 15 ? `${ch.label} ${Math.round(pct)}%` : `${Math.round(pct)}%`}
+                                            </span>
+                                          </div>
+                                        );
                                       })}
                                     </div>
-                                  </div>
-                                  <div className="flex gap-4">
-                                    {channels.map(ch => {
-                                      const pct = totalRev > 0 ? Math.round((ch.revenue / totalRev) * 100) : 0;
-                                      if (ch.revenue === 0 && ch.nights === 0) return null;
-                                      return (
-                                        <div key={ch.label} className="flex items-center gap-1.5 text-xs text-gray-600">
-                                          <div className={`w-2 h-2 rounded-full ${ch.dot}`} />
-                                          <span>{ch.label}</span>
-                                        </div>
-                                      );
-                                    })}
                                   </div>
                                 </div>
                               )}
