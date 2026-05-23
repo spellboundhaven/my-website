@@ -178,7 +178,7 @@ export default function AdminDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
   const [authError, setAuthError] = useState('')
-  const [activeTab, setActiveTab] = useState<'bookings' | 'calendar' | 'reviews' | 'invoices' | 'rental-agreements' | 'maintenance' | 'occupancy' | 'settings'>('bookings')
+  const [activeTab, setActiveTab] = useState<'bookings' | 'calendar' | 'reviews' | 'invoices' | 'rental-agreements' | 'maintenance' | 'occupancy' | 'settings'>('occupancy')
   
   const [bookings, setBookings] = useState<Booking[]>([])
   const [dateBlocks, setDateBlocks] = useState<DateBlock[]>([])
@@ -1346,16 +1346,15 @@ export default function AdminDashboard() {
           <div className="border-b border-gray-200 overflow-x-auto scrollbar-hide">
             <div className="flex">
               <button
-                onClick={() => setActiveTab('bookings')}
+                onClick={() => setActiveTab('occupancy')}
                 className={`px-2 sm:px-3 lg:px-4 py-3 font-medium transition-colors flex items-center gap-1 whitespace-nowrap text-xs sm:text-sm ${
-                  activeTab === 'bookings'
+                  activeTab === 'occupancy'
                     ? 'border-b-2 border-purple-600 text-purple-600'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline">Inquiries</span>
-                <span className="sm:hidden">Inq.</span>
+                <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span>Insights</span>
               </button>
               <button
                 onClick={() => setActiveTab('calendar')}
@@ -1416,16 +1415,16 @@ export default function AdminDashboard() {
                 <span className="sm:hidden">Maint.</span>
               </button>
               <button
-                onClick={() => setActiveTab('occupancy')}
+                onClick={() => setActiveTab('bookings')}
                 className={`px-2 sm:px-3 lg:px-4 py-3 font-medium transition-colors flex items-center gap-1 whitespace-nowrap text-xs sm:text-sm ${
-                  activeTab === 'occupancy'
+                  activeTab === 'bookings'
                     ? 'border-b-2 border-purple-600 text-purple-600'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline">Insights</span>
-                <span className="sm:hidden">Insights</span>
+                <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Inquiries</span>
+                <span className="sm:hidden">Inq.</span>
               </button>
               <button
                 onClick={() => setActiveTab('settings')}
