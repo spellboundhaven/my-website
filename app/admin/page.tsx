@@ -23,10 +23,10 @@ function OccupancyChart({ data }: { data: { monthName: string; occupancyRate: nu
   return (
     <div className="w-full h-[220px] sm:h-[350px]">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+        <LineChart data={data} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
           <XAxis dataKey="monthName" tick={{ fontSize: 10, fill: '#6b7280' }} interval={0} />
-          <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: '#6b7280' }} tickFormatter={(v) => `${v}%`} width={35} />
+          <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: '#6b7280' }} tickFormatter={(v) => `${v}%`} width={40} />
           <Tooltip
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             formatter={(value: any, name: any, props: any) => {
