@@ -3516,7 +3516,7 @@ export default function AdminDashboard() {
                     </div>
                   ) : (
                     <>
-                      <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4 mb-6 sm:mb-8">
+                      <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4 mb-6 sm:mb-8">
                         <div className="bg-purple-50 rounded-lg sm:rounded-xl p-2 sm:p-4 text-center">
                           <div className="text-lg sm:text-2xl font-bold text-purple-700">{occupancyData.yearlyOccupancyRate}%</div>
                           <div className="text-[10px] sm:text-xs text-purple-600 mt-0.5 sm:mt-1">Occupancy</div>
@@ -3536,6 +3536,10 @@ export default function AdminDashboard() {
                         <div className="bg-rose-50 rounded-lg sm:rounded-xl p-2 sm:p-4 text-center col-span-1">
                           <div className="text-lg sm:text-2xl font-bold text-rose-700">{occupancyData.remainingOpenNights}</div>
                           <div className="text-[10px] sm:text-xs text-rose-600 mt-0.5 sm:mt-1">Open</div>
+                        </div>
+                        <div className="bg-orange-50 rounded-lg sm:rounded-xl p-2 sm:p-4 text-center col-span-1">
+                          <div className="text-lg sm:text-2xl font-bold text-orange-700">{occupancyData.totalOccupiedDays > 0 ? Math.round((occupancyData.bySource.nights.direct / occupancyData.totalOccupiedDays) * 100) : 0}%</div>
+                          <div className="text-[10px] sm:text-xs text-orange-600 mt-0.5 sm:mt-1">Direct</div>
                         </div>
                       </div>
 
