@@ -1424,8 +1424,8 @@ export default function AdminDashboard() {
                 }`}
               >
                 <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline">Occupancy</span>
-                <span className="sm:hidden">Occ.</span>
+                <span className="hidden sm:inline">Insights</span>
+                <span className="sm:hidden">Insights</span>
               </button>
               <button
                 onClick={() => setActiveTab('settings')}
@@ -3492,7 +3492,7 @@ export default function AdminDashboard() {
               <div className="space-y-8">
                 <div>
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                    <h2 className="text-2xl font-bold text-gray-800">Occupancy Dashboard</h2>
+                    <h2 className="text-2xl font-bold text-gray-800">Insights Dashboard</h2>
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => setOccupancyYear(prev => prev - 1)}
