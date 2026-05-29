@@ -95,7 +95,7 @@ export default function PoliciesPage() {
                   Cancellations are subject to the policy stated on the booking platform (e.g., Airbnb or VRBO).
                 </p>
                 <p>
-                  If this agreement is executed outside of those platforms, cancellations made <strong>at least 60 days before check-in</strong> will receive a full refund minus the processing fees. Cancellations made <strong>within 60 days are non-refundable</strong>.
+                  If this agreement is executed outside of those platforms, cancellations made <strong>at least 90 days before check-in</strong> will receive a full refund minus the processing fees. Cancellations made <strong>within 90 days are non-refundable</strong>.
                 </p>
               </div>
             </section>
