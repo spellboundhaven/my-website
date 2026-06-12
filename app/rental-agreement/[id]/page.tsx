@@ -403,7 +403,7 @@ export default function RentalAgreementForm() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Number of Vehicles
                   </label>
-                  <p className="text-xs text-gray-500 mb-3">Please let us know how many vehicles you will be bringing (max 3).</p>
+                  <p className="text-xs text-gray-500 mb-3">Please let us know how many vehicles you will be bringing (max 5).</p>
                   <select
                     name="num_vehicles"
                     value={formData.num_vehicles}
@@ -415,6 +415,8 @@ export default function RentalAgreementForm() {
                     <option value="1">1 vehicle</option>
                     <option value="2">2 vehicles</option>
                     <option value="3">3 vehicles</option>
+                    <option value="4">4 vehicles</option>
+                    <option value="5">5 vehicles</option>
                   </select>
                 </div>
               </div>
