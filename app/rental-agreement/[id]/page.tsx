@@ -39,7 +39,7 @@ export default function RentalAgreementForm() {
     num_adults: '',
     num_children: '',
     additional_adults: [{ first_name: '', last_name: '' }],
-    vehicles: [{ license_plate: '', make: '', model: '', color: '' }],
+    num_vehicles: '',
     security_deposit_authorized: false,
     damage_protection_choice: '' as '' | 'security_deposit' | 'insurance_fee',
     electronic_signature_agreed: false,
@@ -73,33 +73,9 @@ export default function RentalAgreementForm() {
     }
   }
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
-  }
-
-  const handleVehicleChange = (index: number, field: string, value: string) => {
-    const newVehicles = [...formData.vehicles]
-    newVehicles[index] = { ...newVehicles[index], [field]: value }
-    setFormData(prev => ({ ...prev, vehicles: newVehicles }))
-  }
-
-  const addVehicle = () => {
-    if (formData.vehicles.length < 5) {
-      setFormData(prev => ({
-        ...prev,
-        vehicles: [...prev.vehicles, { license_plate: '', make: '', model: '', color: '' }]
-      }))
-    }
-  }
-
-  const removeVehicle = (index: number) => {
-    if (formData.vehicles.length > 1) {
-      setFormData(prev => ({
-        ...prev,
-        vehicles: prev.vehicles.filter((_, i) => i !== index)
-      }))
-    }
   }
 
   const handleAdditionalAdultChange = (index: number, field: string, value: string) => {
@@ -167,7 +143,7 @@ export default function RentalAgreementForm() {
           additional_adults: formData.additional_adults
             .filter(a => a.first_name.trim() || a.last_name.trim())
             .map(a => ({ name: `${a.first_name} ${a.last_name}`.trim() })),
-          vehicles: formData.vehicles.filter(v => v.license_plate || v.make || v.model || v.color),
+          num_vehicles: formData.num_vehicles ? parseInt(formData.num_vehicles) : 0,
           security_deposit_authorized: formData.damage_protection_choice === 'security_deposit',
           damage_protection_choice: formData.damage_protection_choice || undefined,
           electronic_signature_agreed: formData.electronic_signature_agreed,
@@ -422,89 +398,24 @@ export default function RentalAgreementForm() {
                   </div>
                 </div>
 
-                {/* Vehicle Information */}
+                {/* Vehicle Count */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Vehicle Information (Optional)
+                    Number of Vehicles
                   </label>
-                  <p className="text-xs text-gray-500 mb-3">Add up to 5 vehicles</p>
-                  <div className="space-y-4">
-                    {formData.vehicles.map((vehicle, index) => (
-                      <div key={index} className="border border-gray-300 rounded-lg p-4 bg-gray-50">
-                        <div className="flex justify-between items-center mb-3">
-                          <h4 className="text-sm font-medium text-gray-700">Vehicle {index + 1}</h4>
-                          {formData.vehicles.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => removeVehicle(index)}
-                              className="text-sm text-red-600 hover:text-red-800"
-                            >
-                              Remove
-                            </button>
-                          )}
-                        </div>
-                        <div className="grid grid-cols-2 gap-3">
-                          <div>
-                            <label className="block text-xs font-medium text-gray-600 mb-1">
-                              License Plate
-                            </label>
-                            <input
-                              type="text"
-                              value={vehicle.license_plate}
-                              onChange={(e) => handleVehicleChange(index, 'license_plate', e.target.value)}
-                              placeholder="ABC-1234"
-                              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs font-medium text-gray-600 mb-1">
-                              Make
-                            </label>
-                            <input
-                              type="text"
-                              value={vehicle.make}
-                              onChange={(e) => handleVehicleChange(index, 'make', e.target.value)}
-                              placeholder="Toyota"
-                              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs font-medium text-gray-600 mb-1">
-                              Model
-                            </label>
-                            <input
-                              type="text"
-                              value={vehicle.model}
-                              onChange={(e) => handleVehicleChange(index, 'model', e.target.value)}
-                              placeholder="Camry"
-                              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs font-medium text-gray-600 mb-1">
-                              Color
-                            </label>
-                            <input
-                              type="text"
-                              value={vehicle.color}
-                              onChange={(e) => handleVehicleChange(index, 'color', e.target.value)}
-                              placeholder="Silver"
-                              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                    {formData.vehicles.length < 5 && (
-                      <button
-                        type="button"
-                        onClick={addVehicle}
-                        className="w-full py-2 px-4 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-600 hover:border-indigo-500 hover:text-indigo-600 transition duration-200"
-                      >
-                        + Add Another Vehicle
-                      </button>
-                    )}
-                  </div>
+                  <p className="text-xs text-gray-500 mb-3">Please let us know how many vehicles you will be bringing (max 3).</p>
+                  <select
+                    name="num_vehicles"
+                    value={formData.num_vehicles}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  >
+                    <option value="">Select number of vehicles</option>
+                    <option value="0">0 vehicles</option>
+                    <option value="1">1 vehicle</option>
+                    <option value="2">2 vehicles</option>
+                    <option value="3">3 vehicles</option>
+                  </select>
                 </div>
               </div>
             </div>

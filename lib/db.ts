@@ -858,6 +858,7 @@ export interface RentalSubmission {
   num_children: number;
   additional_adults?: AdditionalAdult[];
   vehicles?: Vehicle[];
+  num_vehicles?: number;
   security_deposit_authorized: boolean;
   damage_protection_choice?: string;
   electronic_signature_agreed: boolean;
@@ -909,6 +910,7 @@ export async function initRentalAgreementTables() {
         num_children INTEGER DEFAULT 0,
         additional_adults JSONB,
         vehicles JSONB,
+        num_vehicles INTEGER DEFAULT 0,
         security_deposit_authorized BOOLEAN DEFAULT FALSE,
         electronic_signature_agreed BOOLEAN DEFAULT FALSE,
         signature_data TEXT NOT NULL,
@@ -968,6 +970,16 @@ export async function initRentalAgreementTables() {
       `;
     } catch (alterError) {
       console.log('Note: damage_protection_choice column may already exist');
+    }
+
+    // Add num_vehicles column to rental_submissions
+    try {
+      await sql`
+        ALTER TABLE rental_submissions 
+        ADD COLUMN IF NOT EXISTS num_vehicles INTEGER DEFAULT 0
+      `;
+    } catch (alterError) {
+      console.log('Note: num_vehicles column may already exist');
     }
 
     console.log('Rental agreement database tables initialized successfully');
@@ -1033,7 +1045,7 @@ export async function createRentalSubmission(submission: RentalSubmission): Prom
   const result = await sql`
     INSERT INTO rental_submissions (
       agreement_id, guest_name, guest_email, guest_phone, guest_address,
-      num_adults, num_children, additional_adults, vehicles, security_deposit_authorized,
+      num_adults, num_children, additional_adults, vehicles, num_vehicles, security_deposit_authorized,
       damage_protection_choice, electronic_signature_agreed, signature_data, check_in_date, check_out_date, view_token, submitted_at
     )
     VALUES (
@@ -1046,6 +1058,7 @@ export async function createRentalSubmission(submission: RentalSubmission): Prom
       ${submission.num_children || 0},
       ${JSON.stringify(submission.additional_adults || [])},
       ${JSON.stringify(submission.vehicles || [])},
+      ${submission.num_vehicles || 0},
       ${submission.security_deposit_authorized || false},
       ${submission.damage_protection_choice || null},
       ${submission.electronic_signature_agreed || false},

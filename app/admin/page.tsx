@@ -164,6 +164,7 @@ interface RentalSubmission {
   num_children: number
   additional_adults?: AdditionalAdult[]
   vehicles?: Vehicle[]
+  num_vehicles?: number
   security_deposit_authorized: boolean
   damage_protection_choice?: string
   electronic_signature_agreed: boolean
@@ -3044,24 +3045,14 @@ export default function AdminDashboard() {
                                     </div>
                                   </td>
                                   <td className="px-4 py-3 text-sm text-gray-600">
-                                    {submission.vehicles && submission.vehicles.length > 0 ? (
-                                      <details className="cursor-pointer">
-                                        <summary className="text-indigo-600 hover:text-indigo-800 font-medium">
-                                          {submission.vehicles.length} Vehicle{submission.vehicles.length !== 1 ? 's' : ''}
-                                        </summary>
-                                        <div className="mt-2 space-y-2 bg-gray-50 p-2 rounded text-xs">
-                                          {submission.vehicles.map((vehicle, idx) => (
-                                            <div key={idx} className="border-b border-gray-200 pb-1 last:border-0">
-                                              <div><strong>Plate:</strong> {vehicle.license_plate || 'N/A'}</div>
-                                              <div><strong>Make/Model:</strong> {vehicle.make || 'N/A'} {vehicle.model || ''}</div>
-                                              <div><strong>Color:</strong> {vehicle.color || 'N/A'}</div>
-                                            </div>
-                                          ))}
-                                        </div>
-                                      </details>
-                                    ) : (
-                                      <span className="text-gray-400">None</span>
-                                    )}
+                                    {(() => {
+                                      const vehicleCount = submission.num_vehicles ?? (submission.vehicles ? submission.vehicles.length : 0)
+                                      return vehicleCount > 0 ? (
+                                        <span className="font-medium">{vehicleCount} Vehicle{vehicleCount !== 1 ? 's' : ''}</span>
+                                      ) : (
+                                        <span className="text-gray-400">None</span>
+                                      )
+                                    })()}
                                   </td>
                                   <td className="px-4 py-3 text-sm text-gray-600">
                                     <div className="space-y-1">

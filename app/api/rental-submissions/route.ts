@@ -16,6 +16,7 @@ export async function POST(request: NextRequest) {
       num_children,
       additional_adults,
       vehicles,
+      num_vehicles,
       security_deposit_authorized,
       damage_protection_choice,
       electronic_signature_agreed,
@@ -41,6 +42,7 @@ export async function POST(request: NextRequest) {
       num_children: num_children || 0,
       additional_adults: additional_adults || [],
       vehicles: vehicles || [],
+      num_vehicles: num_vehicles || 0,
       security_deposit_authorized: security_deposit_authorized || false,
       damage_protection_choice: damage_protection_choice || undefined,
       electronic_signature_agreed: electronic_signature_agreed || false,
@@ -61,17 +63,9 @@ export async function POST(request: NextRequest) {
         
         const resend = new Resend(process.env.RESEND_API_KEY);
         
-        // Format vehicle information
-        let vehicleInfo = 'None';
-        if (vehicles && vehicles.length > 0) {
-          vehicleInfo = vehicles
-            .map(
-              (v: any, idx: number) =>
-                `<li><strong>Vehicle ${idx + 1}:</strong> ${v.make || 'N/A'} ${v.model || ''}, ${v.color || 'N/A'}, License: ${v.license_plate || 'N/A'}</li>`
-            )
-            .join('');
-          vehicleInfo = `<ul>${vehicleInfo}</ul>`;
-        }
+        // Format vehicle information (count only)
+        const vehicleCount = num_vehicles || (vehicles ? vehicles.length : 0);
+        const vehicleInfo = vehicleCount > 0 ? `${vehicleCount}` : 'None';
 
         // Create HTML email content
         const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://spellboundhaven.com';
@@ -95,7 +89,7 @@ export async function POST(request: NextRequest) {
                 <p><strong>Name:</strong> ${guest_name}</p>
                 <p><strong>Email:</strong> ${guest_email}</p>
                 <p><strong>Guests:</strong> ${num_adults || 0} Adult(s), ${num_children || 0} Child(ren)</p>
-                <p><strong>Vehicles:</strong> ${vehicleInfo}</p>
+                <p><strong>Number of Vehicles:</strong> ${vehicleInfo}</p>
               </div>
               
               ${damage_protection_choice ? `

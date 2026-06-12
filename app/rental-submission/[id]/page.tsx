@@ -39,6 +39,7 @@ interface Submission {
   num_children: number
   additional_adults?: AdditionalAdult[]
   vehicles?: Vehicle[]
+  num_vehicles?: number
   security_deposit_authorized: boolean
   damage_protection_choice?: string
   electronic_signature_agreed: boolean
@@ -173,21 +174,14 @@ export default function ViewRentalSubmission() {
             )}
 
             {/* Vehicle Information */}
-            {submission.vehicles && submission.vehicles.length > 0 && (
+            {(() => {
+              const vehicleCount = submission.num_vehicles ?? (submission.vehicles ? submission.vehicles.length : 0)
+              return vehicleCount > 0 ? (
               <div className="mt-4 pt-4 border-t border-gray-200">
-                <p className="font-medium mb-2">Vehicles:</p>
-                <div className="space-y-2">
-                  {submission.vehicles.map((vehicle, idx) => (
-                    <div key={idx} className="text-sm bg-white p-3 rounded border border-gray-200">
-                      <p><strong>Vehicle {idx + 1}:</strong></p>
-                      <p>License Plate: {vehicle.license_plate || 'N/A'}</p>
-                      <p>Make/Model: {vehicle.make || 'N/A'} {vehicle.model || ''}</p>
-                      <p>Color: {vehicle.color || 'N/A'}</p>
-                    </div>
-                  ))}
-                </div>
+                <p className="font-medium mb-2">Number of Vehicles: {vehicleCount}</p>
               </div>
-            )}
+              ) : null
+            })()}
           </div>
 
           {/* Rental Terms */}
