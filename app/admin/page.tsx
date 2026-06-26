@@ -4020,6 +4020,8 @@ export default function AdminDashboard() {
                                   const rows = lt.bucketBreakdownBySource[ch.label.toLowerCase() as 'airbnb' | 'vrbo' | 'direct']
                                     .filter(r => bucketOrder.includes(r.bucket))
                                   const hasData = rows.some(r => r.bookings > 0)
+                                  const maxAdr = Math.max(0, ...rows.map(r => r.adr))
+                                  const topAdrBucket = maxAdr > 0 ? rows.find(r => r.adr === maxAdr)?.bucket : undefined
                                   return (
                                     <div key={ch.label}>
                                       <div className="flex items-center gap-1.5 mb-2">
@@ -4041,15 +4043,18 @@ export default function AdminDashboard() {
                                               </tr>
                                             </thead>
                                             <tbody>
-                                              {rows.map(row => (
-                                                <tr key={row.bucket} className={`border-b last:border-b-0 ${row.bookings === 0 ? 'text-gray-300' : ''}`}>
+                                              {rows.map(row => {
+                                                const isTopAdr = row.bucket === topAdrBucket
+                                                return (
+                                                <tr key={row.bucket} className={`border-b last:border-b-0 ${row.bookings === 0 ? 'text-gray-300' : ''} ${isTopAdr ? 'bg-amber-50' : ''}`}>
                                                   <td className="text-left px-2 sm:px-3 py-2 font-medium">{bucketLabels[row.bucket]}</td>
                                                   <td className="text-right px-2 sm:px-3 py-2">{row.bookings || '—'}</td>
                                                   <td className="text-right px-2 sm:px-3 py-2">{row.bookings > 0 ? row.avgLOS : '—'}</td>
-                                                  <td className="text-right px-2 sm:px-3 py-2">{row.adr > 0 ? `$${row.adr.toLocaleString()}` : '—'}</td>
+                                                  <td className={`text-right px-2 sm:px-3 py-2 ${isTopAdr ? 'font-bold text-amber-700' : ''}`}>{row.adr > 0 ? `$${row.adr.toLocaleString()}` : '—'}{isTopAdr ? ' ★' : ''}</td>
                                                   <td className="text-right px-2 sm:px-3 py-2 font-medium">{row.revenue > 0 ? `$${row.revenue.toLocaleString('en-US', { maximumFractionDigits: 0 })}` : '—'}</td>
                                                 </tr>
-                                              ))}
+                                                )
+                                              })}
                                             </tbody>
                                           </table>
                                         </div>
@@ -4057,7 +4062,7 @@ export default function AdminDashboard() {
                                     </div>
                                   )
                                 })}
-                                <p className="text-[10px] text-gray-400">LOS = avg length of stay (nights) · ADR = revenue ÷ nights</p>
+                                <p className="text-[10px] text-gray-400">LOS = avg length of stay (nights) · ADR = revenue ÷ nights · ★ highlights the highest-ADR lead time per channel</p>
                               </div>
                             </div>
                           )
