@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
   const yearEnd = `${year + 1}-01-01`;
 
   const result = await sql`
-    SELECT start_date, end_date, reason, revenue
+    SELECT start_date, end_date, reason, revenue, booking_date
     FROM date_blocks
     WHERE end_date > ${yearStart}
       AND start_date < ${yearEnd}
@@ -149,6 +149,78 @@ export async function GET(request: NextRequest) {
 
   const remainingOpenNights = Math.max(0, remainingDays - remainingBooked);
 
+  // Lead time analysis: days between booking_date and check-in (start_date)
+  // for reservations whose check-in falls within the selected year.
+  const leadTimes: number[] = [];
+  const leadBySource: { airbnb: number[]; vrbo: number[]; direct: number[] } = {
+    airbnb: [],
+    vrbo: [],
+    direct: [],
+  };
+  const leadBuckets = {
+    '0-7': 0,
+    '8-30': 0,
+    '31-60': 0,
+    '61-90': 0,
+    '91-180': 0,
+    '180+': 0,
+  };
+  let bookingsInYear = 0;
+  let bookingsWithDate = 0;
+
+  for (const block of blocks) {
+    const startStr = String(block.start_date).split('T')[0];
+    const startYear = parseInt(startStr.split('-')[0]);
+    if (startYear !== year) continue;
+
+    bookingsInYear++;
+    if (!block.booking_date) continue;
+
+    const bookingStr = String(block.booking_date).split('T')[0];
+    const checkIn = new Date(startStr);
+    const booked = new Date(bookingStr);
+    const lead = Math.round((checkIn.getTime() - booked.getTime()) / (1000 * 60 * 60 * 24));
+    if (isNaN(lead) || lead < 0) continue;
+
+    bookingsWithDate++;
+    leadTimes.push(lead);
+    leadBySource[classifySource(block.reason)].push(lead);
+
+    if (lead <= 7) leadBuckets['0-7']++;
+    else if (lead <= 30) leadBuckets['8-30']++;
+    else if (lead <= 60) leadBuckets['31-60']++;
+    else if (lead <= 90) leadBuckets['61-90']++;
+    else if (lead <= 180) leadBuckets['91-180']++;
+    else leadBuckets['180+']++;
+  }
+
+  const average = (arr: number[]) =>
+    arr.length > 0 ? Math.round(arr.reduce((s, n) => s + n, 0) / arr.length) : 0;
+  const median = (arr: number[]) => {
+    if (arr.length === 0) return 0;
+    const sorted = [...arr].sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    return sorted.length % 2 !== 0
+      ? sorted[mid]
+      : Math.round((sorted[mid - 1] + sorted[mid]) / 2);
+  };
+
+  const leadTime = {
+    count: bookingsWithDate,
+    bookingsInYear,
+    coverage: bookingsInYear > 0 ? Math.round((bookingsWithDate / bookingsInYear) * 100) : 0,
+    average: average(leadTimes),
+    median: median(leadTimes),
+    min: leadTimes.length > 0 ? Math.min(...leadTimes) : 0,
+    max: leadTimes.length > 0 ? Math.max(...leadTimes) : 0,
+    buckets: leadBuckets,
+    bySource: {
+      airbnb: { count: leadBySource.airbnb.length, average: average(leadBySource.airbnb) },
+      vrbo: { count: leadBySource.vrbo.length, average: average(leadBySource.vrbo) },
+      direct: { count: leadBySource.direct.length, average: average(leadBySource.direct) },
+    },
+  };
+
   return NextResponse.json({
     year,
     months: monthlyData,
@@ -163,5 +235,6 @@ export async function GET(request: NextRequest) {
       revenue: sourceRevenue,
     },
     totalRevenue: sourceRevenue.airbnb + sourceRevenue.vrbo + sourceRevenue.direct,
+    leadTime,
   });
 }

@@ -37,6 +37,7 @@ export interface DateBlock {
   end_date: string;
   reason: string;
   revenue?: number;
+  booking_date?: string;
   created_at?: string;
 }
 
@@ -116,6 +117,8 @@ export async function initDatabase() {
     `;
 
     await sql`ALTER TABLE date_blocks ADD COLUMN IF NOT EXISTS revenue DECIMAL(10, 2)`;
+
+    await sql`ALTER TABLE date_blocks ADD COLUMN IF NOT EXISTS booking_date DATE`;
 
     await sql`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS hidden BOOLEAN DEFAULT false`;
 
@@ -291,12 +294,13 @@ export async function deleteBooking(id: number): Promise<boolean> {
 // Date block operations
 export async function createDateBlock(block: DateBlock): Promise<DateBlock> {
   const result = await sql`
-    INSERT INTO date_blocks (start_date, end_date, reason, revenue, created_at)
+    INSERT INTO date_blocks (start_date, end_date, reason, revenue, booking_date, created_at)
     VALUES (
       ${block.start_date},
       ${block.end_date},
       ${block.reason},
       ${block.revenue ?? null},
+      ${block.booking_date || null},
       ${block.created_at || new Date().toISOString()}
     )
     RETURNING *
@@ -338,6 +342,13 @@ export async function getActiveDateBlocks(): Promise<DateBlock[]> {
 export async function updateDateBlockRevenue(id: number, revenue: number | null): Promise<DateBlock> {
   const result = await sql`
     UPDATE date_blocks SET revenue = ${revenue} WHERE id = ${id} RETURNING *
+  `;
+  return result.rows[0] as DateBlock;
+}
+
+export async function updateDateBlockBookingDate(id: number, bookingDate: string | null): Promise<DateBlock> {
+  const result = await sql`
+    UPDATE date_blocks SET booking_date = ${bookingDate} WHERE id = ${id} RETURNING *
   `;
   return result.rows[0] as DateBlock;
 }

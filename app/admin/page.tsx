@@ -92,6 +92,7 @@ interface DateBlock {
   end_date: string
   reason: string
   revenue?: number
+  booking_date?: string
   created_at: string
 }
 
@@ -191,6 +192,8 @@ export default function AdminDashboard() {
   
   const [editingBlockId, setEditingBlockId] = useState<number | null>(null)
   const [editingRevenue, setEditingRevenue] = useState('')
+  const [editingBookingDateId, setEditingBookingDateId] = useState<number | null>(null)
+  const [editingBookingDate, setEditingBookingDate] = useState('')
 
   const [airbnbUrl, setAirbnbUrl] = useState('')
   const [vrboUrl, setVrboUrl] = useState('')
@@ -249,6 +252,21 @@ export default function AdminDashboard() {
       nights: { airbnb: number; vrbo: number; direct: number }
       bookings: { airbnb: number; vrbo: number; direct: number }
       revenue: { airbnb: number; vrbo: number; direct: number }
+    }
+    leadTime: {
+      count: number
+      bookingsInYear: number
+      coverage: number
+      average: number
+      median: number
+      min: number
+      max: number
+      buckets: Record<string, number>
+      bySource: {
+        airbnb: { count: number; average: number }
+        vrbo: { count: number; average: number }
+        direct: { count: number; average: number }
+      }
     }
   }
   const [occupancyData, setOccupancyData] = useState<OccupancyData | null>(null)
@@ -470,7 +488,8 @@ export default function AdminDashboard() {
             start_date: formData.get('start_date'),
             end_date: formData.get('end_date'),
             reason: formData.get('reason'),
-            revenue: formData.get('revenue') ? parseFloat(formData.get('revenue') as string) : null
+            revenue: formData.get('revenue') ? parseFloat(formData.get('revenue') as string) : null,
+            booking_date: formData.get('booking_date') || null
           }
         })
       })
@@ -1630,7 +1649,7 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                   <form onSubmit={handleCreateBlock} className="bg-gray-50 rounded-lg p-6 mb-6">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Start Date
@@ -1678,6 +1697,16 @@ export default function AdminDashboard() {
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                         />
                       </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Booking Date
+                        </label>
+                        <input
+                          type="date"
+                          name="booking_date"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        />
+                      </div>
                     </div>
                     <button
                       type="submit"
@@ -1694,15 +1723,78 @@ export default function AdminDashboard() {
                     ) : dateBlocks.length === 0 ? (
                       <p className="text-gray-500 text-center py-8">No date blocks</p>
                     ) : (
-                      dateBlocks.map((block) => (
+                      dateBlocks.map((block) => {
+                        const leadDays = block.booking_date
+                          ? Math.round((new Date(block.start_date.split('T')[0]).getTime() - new Date(block.booking_date.split('T')[0]).getTime()) / 86400000)
+                          : null
+                        return (
                         <div key={block.id} className="bg-white border border-gray-200 rounded-lg p-4 flex flex-col sm:flex-row justify-between sm:items-center gap-2">
                           <div className="flex-1">
                             <div className="font-medium text-gray-900">
                               {formatDateForDisplay(block.start_date)} to {formatDateForDisplay(block.end_date)}
                             </div>
                             <div className="text-sm text-gray-600">{block.reason}</div>
+                            {block.booking_date && (
+                              <div className="text-xs text-gray-500 mt-0.5">
+                                Booked {formatDateForDisplay(block.booking_date)}
+                                {leadDays != null && leadDays >= 0 && <span className="text-indigo-600 font-medium"> · {leadDays} day lead time</span>}
+                              </div>
+                            )}
                           </div>
-                          <div className="flex items-center gap-2 flex-shrink-0">
+                          <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
+                            {/* Booking date control */}
+                            {editingBookingDateId === block.id ? (
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="date"
+                                  value={editingBookingDate}
+                                  onChange={(e) => setEditingBookingDate(e.target.value)}
+                                  className="px-2 py-1 border border-gray-300 rounded text-sm"
+                                  autoFocus
+                                />
+                                <button
+                                  onClick={async () => {
+                                    try {
+                                      const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123'
+                                      await fetch('/api/admin', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminPassword}` },
+                                        body: JSON.stringify({ action: 'updateBlockBookingDate', data: { id: block.id, booking_date: editingBookingDate || null } })
+                                      })
+                                      setEditingBookingDateId(null)
+                                      setEditingBookingDate('')
+                                      fetchAdminData()
+                                    } catch (error) {
+                                      console.error('Error updating booking date:', error)
+                                      alert('Failed to update booking date')
+                                    }
+                                  }}
+                                  className="px-2 py-1 bg-indigo-600 text-white rounded text-sm hover:bg-indigo-700"
+                                >
+                                  Save
+                                </button>
+                                <button
+                                  onClick={() => { setEditingBookingDateId(null); setEditingBookingDate('') }}
+                                  className="px-2 py-1 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => {
+                                  setEditingBookingDateId(block.id)
+                                  setEditingBookingDate(block.booking_date ? block.booking_date.split('T')[0] : '')
+                                }}
+                                className="text-sm font-semibold text-indigo-700 hover:text-indigo-900 cursor-pointer"
+                              >
+                                {block.booking_date
+                                  ? <span className="text-gray-500 font-normal">Edit booked date</span>
+                                  : <span className="text-gray-400 font-normal">+ Booking date</span>
+                                }
+                              </button>
+                            )}
+                            {/* Revenue control */}
                             {editingBlockId === block.id ? (
                               <div className="flex items-center gap-2">
                                 <span className="text-sm text-gray-500">$</span>
@@ -1767,7 +1859,8 @@ export default function AdminDashboard() {
                             )}
                           </div>
                         </div>
-                      ))
+                        )
+                      })
                     )}
                   </div>
                 </div>
@@ -3673,6 +3766,89 @@ export default function AdminDashboard() {
                               </div>
                             </div>
                           );
+                        })()}
+                      </div>
+
+                      {/* Lead Time Analysis */}
+                      <div className="bg-white border rounded-xl p-3 sm:p-5 mb-6 sm:mb-8">
+                        <h3 className="text-base sm:text-lg font-semibold text-gray-700 mb-1">Lead Time Analysis</h3>
+                        <p className="text-xs text-gray-500 mb-4">Days between booking date and check-in for {occupancyYear} arrivals.</p>
+                        {(() => {
+                          const lt = occupancyData.leadTime
+                          if (!lt || lt.count === 0) {
+                            return <p className="text-gray-400 text-sm">No booking dates recorded yet. Add a booking date to your date blocks to see lead time insights.</p>
+                          }
+                          const bucketOrder = ['0-7', '8-30', '31-60', '61-90', '91-180', '180+']
+                          const bucketLabels: Record<string, string> = {
+                            '0-7': '0-7 days', '8-30': '8-30 days', '31-60': '31-60 days',
+                            '61-90': '61-90 days', '91-180': '91-180 days', '180+': '180+ days'
+                          }
+                          const maxBucket = Math.max(...bucketOrder.map(b => lt.buckets[b] || 0), 1)
+                          const channels = [
+                            { label: 'Airbnb', data: lt.bySource.airbnb, dot: 'bg-red-500', text: 'text-red-700' },
+                            { label: 'VRBO', data: lt.bySource.vrbo, dot: 'bg-blue-500', text: 'text-blue-700' },
+                            { label: 'Direct', data: lt.bySource.direct, dot: 'bg-emerald-500', text: 'text-emerald-700' },
+                          ]
+                          return (
+                            <div className="space-y-6">
+                              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
+                                <div className="bg-indigo-50 rounded-lg sm:rounded-xl p-2 sm:p-4 text-center">
+                                  <div className="text-lg sm:text-2xl font-bold text-indigo-700">{lt.average}</div>
+                                  <div className="text-[10px] sm:text-xs text-indigo-600 mt-0.5 sm:mt-1">Avg Lead (days)</div>
+                                </div>
+                                <div className="bg-purple-50 rounded-lg sm:rounded-xl p-2 sm:p-4 text-center">
+                                  <div className="text-lg sm:text-2xl font-bold text-purple-700">{lt.median}</div>
+                                  <div className="text-[10px] sm:text-xs text-purple-600 mt-0.5 sm:mt-1">Median (days)</div>
+                                </div>
+                                <div className="bg-cyan-50 rounded-lg sm:rounded-xl p-2 sm:p-4 text-center">
+                                  <div className="text-lg sm:text-2xl font-bold text-cyan-700">{lt.min}-{lt.max}</div>
+                                  <div className="text-[10px] sm:text-xs text-cyan-600 mt-0.5 sm:mt-1">Range (days)</div>
+                                </div>
+                                <div className="bg-gray-50 rounded-lg sm:rounded-xl p-2 sm:p-4 text-center">
+                                  <div className="text-lg sm:text-2xl font-bold text-gray-700">{lt.count}/{lt.bookingsInYear}</div>
+                                  <div className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">With Date ({lt.coverage}%)</div>
+                                </div>
+                              </div>
+
+                              <div>
+                                <div className="text-xs font-medium text-gray-500 mb-2">Distribution</div>
+                                <div className="space-y-1.5">
+                                  {bucketOrder.map(b => {
+                                    const count = lt.buckets[b] || 0
+                                    const pct = (count / maxBucket) * 100
+                                    return (
+                                      <div key={b} className="flex items-center gap-2">
+                                        <div className="w-16 sm:w-20 text-xs text-gray-600 flex-shrink-0">{bucketLabels[b]}</div>
+                                        <div className="flex-1 bg-gray-100 rounded-full h-5 overflow-hidden">
+                                          {count > 0 && (
+                                            <div className="h-full bg-indigo-500 rounded-full flex items-center justify-end pr-2" style={{ width: `${Math.max(pct, 8)}%` }}>
+                                              <span className="text-white text-[10px] font-bold">{count}</span>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    )
+                                  })}
+                                </div>
+                              </div>
+
+                              <div className="pt-3 border-t">
+                                <div className="text-xs font-medium text-gray-500 mb-2">Average lead time by channel</div>
+                                <div className="grid grid-cols-3 gap-2 sm:gap-4">
+                                  {channels.map(ch => (
+                                    <div key={ch.label} className="text-center">
+                                      <div className="flex items-center justify-center gap-1.5 mb-1">
+                                        <div className={`w-2 h-2 rounded-full ${ch.dot}`} />
+                                        <span className="text-xs text-gray-600">{ch.label}</span>
+                                      </div>
+                                      <div className={`text-lg sm:text-xl font-bold ${ch.text}`}>{ch.data.count > 0 ? `${ch.data.average}d` : '—'}</div>
+                                      <div className="text-[10px] text-gray-400">{ch.data.count} booking{ch.data.count !== 1 ? 's' : ''}</div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          )
                         })()}
                       </div>
 
