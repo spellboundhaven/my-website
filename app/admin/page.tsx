@@ -262,12 +262,25 @@ export default function AdminDashboard() {
       min: number
       max: number
       buckets: Record<string, number>
+      bucketBreakdownBySource: {
+        airbnb: LeadBucketRow[]
+        vrbo: LeadBucketRow[]
+        direct: LeadBucketRow[]
+      }
       bySource: {
         airbnb: { count: number; average: number }
         vrbo: { count: number; average: number }
         direct: { count: number; average: number }
       }
     }
+  }
+  interface LeadBucketRow {
+    bucket: string
+    nights: number
+    bookings: number
+    revenue: number
+    avgLOS: number
+    adr: number
   }
   const [occupancyData, setOccupancyData] = useState<OccupancyData | null>(null)
   const [occupancyYear, setOccupancyYear] = useState(new Date().getFullYear())
@@ -3846,6 +3859,52 @@ export default function AdminDashboard() {
                                     </div>
                                   ))}
                                 </div>
+                              </div>
+
+                              {/* Channel-specific performance by lead time bucket */}
+                              <div className="pt-3 border-t space-y-5">
+                                <div className="text-xs font-medium text-gray-500">Performance by lead time bucket (per channel)</div>
+                                {channels.map(ch => {
+                                  const rows = lt.bucketBreakdownBySource[ch.label.toLowerCase() as 'airbnb' | 'vrbo' | 'direct']
+                                  const hasData = rows.some(r => r.bookings > 0)
+                                  return (
+                                    <div key={ch.label}>
+                                      <div className="flex items-center gap-1.5 mb-2">
+                                        <div className={`w-2.5 h-2.5 rounded-full ${ch.dot}`} />
+                                        <span className={`text-sm font-semibold ${ch.text}`}>{ch.label}</span>
+                                      </div>
+                                      {!hasData ? (
+                                        <p className="text-xs text-gray-400">No bookings with a booking date.</p>
+                                      ) : (
+                                        <div className="overflow-x-auto -mx-3 sm:mx-0">
+                                          <table className="w-full text-xs sm:text-sm min-w-[380px]">
+                                            <thead>
+                                              <tr className="bg-gray-50 border-b text-gray-600">
+                                                <th className="text-left px-2 sm:px-3 py-2 font-semibold">Lead Time</th>
+                                                <th className="text-right px-2 sm:px-3 py-2 font-semibold">Bookings</th>
+                                                <th className="text-right px-2 sm:px-3 py-2 font-semibold">Avg LOS</th>
+                                                <th className="text-right px-2 sm:px-3 py-2 font-semibold">ADR</th>
+                                                <th className="text-right px-2 sm:px-3 py-2 font-semibold">Revenue</th>
+                                              </tr>
+                                            </thead>
+                                            <tbody>
+                                              {rows.map(row => (
+                                                <tr key={row.bucket} className={`border-b last:border-b-0 ${row.bookings === 0 ? 'text-gray-300' : ''}`}>
+                                                  <td className="text-left px-2 sm:px-3 py-2 font-medium">{bucketLabels[row.bucket]}</td>
+                                                  <td className="text-right px-2 sm:px-3 py-2">{row.bookings || '—'}</td>
+                                                  <td className="text-right px-2 sm:px-3 py-2">{row.bookings > 0 ? row.avgLOS : '—'}</td>
+                                                  <td className="text-right px-2 sm:px-3 py-2">{row.adr > 0 ? `$${row.adr.toLocaleString()}` : '—'}</td>
+                                                  <td className="text-right px-2 sm:px-3 py-2 font-medium">{row.revenue > 0 ? `$${row.revenue.toLocaleString('en-US', { maximumFractionDigits: 0 })}` : '—'}</td>
+                                                </tr>
+                                              ))}
+                                            </tbody>
+                                          </table>
+                                        </div>
+                                      )}
+                                    </div>
+                                  )
+                                })}
+                                <p className="text-[10px] text-gray-400">LOS = avg length of stay (nights) · ADR = revenue ÷ nights</p>
                               </div>
                             </div>
                           )

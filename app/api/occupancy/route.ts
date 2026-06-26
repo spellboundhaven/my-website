@@ -165,6 +165,22 @@ export async function GET(request: NextRequest) {
     '91-180': 0,
     '180+': 0,
   };
+  const bucketKeys = ['0-7', '8-30', '31-60', '61-90', '91-180', '180+'] as const;
+  type BucketKey = typeof bucketKeys[number];
+  type SourceKey = 'airbnb' | 'vrbo' | 'direct';
+  const emptyBuckets = (): Record<BucketKey, { nights: number; bookings: number; revenue: number }> => ({
+    '0-7': { nights: 0, bookings: 0, revenue: 0 },
+    '8-30': { nights: 0, bookings: 0, revenue: 0 },
+    '31-60': { nights: 0, bookings: 0, revenue: 0 },
+    '61-90': { nights: 0, bookings: 0, revenue: 0 },
+    '91-180': { nights: 0, bookings: 0, revenue: 0 },
+    '180+': { nights: 0, bookings: 0, revenue: 0 },
+  });
+  const bucketStatsBySource: Record<SourceKey, ReturnType<typeof emptyBuckets>> = {
+    airbnb: emptyBuckets(),
+    vrbo: emptyBuckets(),
+    direct: emptyBuckets(),
+  };
   let bookingsInYear = 0;
   let bookingsWithDate = 0;
 
@@ -175,6 +191,15 @@ export async function GET(request: NextRequest) {
     const str = String(value).split('T')[0];
     const [y, m, d] = str.split('-').map(Number);
     return new Date(Date.UTC(y, (m || 1) - 1, d || 1));
+  };
+
+  const bucketFor = (lead: number): BucketKey => {
+    if (lead <= 7) return '0-7';
+    if (lead <= 30) return '8-30';
+    if (lead <= 60) return '31-60';
+    if (lead <= 90) return '61-90';
+    if (lead <= 180) return '91-180';
+    return '180+';
   };
 
   for (const block of blocks) {
@@ -191,15 +216,37 @@ export async function GET(request: NextRequest) {
 
     bookingsWithDate++;
     leadTimes.push(lead);
-    leadBySource[classifySource(block.reason)].push(lead);
+    const source = classifySource(block.reason);
+    leadBySource[source].push(lead);
 
-    if (lead <= 7) leadBuckets['0-7']++;
-    else if (lead <= 30) leadBuckets['8-30']++;
-    else if (lead <= 60) leadBuckets['31-60']++;
-    else if (lead <= 90) leadBuckets['61-90']++;
-    else if (lead <= 180) leadBuckets['91-180']++;
-    else leadBuckets['180+']++;
+    const bucket = bucketFor(lead);
+    leadBuckets[bucket]++;
+
+    const blockEnd = toDateOnly(block.end_date);
+    const nights = Math.max(0, Math.round((blockEnd.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24)));
+    const revenue = parseFloat(block.revenue) || 0;
+    bucketStatsBySource[source][bucket].nights += nights;
+    bucketStatsBySource[source][bucket].bookings += 1;
+    bucketStatsBySource[source][bucket].revenue += revenue;
   }
+
+  const buildBreakdown = (src: SourceKey) =>
+    bucketKeys.map((k) => {
+      const s = bucketStatsBySource[src][k];
+      return {
+        bucket: k,
+        nights: s.nights,
+        bookings: s.bookings,
+        revenue: Math.round(s.revenue * 100) / 100,
+        avgLOS: s.bookings > 0 ? Math.round((s.nights / s.bookings) * 10) / 10 : 0,
+        adr: s.nights > 0 ? Math.round(s.revenue / s.nights) : 0,
+      };
+    });
+  const bucketBreakdownBySource = {
+    airbnb: buildBreakdown('airbnb'),
+    vrbo: buildBreakdown('vrbo'),
+    direct: buildBreakdown('direct'),
+  };
 
   const average = (arr: number[]) =>
     arr.length > 0 ? Math.round(arr.reduce((s, n) => s + n, 0) / arr.length) : 0;
@@ -221,6 +268,7 @@ export async function GET(request: NextRequest) {
     min: leadTimes.length > 0 ? Math.min(...leadTimes) : 0,
     max: leadTimes.length > 0 ? Math.max(...leadTimes) : 0,
     buckets: leadBuckets,
+    bucketBreakdownBySource,
     bySource: {
       airbnb: { count: leadBySource.airbnb.length, average: average(leadBySource.airbnb) },
       vrbo: { count: leadBySource.vrbo.length, average: average(leadBySource.vrbo) },
