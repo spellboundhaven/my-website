@@ -3984,14 +3984,22 @@ export default function AdminDashboard() {
                                   const activeIdx = lt.heatmap.buckets
                                     .map((_, i) => i)
                                     .filter(i => colTotals[i] > 0)
-                                  const lerp = (a: number, b: number, t: number) => Math.round(a + (b - a) * t)
+                                  const viridisStops = [
+                                    [68, 1, 84], [72, 40, 120], [62, 74, 137], [49, 104, 142], [38, 130, 142],
+                                    [31, 158, 137], [53, 183, 121], [110, 206, 88], [181, 222, 43], [253, 231, 37],
+                                  ]
                                   const heatColor = (c: number) => {
                                     if (c === 0) return { bg: '#f8fafc', fg: '#cbd5e1' }
                                     const t = lt.heatmap.maxCount > 1 ? (c - 1) / (lt.heatmap.maxCount - 1) : 1
-                                    const from = [224, 242, 254] // sky-100
-                                    const to = [2, 132, 199]     // sky-600
-                                    const bg = `rgb(${lerp(from[0], to[0], t)}, ${lerp(from[1], to[1], t)}, ${lerp(from[2], to[2], t)})`
-                                    return { bg, fg: t > 0.45 ? '#fff' : '#075985' }
+                                    const x = Math.max(0, Math.min(1, t)) * (viridisStops.length - 1)
+                                    const i = Math.floor(x)
+                                    const f = x - i
+                                    const a = viridisStops[i]
+                                    const b = viridisStops[Math.min(i + 1, viridisStops.length - 1)]
+                                    const ch = (j: number) => Math.round(a[j] + (b[j] - a[j]) * f)
+                                    const bg = `rgb(${ch(0)}, ${ch(1)}, ${ch(2)})`
+                                    // Viridis is dark (purple/blue) at low values, bright (yellow) at high
+                                    return { bg, fg: t > 0.6 ? '#1f2937' : '#fff' }
                                   }
                                   return (
                                     <div className="overflow-x-auto -mx-3 sm:mx-0">
