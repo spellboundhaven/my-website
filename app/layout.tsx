@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import StructuredData from '@/components/StructuredData'
+import { Analytics } from '@vercel/analytics/next'
 
 export const metadata: Metadata = {
   title: 'Spellbound Haven | Windsor Island Resort Vacation Rental Near Walt Disney World® | Orlando Family Villa',
@@ -46,6 +47,7 @@ export default function RootLayout({
       </head>
       <body className="antialiased">
         {children}
+        <Analytics />
       </body>
     </html>
   )
