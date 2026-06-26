@@ -17,6 +17,9 @@ import {
   CartesianGrid,
   Tooltip,
   ReferenceLine,
+  ScatterChart,
+  Scatter,
+  ZAxis,
 } from 'recharts'
 
 function OccupancyChart({ data }: { data: { monthName: string; occupancyRate: number; isFuture: boolean; occupiedDays: number; daysInMonth: number; airbnb: number; vrbo: number; direct: number }[] }) {
@@ -48,6 +51,61 @@ function OccupancyChart({ data }: { data: { monthName: string; occupancyRate: nu
             activeDot={{ r: 6, fill: '#7c3aed', stroke: '#fff', strokeWidth: 2 }}
           />
         </LineChart>
+      </ResponsiveContainer>
+    </div>
+  )
+}
+
+function LeadAdrScatter({ points }: { points: { lead: number; adr: number; source: string; los: number; revenue: number; month: number }[] }) {
+  const series = [
+    { key: 'airbnb', name: 'Airbnb', color: '#ef4444' },
+    { key: 'vrbo', name: 'VRBO', color: '#3b82f6' },
+    { key: 'direct', name: 'Direct', color: '#10b981' },
+  ]
+  return (
+    <div className="w-full h-[260px] sm:h-[340px]">
+      <ResponsiveContainer width="100%" height="100%">
+        <ScatterChart margin={{ top: 10, right: 10, left: 0, bottom: 14 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+          <XAxis
+            type="number"
+            dataKey="lead"
+            name="Lead time"
+            tick={{ fontSize: 10, fill: '#6b7280' }}
+            tickFormatter={(v) => `${v}d`}
+            label={{ value: 'Lead time (days)', position: 'insideBottom', offset: -6, fontSize: 10, fill: '#9ca3af' }}
+          />
+          <YAxis
+            type="number"
+            dataKey="adr"
+            name="ADR"
+            tick={{ fontSize: 10, fill: '#6b7280' }}
+            tickFormatter={(v) => `$${v}`}
+            width={48}
+          />
+          <ZAxis type="number" dataKey="los" range={[40, 220]} name="Nights" />
+          <Tooltip
+            cursor={{ strokeDasharray: '3 3' }}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            content={({ active, payload }: any) => {
+              if (!active || !payload || !payload.length) return null
+              const p = payload[0].payload
+              const label = p.source === 'airbnb' ? 'Airbnb' : p.source === 'vrbo' ? 'VRBO' : 'Direct'
+              return (
+                <div className="bg-white border rounded-lg px-3 py-2 text-xs shadow-sm">
+                  <div className="font-semibold text-gray-700 mb-0.5">{label}</div>
+                  <div className="text-gray-600">Lead time: {p.lead} days</div>
+                  <div className="text-gray-600">ADR: ${p.adr.toLocaleString()}</div>
+                  <div className="text-gray-600">Stay: {p.los} night{p.los !== 1 ? 's' : ''}</div>
+                  <div className="text-gray-600">Revenue: ${p.revenue.toLocaleString()}</div>
+                </div>
+              )
+            }}
+          />
+          {series.map((s) => (
+            <Scatter key={s.key} name={s.name} data={points.filter((p) => p.source === s.key)} fill={s.color} fillOpacity={0.7} />
+          ))}
+        </ScatterChart>
       </ResponsiveContainer>
     </div>
   )
@@ -238,6 +296,7 @@ export default function AdminDashboard() {
     vrbo: number
     direct: number
     revenue: number
+    avgLeadTime: number | null
   }
   interface OccupancyData {
     year: number
@@ -266,6 +325,12 @@ export default function AdminDashboard() {
         airbnb: LeadBucketRow[]
         vrbo: LeadBucketRow[]
         direct: LeadBucketRow[]
+      }
+      scatter: { lead: number; adr: number; source: string; los: number; revenue: number; month: number }[]
+      heatmap: {
+        buckets: string[]
+        maxCount: number
+        rows: { month: number; monthName: string; counts: number[]; total: number }[]
       }
       bySource: {
         airbnb: { count: number; average: number }
@@ -3861,6 +3926,78 @@ export default function AdminDashboard() {
                                 </div>
                               </div>
 
+                              {/* Lead Time vs ADR scatter */}
+                              <div className="pt-3 border-t">
+                                <div className="text-xs font-medium text-gray-500 mb-1">Lead time vs. ADR</div>
+                                <p className="text-[10px] text-gray-400 mb-2">Each dot is a booking. Bubble size = nights stayed.</p>
+                                {lt.scatter && lt.scatter.length > 0 ? (
+                                  <>
+                                    <div className="flex flex-wrap items-center gap-3 mb-2">
+                                      {[
+                                        { label: 'Airbnb', dot: 'bg-red-500' },
+                                        { label: 'VRBO', dot: 'bg-blue-500' },
+                                        { label: 'Direct', dot: 'bg-emerald-500' },
+                                      ].map(s => (
+                                        <div key={s.label} className="flex items-center gap-1.5">
+                                          <div className={`w-2.5 h-2.5 rounded-full ${s.dot}`} />
+                                          <span className="text-[10px] sm:text-xs text-gray-600">{s.label}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                    <LeadAdrScatter points={lt.scatter} />
+                                  </>
+                                ) : (
+                                  <p className="text-xs text-gray-400">Not enough data (needs booking date, revenue, and nights).</p>
+                                )}
+                              </div>
+
+                              {/* Booking pace heatmap: arrival month x lead time bucket */}
+                              <div className="pt-3 border-t">
+                                <div className="text-xs font-medium text-gray-500 mb-1">Booking pace heatmap</div>
+                                <p className="text-[10px] text-gray-400 mb-2">Bookings by arrival month and how far ahead they were booked.</p>
+                                {lt.heatmap && lt.heatmap.rows.some(r => r.total > 0) ? (
+                                  <div className="overflow-x-auto -mx-3 sm:mx-0">
+                                    <table className="w-full text-[10px] sm:text-xs border-separate border-spacing-1 min-w-[420px]">
+                                      <thead>
+                                        <tr className="text-gray-500">
+                                          <th className="text-left font-medium px-1 py-1">Month</th>
+                                          {lt.heatmap.buckets.map(b => (
+                                            <th key={b} className="text-center font-medium px-1 py-1 whitespace-nowrap">{b}d</th>
+                                          ))}
+                                          <th className="text-center font-medium px-1 py-1">Total</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {lt.heatmap.rows.map(row => (
+                                          <tr key={row.month}>
+                                            <td className="text-left font-medium text-gray-600 px-1 py-1 whitespace-nowrap">{row.monthName}</td>
+                                            {row.counts.map((c, i) => {
+                                              const intensity = c === 0 ? 0 : 0.15 + 0.85 * (c / lt.heatmap.maxCount)
+                                              return (
+                                                <td key={i} className="text-center px-0.5 py-0.5">
+                                                  <div
+                                                    className="rounded-md py-1.5 font-semibold"
+                                                    style={{
+                                                      backgroundColor: c === 0 ? '#f3f4f6' : `rgba(79, 70, 229, ${intensity})`,
+                                                      color: c === 0 ? '#d1d5db' : intensity > 0.55 ? '#fff' : '#3730a3',
+                                                    }}
+                                                  >
+                                                    {c || '·'}
+                                                  </div>
+                                                </td>
+                                              )
+                                            })}
+                                            <td className="text-center font-bold text-gray-700 px-1 py-1">{row.total || '—'}</td>
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                ) : (
+                                  <p className="text-xs text-gray-400">No bookings with a booking date yet.</p>
+                                )}
+                              </div>
+
                               {/* Channel-specific performance by lead time bucket */}
                               <div className="pt-3 border-t space-y-5">
                                 <div className="text-xs font-medium text-gray-500">Performance by lead time bucket (per channel)</div>
@@ -3920,6 +4057,7 @@ export default function AdminDashboard() {
                               <th className="text-center px-1 sm:px-4 py-2 sm:py-3 font-semibold text-gray-700">Rate</th>
                               <th className="text-right px-2 sm:px-4 py-2 sm:py-3 font-semibold text-gray-700">Revenue</th>
                               <th className="text-right px-1 sm:px-4 py-2 sm:py-3 font-semibold text-gray-700">Avg/Nt</th>
+                              <th className="text-right px-1 sm:px-4 py-2 sm:py-3 font-semibold text-gray-700">Avg Lead</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -3940,6 +4078,7 @@ export default function AdminDashboard() {
                                 </td>
                                 <td className="px-2 sm:px-4 py-2 sm:py-3 text-right font-medium">{m.revenue > 0 ? '$' + m.revenue.toLocaleString('en-US', { maximumFractionDigits: 0 }) : '—'}</td>
                                 <td className="px-1 sm:px-4 py-2 sm:py-3 text-right">{m.occupiedDays > 0 && m.revenue > 0 ? '$' + Math.round(m.revenue / m.occupiedDays).toLocaleString() : '—'}</td>
+                                <td className="px-1 sm:px-4 py-2 sm:py-3 text-right">{m.avgLeadTime != null ? `${m.avgLeadTime}d` : '—'}</td>
                               </tr>
                             ))}
                           </tbody>

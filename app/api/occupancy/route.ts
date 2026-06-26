@@ -184,6 +184,28 @@ export async function GET(request: NextRequest) {
   let bookingsInYear = 0;
   let bookingsWithDate = 0;
 
+  // Per-booking points for the Lead Time vs ADR scatter plot
+  const scatter: {
+    lead: number;
+    adr: number;
+    source: SourceKey;
+    los: number;
+    revenue: number;
+    month: number;
+  }[] = [];
+
+  // Lead times grouped by arrival month for the monthly table
+  const monthLeadTimes: Record<number, number[]> = {};
+  for (let m = 1; m <= 12; m++) monthLeadTimes[m] = [];
+
+  // Arrival month (1-12) x lead time bucket counts for the booking-pace heatmap
+  const heatmapCounts: Record<number, Record<BucketKey, number>> = {};
+  for (let m = 1; m <= 12; m++) {
+    heatmapCounts[m] = {
+      '0-7': 0, '8-30': 0, '31-60': 0, '61-90': 0, '91-180': 0, '180+': 0,
+    };
+  }
+
   const toDateOnly = (value: any): Date => {
     if (value instanceof Date) {
       return new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate()));
@@ -228,7 +250,41 @@ export async function GET(request: NextRequest) {
     bucketStatsBySource[source][bucket].nights += nights;
     bucketStatsBySource[source][bucket].bookings += 1;
     bucketStatsBySource[source][bucket].revenue += revenue;
+
+    const arrivalMonth = checkIn.getUTCMonth() + 1;
+    heatmapCounts[arrivalMonth][bucket] += 1;
+    monthLeadTimes[arrivalMonth].push(lead);
+
+    if (nights > 0 && revenue > 0) {
+      scatter.push({
+        lead,
+        adr: Math.round(revenue / nights),
+        source,
+        los: nights,
+        revenue: Math.round(revenue),
+        month: arrivalMonth,
+      });
+    }
   }
+
+  const heatmapMaxCount = Math.max(
+    1,
+    ...Object.values(heatmapCounts).flatMap((row) => bucketKeys.map((k) => row[k]))
+  );
+  const heatmap = {
+    buckets: bucketKeys as unknown as string[],
+    maxCount: heatmapMaxCount,
+    rows: Array.from({ length: 12 }, (_, i) => {
+      const month = i + 1;
+      const counts = bucketKeys.map((k) => heatmapCounts[month][k]);
+      return {
+        month,
+        monthName: new Date(year, i).toLocaleString('en-US', { month: 'short' }),
+        counts,
+        total: counts.reduce((s, n) => s + n, 0),
+      };
+    }),
+  };
 
   const buildBreakdown = (src: SourceKey) =>
     bucketKeys.map((k) => {
@@ -259,6 +315,12 @@ export async function GET(request: NextRequest) {
       : Math.round((sorted[mid - 1] + sorted[mid]) / 2);
   };
 
+  for (const m of monthlyData) {
+    const arr = monthLeadTimes[m.month] || [];
+    (m as typeof m & { avgLeadTime: number | null }).avgLeadTime =
+      arr.length > 0 ? average(arr) : null;
+  }
+
   const leadTime = {
     count: bookingsWithDate,
     bookingsInYear,
@@ -269,6 +331,8 @@ export async function GET(request: NextRequest) {
     max: leadTimes.length > 0 ? Math.max(...leadTimes) : 0,
     buckets: leadBuckets,
     bucketBreakdownBySource,
+    scatter,
+    heatmap,
     bySource: {
       airbnb: { count: leadBySource.airbnb.length, average: average(leadBySource.airbnb) },
       vrbo: { count: leadBySource.vrbo.length, average: average(leadBySource.vrbo) },
