@@ -151,6 +151,7 @@ interface DateBlock {
   reason: string
   revenue?: number
   booking_date?: string
+  season?: string | null
   created_at: string
 }
 
@@ -252,6 +253,8 @@ export default function AdminDashboard() {
   const [editingRevenue, setEditingRevenue] = useState('')
   const [editingBookingDateId, setEditingBookingDateId] = useState<number | null>(null)
   const [editingBookingDate, setEditingBookingDate] = useState('')
+  const [editingSeasonId, setEditingSeasonId] = useState<number | null>(null)
+  const [editingSeason, setEditingSeason] = useState('')
 
   const [airbnbUrl, setAirbnbUrl] = useState('')
   const [vrboUrl, setVrboUrl] = useState('')
@@ -567,7 +570,8 @@ export default function AdminDashboard() {
             end_date: formData.get('end_date'),
             reason: formData.get('reason'),
             revenue: formData.get('revenue') ? parseFloat(formData.get('revenue') as string) : null,
-            booking_date: formData.get('booking_date') || null
+            booking_date: formData.get('booking_date') || null,
+            season: formData.get('season') || null
           }
         })
       })
@@ -1727,7 +1731,7 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                   <form onSubmit={handleCreateBlock} className="bg-gray-50 rounded-lg p-6 mb-6">
-                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Start Date
@@ -1785,6 +1789,22 @@ export default function AdminDashboard() {
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                         />
                       </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Season
+                        </label>
+                        <select
+                          name="season"
+                          defaultValue=""
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        >
+                          <option value="">—</option>
+                          <option value="peak">Peak</option>
+                          <option value="high">High</option>
+                          <option value="shoulder">Shoulder</option>
+                          <option value="low">Low</option>
+                        </select>
+                      </div>
                     </div>
                     <button
                       type="submit"
@@ -1805,13 +1825,25 @@ export default function AdminDashboard() {
                         const leadDays = block.booking_date
                           ? Math.round((new Date(block.start_date.split('T')[0]).getTime() - new Date(block.booking_date.split('T')[0]).getTime()) / 86400000)
                           : null
+                        const seasonMeta: Record<string, { label: string; cls: string }> = {
+                          peak: { label: 'Peak', cls: 'bg-rose-100 text-rose-700' },
+                          high: { label: 'High', cls: 'bg-orange-100 text-orange-700' },
+                          shoulder: { label: 'Shoulder', cls: 'bg-amber-100 text-amber-700' },
+                          low: { label: 'Low', cls: 'bg-sky-100 text-sky-700' },
+                        }
+                        const season = block.season ? seasonMeta[block.season] : null
                         return (
                         <div key={block.id} className="bg-white border border-gray-200 rounded-lg p-4 flex flex-col sm:flex-row justify-between sm:items-center gap-2">
                           <div className="flex-1">
                             <div className="font-medium text-gray-900">
                               {formatDateForDisplay(block.start_date)} to {formatDateForDisplay(block.end_date)}
                             </div>
-                            <div className="text-sm text-gray-600">{block.reason}</div>
+                            <div className="text-sm text-gray-600 flex items-center gap-2 flex-wrap">
+                              <span>{block.reason}</span>
+                              {season && (
+                                <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold ${season.cls}`}>{season.label} season</span>
+                              )}
+                            </div>
                             {block.booking_date && (
                               <div className="text-xs text-gray-500 mt-0.5">
                                 Booked {formatDateForDisplay(block.booking_date)}
@@ -1869,6 +1901,63 @@ export default function AdminDashboard() {
                                 {block.booking_date
                                   ? <span className="text-gray-500 font-normal">Edit booked date</span>
                                   : <span className="text-gray-400 font-normal">+ Booking date</span>
+                                }
+                              </button>
+                            )}
+                            {/* Season control */}
+                            {editingSeasonId === block.id ? (
+                              <div className="flex items-center gap-2">
+                                <select
+                                  value={editingSeason}
+                                  onChange={(e) => setEditingSeason(e.target.value)}
+                                  className="px-2 py-1 border border-gray-300 rounded text-sm"
+                                  autoFocus
+                                >
+                                  <option value="">—</option>
+                                  <option value="peak">Peak</option>
+                                  <option value="high">High</option>
+                                  <option value="shoulder">Shoulder</option>
+                                  <option value="low">Low</option>
+                                </select>
+                                <button
+                                  onClick={async () => {
+                                    try {
+                                      const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123'
+                                      await fetch('/api/admin', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminPassword}` },
+                                        body: JSON.stringify({ action: 'updateBlockSeason', data: { id: block.id, season: editingSeason || null } })
+                                      })
+                                      setEditingSeasonId(null)
+                                      setEditingSeason('')
+                                      fetchAdminData()
+                                    } catch (error) {
+                                      console.error('Error updating season:', error)
+                                      alert('Failed to update season')
+                                    }
+                                  }}
+                                  className="px-2 py-1 bg-purple-600 text-white rounded text-sm hover:bg-purple-700"
+                                >
+                                  Save
+                                </button>
+                                <button
+                                  onClick={() => { setEditingSeasonId(null); setEditingSeason('') }}
+                                  className="px-2 py-1 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => {
+                                  setEditingSeasonId(block.id)
+                                  setEditingSeason(block.season || '')
+                                }}
+                                className="text-sm font-semibold text-purple-700 hover:text-purple-900 cursor-pointer"
+                              >
+                                {block.season
+                                  ? <span className="text-gray-500 font-normal">Edit season</span>
+                                  : <span className="text-gray-400 font-normal">+ Season</span>
                                 }
                               </button>
                             )}

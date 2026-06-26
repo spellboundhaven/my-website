@@ -7,6 +7,7 @@ import {
   deleteDateBlock,
   updateDateBlockRevenue,
   updateDateBlockBookingDate,
+  updateDateBlockSeason,
   updateBooking,
   deleteBooking,
   getAllReviews,
@@ -128,6 +129,11 @@ export async function POST(request: NextRequest) {
 
     if (action === 'updateBlockBookingDate') {
       const block = await updateDateBlockBookingDate(data.id, data.booking_date);
+      return NextResponse.json({ success: true, block });
+    }
+
+    if (action === 'updateBlockSeason') {
+      const block = await updateDateBlockSeason(data.id, data.season || null);
       return NextResponse.json({ success: true, block });
     }
 
