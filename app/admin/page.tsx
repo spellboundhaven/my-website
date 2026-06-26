@@ -333,7 +333,7 @@ export default function AdminDashboard() {
       heatmap: {
         buckets: string[]
         maxCount: number
-        rows: { month: number; monthName: string; counts: number[]; total: number }[]
+        rows: { season: string; seasonName: string; counts: number[]; total: number }[]
       }
       bySource: {
         airbnb: { count: number; average: number }
@@ -4057,6 +4057,74 @@ export default function AdminDashboard() {
                                 ) : (
                                   <p className="text-xs text-gray-400">Not enough data (needs booking date, revenue, and nights).</p>
                                 )}
+                              </div>
+
+                              {/* Booking pace heatmap: season x lead time bucket */}
+                              <div className="pt-3 border-t">
+                                <div className="text-xs font-medium text-gray-500 mb-1">Booking pace by season</div>
+                                <p className="text-[10px] text-gray-400 mb-2">Bookings by season and how far ahead they were booked.</p>
+                                {(() => {
+                                  if (!lt.heatmap || !lt.heatmap.rows.some(r => r.total > 0)) {
+                                    return <p className="text-xs text-gray-400">No bookings with both a season and booking date yet.</p>
+                                  }
+                                  // Drop lead-time buckets and seasons with no bookings
+                                  const colTotals = lt.heatmap.buckets.map((_, i) =>
+                                    lt.heatmap.rows.reduce((s, r) => s + r.counts[i], 0))
+                                  const activeIdx = lt.heatmap.buckets
+                                    .map((_, i) => i)
+                                    .filter(i => colTotals[i] > 0)
+                                  const activeRows = lt.heatmap.rows.filter(r => r.total > 0)
+                                  const viridisStops = [
+                                    [68, 1, 84], [72, 40, 120], [62, 74, 137], [49, 104, 142], [38, 130, 142],
+                                    [31, 158, 137], [53, 183, 121], [110, 206, 88], [181, 222, 43], [253, 231, 37],
+                                  ]
+                                  const heatColor = (c: number) => {
+                                    if (c === 0) return { bg: '#f8fafc', fg: '#cbd5e1' }
+                                    const t = lt.heatmap.maxCount > 1 ? (c - 1) / (lt.heatmap.maxCount - 1) : 1
+                                    const x = Math.max(0, Math.min(1, t)) * (viridisStops.length - 1)
+                                    const i = Math.floor(x)
+                                    const f = x - i
+                                    const a = viridisStops[i]
+                                    const b = viridisStops[Math.min(i + 1, viridisStops.length - 1)]
+                                    const ch = (j: number) => Math.round(a[j] + (b[j] - a[j]) * f)
+                                    const bg = `rgb(${ch(0)}, ${ch(1)}, ${ch(2)})`
+                                    return { bg, fg: t > 0.6 ? '#1f2937' : '#fff' }
+                                  }
+                                  return (
+                                    <div className="overflow-x-auto -mx-3 sm:mx-0">
+                                      <table className="w-full text-[10px] sm:text-xs border-separate border-spacing-1 min-w-[320px]">
+                                        <thead>
+                                          <tr className="text-gray-500">
+                                            <th className="text-left font-medium px-1 py-1">Season</th>
+                                            {activeIdx.map(i => (
+                                              <th key={i} className="text-center font-medium px-1 py-1 whitespace-nowrap">{lt.heatmap.buckets[i]}d</th>
+                                            ))}
+                                            <th className="text-center font-medium px-1 py-1">Total</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {activeRows.map(row => (
+                                            <tr key={row.season}>
+                                              <td className="text-left font-medium text-gray-600 px-1 py-1 whitespace-nowrap">{row.seasonName}</td>
+                                              {activeIdx.map(i => {
+                                                const c = row.counts[i]
+                                                const { bg, fg } = heatColor(c)
+                                                return (
+                                                  <td key={i} className="text-center px-0.5 py-0.5">
+                                                    <div className="rounded-md py-1.5 font-semibold" style={{ backgroundColor: bg, color: fg }}>
+                                                      {c || '·'}
+                                                    </div>
+                                                  </td>
+                                                )
+                                              })}
+                                              <td className="text-center font-bold text-gray-700 px-1 py-1">{row.total || '—'}</td>
+                                            </tr>
+                                          ))}
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  )
+                                })()}
                               </div>
 
                               {/* Channel-specific performance by lead time bucket */}

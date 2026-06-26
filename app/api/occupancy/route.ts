@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
   const yearEnd = `${year + 1}-01-01`;
 
   const result = await sql`
-    SELECT start_date, end_date, reason, revenue, booking_date
+    SELECT start_date, end_date, reason, revenue, booking_date, season
     FROM date_blocks
     WHERE end_date > ${yearStart}
       AND start_date < ${yearEnd}
@@ -198,13 +198,19 @@ export async function GET(request: NextRequest) {
   const monthLeadTimes: Record<number, number[]> = {};
   for (let m = 1; m <= 12; m++) monthLeadTimes[m] = [];
 
-  // Arrival month (1-12) x lead time bucket counts for the booking-pace heatmap
-  const heatmapCounts: Record<number, Record<BucketKey, number>> = {};
-  for (let m = 1; m <= 12; m++) {
-    heatmapCounts[m] = {
-      '0-7': 0, '8-30': 0, '31-60': 0, '61-90': 0, '91-180': 0, '180+': 0,
-    };
-  }
+  // Season x lead time bucket counts for the booking-pace heatmap
+  const seasonKeys = ['peak', 'high', 'shoulder', 'low'] as const;
+  type SeasonKey = typeof seasonKeys[number];
+  const heatmapCounts: Record<SeasonKey, Record<BucketKey, number>> = {
+    peak: { '0-7': 0, '8-30': 0, '31-60': 0, '61-90': 0, '91-180': 0, '180+': 0 },
+    high: { '0-7': 0, '8-30': 0, '31-60': 0, '61-90': 0, '91-180': 0, '180+': 0 },
+    shoulder: { '0-7': 0, '8-30': 0, '31-60': 0, '61-90': 0, '91-180': 0, '180+': 0 },
+    low: { '0-7': 0, '8-30': 0, '31-60': 0, '61-90': 0, '91-180': 0, '180+': 0 },
+  };
+  const normalizeSeason = (s: any): SeasonKey | null => {
+    const v = String(s || '').toLowerCase();
+    return (seasonKeys as readonly string[]).includes(v) ? (v as SeasonKey) : null;
+  };
 
   const toDateOnly = (value: any): Date => {
     if (value instanceof Date) {
@@ -252,8 +258,9 @@ export async function GET(request: NextRequest) {
     bucketStatsBySource[source][bucket].revenue += revenue;
 
     const arrivalMonth = checkIn.getUTCMonth() + 1;
-    heatmapCounts[arrivalMonth][bucket] += 1;
     monthLeadTimes[arrivalMonth].push(lead);
+    const seasonKey = normalizeSeason(block.season);
+    if (seasonKey) heatmapCounts[seasonKey][bucket] += 1;
 
     if (nights > 0 && revenue > 0) {
       scatter.push({
@@ -269,19 +276,21 @@ export async function GET(request: NextRequest) {
 
   const heatmapMaxCount = Math.max(
     1,
-    ...Object.values(heatmapCounts).flatMap((row) => bucketKeys.map((k) => row[k]))
+    ...seasonKeys.flatMap((s) => bucketKeys.map((k) => heatmapCounts[s][k]))
   );
+  const seasonLabels: Record<SeasonKey, string> = {
+    peak: 'Peak', high: 'High', shoulder: 'Shoulder', low: 'Low',
+  };
   const heatmap = {
     buckets: bucketKeys as unknown as string[],
     maxCount: heatmapMaxCount,
-    rows: Array.from({ length: 12 }, (_, i) => {
-      const month = i + 1;
-      const counts = bucketKeys.map((k) => heatmapCounts[month][k]);
+    rows: seasonKeys.map((s) => {
+      const counts = bucketKeys.map((k) => heatmapCounts[s][k]);
       return {
-        month,
-        monthName: new Date(year, i).toLocaleString('en-US', { month: 'short' }),
+        season: s,
+        seasonName: seasonLabels[s],
         counts,
-        total: counts.reduce((s, n) => s + n, 0),
+        total: counts.reduce((sum, n) => sum + n, 0),
       };
     }),
   };
