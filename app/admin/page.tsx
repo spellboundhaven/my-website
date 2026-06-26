@@ -3869,6 +3869,14 @@ export default function AdminDashboard() {
                             { label: 'VRBO', data: lt.bySource.vrbo, dot: 'bg-blue-500', text: 'text-blue-700' },
                             { label: 'Direct', data: lt.bySource.direct, dot: 'bg-emerald-500', text: 'text-emerald-700' },
                           ]
+                          const srcLabel: Record<string, string> = { airbnb: 'Airbnb', vrbo: 'VRBO', direct: 'Direct' }
+                          // MVP: highest-ADR lead time + channel combo across all channels
+                          const adrCombos = (['airbnb', 'vrbo', 'direct'] as const)
+                            .flatMap(src => lt.bucketBreakdownBySource[src].map(r => ({ src, ...r })))
+                            .filter(r => r.adr > 0)
+                          const mvp = adrCombos.length > 0
+                            ? adrCombos.reduce((a, b) => (b.adr > a.adr ? b : a))
+                            : null
                           return (
                             <div className="space-y-6">
                               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
@@ -3884,9 +3892,18 @@ export default function AdminDashboard() {
                                   <div className="text-lg sm:text-2xl font-bold text-cyan-700">{lt.min}-{lt.max}</div>
                                   <div className="text-[10px] sm:text-xs text-cyan-600 mt-0.5 sm:mt-1">Range (days)</div>
                                 </div>
-                                <div className="bg-gray-50 rounded-lg sm:rounded-xl p-2 sm:p-4 text-center">
-                                  <div className="text-lg sm:text-2xl font-bold text-gray-700">{lt.count}/{lt.bookingsInYear}</div>
-                                  <div className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">With Date ({lt.coverage}%)</div>
+                                <div className="bg-amber-50 rounded-lg sm:rounded-xl p-2 sm:p-4 text-center">
+                                  {mvp ? (
+                                    <>
+                                      <div className="text-lg sm:text-2xl font-bold text-amber-700">${mvp.adr.toLocaleString()}</div>
+                                      <div className="text-[10px] sm:text-xs text-amber-600 mt-0.5 sm:mt-1">Top ADR · {srcLabel[mvp.src]} {mvp.bucket}d</div>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <div className="text-lg sm:text-2xl font-bold text-gray-700">—</div>
+                                      <div className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">Top ADR</div>
+                                    </>
+                                  )}
                                 </div>
                               </div>
 
@@ -4050,7 +4067,7 @@ export default function AdminDashboard() {
                                                   <td className="text-left px-2 sm:px-3 py-2 font-medium">{bucketLabels[row.bucket]}</td>
                                                   <td className="text-right px-2 sm:px-3 py-2">{row.bookings || '—'}</td>
                                                   <td className="text-right px-2 sm:px-3 py-2">{row.bookings > 0 ? row.avgLOS : '—'}</td>
-                                                  <td className={`text-right px-2 sm:px-3 py-2 ${isTopAdr ? 'font-bold text-amber-700' : ''}`}>{row.adr > 0 ? `$${row.adr.toLocaleString()}` : '—'}{isTopAdr ? ' ★' : ''}</td>
+                                                  <td className={`text-right px-2 sm:px-3 py-2 ${isTopAdr ? 'font-bold text-amber-700' : ''}`}>{row.adr > 0 ? `$${row.adr.toLocaleString()}` : '—'}</td>
                                                   <td className="text-right px-2 sm:px-3 py-2 font-medium">{row.revenue > 0 ? `$${row.revenue.toLocaleString('en-US', { maximumFractionDigits: 0 })}` : '—'}</td>
                                                 </tr>
                                                 )
@@ -4062,7 +4079,7 @@ export default function AdminDashboard() {
                                     </div>
                                   )
                                 })}
-                                <p className="text-[10px] text-gray-400">LOS = avg length of stay (nights) · ADR = revenue ÷ nights · ★ highlights the highest-ADR lead time per channel</p>
+                                <p className="text-[10px] text-gray-400">LOS = avg length of stay (nights) · ADR = revenue ÷ nights · highlighted row = highest-ADR lead time per channel</p>
                               </div>
                             </div>
                           )
