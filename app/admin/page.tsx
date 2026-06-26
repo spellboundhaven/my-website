@@ -3861,7 +3861,6 @@ export default function AdminDashboard() {
                               <th className="text-center px-1 sm:px-4 py-2 sm:py-3 font-semibold text-gray-700">Rate</th>
                               <th className="text-right px-2 sm:px-4 py-2 sm:py-3 font-semibold text-gray-700">Revenue</th>
                               <th className="text-right px-1 sm:px-4 py-2 sm:py-3 font-semibold text-gray-700">Avg/Nt</th>
-                              <th className="text-center px-2 sm:px-4 py-2 sm:py-3 font-semibold text-gray-700 hidden md:table-cell">Bar</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -3882,20 +3881,6 @@ export default function AdminDashboard() {
                                 </td>
                                 <td className="px-2 sm:px-4 py-2 sm:py-3 text-right font-medium">{m.revenue > 0 ? '$' + m.revenue.toLocaleString('en-US', { maximumFractionDigits: 0 }) : '—'}</td>
                                 <td className="px-1 sm:px-4 py-2 sm:py-3 text-right">{m.occupiedDays > 0 && m.revenue > 0 ? '$' + Math.round(m.revenue / m.occupiedDays).toLocaleString() : '—'}</td>
-                                <td className="px-2 sm:px-4 py-2 sm:py-3 hidden md:table-cell">
-                                  <div className="w-full bg-gray-100 rounded-full h-3">
-                                    <div
-                                      className={`h-3 rounded-full transition-all ${
-                                        m.occupancyRate >= 75 ? 'bg-green-500' :
-                                        m.occupancyRate >= 50 ? 'bg-blue-500' :
-                                        m.occupancyRate >= 25 ? 'bg-amber-500' :
-                                        m.occupancyRate > 0 ? 'bg-orange-500' :
-                                        'bg-gray-300'
-                                      }`}
-                                      style={{ width: `${m.occupancyRate}%` }}
-                                    />
-                                  </div>
-                                </td>
                               </tr>
                             ))}
                           </tbody>

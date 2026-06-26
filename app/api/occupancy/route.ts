@@ -168,17 +168,24 @@ export async function GET(request: NextRequest) {
   let bookingsInYear = 0;
   let bookingsWithDate = 0;
 
+  const toDateOnly = (value: any): Date => {
+    if (value instanceof Date) {
+      return new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate()));
+    }
+    const str = String(value).split('T')[0];
+    const [y, m, d] = str.split('-').map(Number);
+    return new Date(Date.UTC(y, (m || 1) - 1, d || 1));
+  };
+
   for (const block of blocks) {
-    const startStr = String(block.start_date).split('T')[0];
-    const startYear = parseInt(startStr.split('-')[0]);
+    const checkIn = toDateOnly(block.start_date);
+    const startYear = checkIn.getUTCFullYear();
     if (startYear !== year) continue;
 
     bookingsInYear++;
     if (!block.booking_date) continue;
 
-    const bookingStr = String(block.booking_date).split('T')[0];
-    const checkIn = new Date(startStr);
-    const booked = new Date(bookingStr);
+    const booked = toDateOnly(block.booking_date);
     const lead = Math.round((checkIn.getTime() - booked.getTime()) / (1000 * 60 * 60 * 24));
     if (isNaN(lead) || lead < 0) continue;
 
