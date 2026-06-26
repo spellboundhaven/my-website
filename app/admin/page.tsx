@@ -3856,11 +3856,13 @@ export default function AdminDashboard() {
                           if (!lt || lt.count === 0) {
                             return <p className="text-gray-400 text-sm">No booking dates recorded yet. Add a booking date to your date blocks to see lead time insights.</p>
                           }
-                          const bucketOrder = ['0-7', '8-30', '31-60', '61-90', '91-180', '180+']
+                          const allBuckets = ['0-7', '8-30', '31-60', '61-90', '91-180', '180+']
                           const bucketLabels: Record<string, string> = {
                             '0-7': '0-7 days', '8-30': '8-30 days', '31-60': '31-60 days',
                             '61-90': '61-90 days', '91-180': '91-180 days', '180+': '180+ days'
                           }
+                          // Only show lead-time buckets that have at least one booking
+                          const bucketOrder = allBuckets.filter(b => (lt.buckets[b] || 0) > 0)
                           const maxBucket = Math.max(...bucketOrder.map(b => lt.buckets[b] || 0), 1)
                           const channels = [
                             { label: 'Airbnb', data: lt.bySource.airbnb, dot: 'bg-red-500', text: 'text-red-700' },
@@ -4016,6 +4018,7 @@ export default function AdminDashboard() {
                                 <div className="text-xs font-medium text-gray-500">Performance by lead time bucket (per channel)</div>
                                 {channels.map(ch => {
                                   const rows = lt.bucketBreakdownBySource[ch.label.toLowerCase() as 'airbnb' | 'vrbo' | 'direct']
+                                    .filter(r => bucketOrder.includes(r.bucket))
                                   const hasData = rows.some(r => r.bookings > 0)
                                   return (
                                     <div key={ch.label}>
