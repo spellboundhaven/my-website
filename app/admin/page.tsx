@@ -481,10 +481,13 @@ export default function AdminDashboard() {
         alert('Date block created successfully!')
         fetchAdminData()
         form.reset()
+      } else {
+        console.error('Create block failed:', { status: response.status, data })
+        alert(`Failed to create date block: ${data.details || data.error || 'Unknown error'}`)
       }
     } catch (error) {
       console.error('Error creating block:', error)
-      alert('Failed to create date block')
+      alert(`Failed to create date block: ${error instanceof Error ? error.message : 'Network error'}`)
     } finally {
       setLoading(false)
     }

@@ -98,8 +98,21 @@ export async function POST(request: NextRequest) {
     const { action, data } = body;
 
     if (action === 'createBlock') {
-      const block = await createDateBlock(data);
-      return NextResponse.json({ success: true, block });
+      try {
+        const block = await createDateBlock(data);
+        return NextResponse.json({ success: true, block });
+      } catch (blockError) {
+        const message = blockError instanceof Error ? blockError.message : String(blockError);
+        console.error('Error creating date block:', {
+          message,
+          data,
+          stack: blockError instanceof Error ? blockError.stack : undefined,
+        });
+        return NextResponse.json(
+          { error: 'Failed to create date block', details: message },
+          { status: 500 }
+        );
+      }
     }
 
     if (action === 'deleteBlock') {
@@ -147,9 +160,10 @@ export async function POST(request: NextRequest) {
       { status: 400 }
     );
   } catch (error) {
-    console.error('Error performing admin action:', error);
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('Error performing admin action:', message, error);
     return NextResponse.json(
-      { error: 'Failed to perform action' },
+      { error: 'Failed to perform action', details: message },
       { status: 500 }
     );
   }
