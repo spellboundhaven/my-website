@@ -3955,47 +3955,60 @@ export default function AdminDashboard() {
                               <div className="pt-3 border-t">
                                 <div className="text-xs font-medium text-gray-500 mb-1">Booking pace heatmap</div>
                                 <p className="text-[10px] text-gray-400 mb-2">Bookings by arrival month and how far ahead they were booked.</p>
-                                {lt.heatmap && lt.heatmap.rows.some(r => r.total > 0) ? (
-                                  <div className="overflow-x-auto -mx-3 sm:mx-0">
-                                    <table className="w-full text-[10px] sm:text-xs border-separate border-spacing-1 min-w-[420px]">
-                                      <thead>
-                                        <tr className="text-gray-500">
-                                          <th className="text-left font-medium px-1 py-1">Month</th>
-                                          {lt.heatmap.buckets.map(b => (
-                                            <th key={b} className="text-center font-medium px-1 py-1 whitespace-nowrap">{b}d</th>
-                                          ))}
-                                          <th className="text-center font-medium px-1 py-1">Total</th>
-                                        </tr>
-                                      </thead>
-                                      <tbody>
-                                        {lt.heatmap.rows.map(row => (
-                                          <tr key={row.month}>
-                                            <td className="text-left font-medium text-gray-600 px-1 py-1 whitespace-nowrap">{row.monthName}</td>
-                                            {row.counts.map((c, i) => {
-                                              const intensity = c === 0 ? 0 : 0.15 + 0.85 * (c / lt.heatmap.maxCount)
-                                              return (
-                                                <td key={i} className="text-center px-0.5 py-0.5">
-                                                  <div
-                                                    className="rounded-md py-1.5 font-semibold"
-                                                    style={{
-                                                      backgroundColor: c === 0 ? '#f3f4f6' : `rgba(79, 70, 229, ${intensity})`,
-                                                      color: c === 0 ? '#d1d5db' : intensity > 0.55 ? '#fff' : '#3730a3',
-                                                    }}
-                                                  >
-                                                    {c || '·'}
-                                                  </div>
-                                                </td>
-                                              )
-                                            })}
-                                            <td className="text-center font-bold text-gray-700 px-1 py-1">{row.total || '—'}</td>
+                                {(() => {
+                                  if (!lt.heatmap || !lt.heatmap.rows.some(r => r.total > 0)) {
+                                    return <p className="text-xs text-gray-400">No bookings with a booking date yet.</p>
+                                  }
+                                  // Drop lead-time buckets that have no bookings in any month
+                                  const colTotals = lt.heatmap.buckets.map((_, i) =>
+                                    lt.heatmap.rows.reduce((s, r) => s + r.counts[i], 0))
+                                  const activeIdx = lt.heatmap.buckets
+                                    .map((_, i) => i)
+                                    .filter(i => colTotals[i] > 0)
+                                  const lerp = (a: number, b: number, t: number) => Math.round(a + (b - a) * t)
+                                  const heatColor = (c: number) => {
+                                    if (c === 0) return { bg: '#f8fafc', fg: '#cbd5e1' }
+                                    const t = lt.heatmap.maxCount > 1 ? (c - 1) / (lt.heatmap.maxCount - 1) : 1
+                                    const from = [224, 242, 254] // sky-100
+                                    const to = [2, 132, 199]     // sky-600
+                                    const bg = `rgb(${lerp(from[0], to[0], t)}, ${lerp(from[1], to[1], t)}, ${lerp(from[2], to[2], t)})`
+                                    return { bg, fg: t > 0.45 ? '#fff' : '#075985' }
+                                  }
+                                  return (
+                                    <div className="overflow-x-auto -mx-3 sm:mx-0">
+                                      <table className="w-full text-[10px] sm:text-xs border-separate border-spacing-1 min-w-[320px]">
+                                        <thead>
+                                          <tr className="text-gray-500">
+                                            <th className="text-left font-medium px-1 py-1">Month</th>
+                                            {activeIdx.map(i => (
+                                              <th key={i} className="text-center font-medium px-1 py-1 whitespace-nowrap">{lt.heatmap.buckets[i]}d</th>
+                                            ))}
+                                            <th className="text-center font-medium px-1 py-1">Total</th>
                                           </tr>
-                                        ))}
-                                      </tbody>
-                                    </table>
-                                  </div>
-                                ) : (
-                                  <p className="text-xs text-gray-400">No bookings with a booking date yet.</p>
-                                )}
+                                        </thead>
+                                        <tbody>
+                                          {lt.heatmap.rows.map(row => (
+                                            <tr key={row.month}>
+                                              <td className="text-left font-medium text-gray-600 px-1 py-1 whitespace-nowrap">{row.monthName}</td>
+                                              {activeIdx.map(i => {
+                                                const c = row.counts[i]
+                                                const { bg, fg } = heatColor(c)
+                                                return (
+                                                  <td key={i} className="text-center px-0.5 py-0.5">
+                                                    <div className="rounded-md py-1.5 font-semibold" style={{ backgroundColor: bg, color: fg }}>
+                                                      {c || '·'}
+                                                    </div>
+                                                  </td>
+                                                )
+                                              })}
+                                              <td className="text-center font-bold text-gray-700 px-1 py-1">{row.total || '—'}</td>
+                                            </tr>
+                                          ))}
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  )
+                                })()}
                               </div>
 
                               {/* Channel-specific performance by lead time bucket */}
