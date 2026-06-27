@@ -212,6 +212,10 @@ export async function GET(request: NextRequest) {
     return (seasonKeys as readonly string[]).includes(v) ? (v as SeasonKey) : null;
   };
 
+  // Per-season aggregation of nights/revenue by channel x lead time bucket,
+  // used to find each season's highest-ADR combo (MVP).
+  const mvpAgg = new Map<string, { nights: number; revenue: number }>();
+
   const toDateOnly = (value: any): Date => {
     if (value instanceof Date) {
       return new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate()));
@@ -260,7 +264,16 @@ export async function GET(request: NextRequest) {
     const arrivalMonth = checkIn.getUTCMonth() + 1;
     monthLeadTimes[arrivalMonth].push(lead);
     const seasonKey = normalizeSeason(block.season);
-    if (seasonKey) heatmapCounts[seasonKey][bucket] += 1;
+    if (seasonKey) {
+      heatmapCounts[seasonKey][bucket] += 1;
+      if (nights > 0 && revenue > 0) {
+        const mk = `${seasonKey}|${source}|${bucket}`;
+        const cur = mvpAgg.get(mk) || { nights: 0, revenue: 0 };
+        cur.nights += nights;
+        cur.revenue += revenue;
+        mvpAgg.set(mk, cur);
+      }
+    }
 
     if (nights > 0 && revenue > 0) {
       scatter.push({
@@ -281,6 +294,21 @@ export async function GET(request: NextRequest) {
   const seasonLabels: Record<SeasonKey, string> = {
     peak: 'Peak', high: 'High', shoulder: 'Shoulder', low: 'Low',
   };
+  type MvpEntry = { adr: number; source: SourceKey; bucket: BucketKey; nights: number; revenue: number };
+  const mvpBySeason: Record<SeasonKey, MvpEntry | null> = {
+    peak: null, high: null, shoulder: null, low: null,
+  };
+  for (const [key, v] of Array.from(mvpAgg.entries())) {
+    if (v.nights <= 0) continue;
+    const [s, src, b] = key.split('|') as [SeasonKey, SourceKey, BucketKey];
+    const adr = Math.round(v.revenue / v.nights);
+    if (adr <= 0) continue;
+    const existing = mvpBySeason[s];
+    if (!existing || adr > existing.adr) {
+      mvpBySeason[s] = { adr, source: src, bucket: b, nights: v.nights, revenue: Math.round(v.revenue) };
+    }
+  }
+
   const heatmap = {
     buckets: bucketKeys as unknown as string[],
     maxCount: heatmapMaxCount,
@@ -342,6 +370,7 @@ export async function GET(request: NextRequest) {
     bucketBreakdownBySource,
     scatter,
     heatmap,
+    mvpBySeason,
     bySource: {
       airbnb: { count: leadBySource.airbnb.length, average: average(leadBySource.airbnb) },
       vrbo: { count: leadBySource.vrbo.length, average: average(leadBySource.vrbo) },

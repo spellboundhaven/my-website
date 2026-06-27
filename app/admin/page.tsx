@@ -335,6 +335,7 @@ export default function AdminDashboard() {
         maxCount: number
         rows: { season: string; seasonName: string; counts: number[]; total: number }[]
       }
+      mvpBySeason: Record<string, { adr: number; source: string; bucket: string; nights: number; revenue: number } | null>
       bySource: {
         airbnb: { count: number; average: number }
         vrbo: { count: number; average: number }
@@ -3993,6 +3994,37 @@ export default function AdminDashboard() {
                                       <div className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">Top ADR</div>
                                     </>
                                   )}
+                                </div>
+                              </div>
+
+                              {/* MVP by season */}
+                              <div>
+                                <div className="text-xs font-medium text-gray-500 mb-2">MVP by season <span className="text-gray-400 font-normal">(highest-ADR channel + lead time combo)</span></div>
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
+                                  {[
+                                    { key: 'peak', label: 'Peak', cls: 'bg-rose-50', text: 'text-rose-700', sub: 'text-rose-600' },
+                                    { key: 'high', label: 'High', cls: 'bg-orange-50', text: 'text-orange-700', sub: 'text-orange-600' },
+                                    { key: 'shoulder', label: 'Shoulder', cls: 'bg-amber-50', text: 'text-amber-700', sub: 'text-amber-600' },
+                                    { key: 'low', label: 'Low', cls: 'bg-sky-50', text: 'text-sky-700', sub: 'text-sky-600' },
+                                  ].map(s => {
+                                    const m = lt.mvpBySeason?.[s.key]
+                                    return (
+                                      <div key={s.key} className={`${s.cls} rounded-lg sm:rounded-xl p-2 sm:p-4 text-center`}>
+                                        <div className="text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wide mb-0.5">{s.label}</div>
+                                        {m ? (
+                                          <>
+                                            <div className={`text-lg sm:text-2xl font-bold ${s.text}`}>${m.adr.toLocaleString()}</div>
+                                            <div className={`text-[10px] sm:text-xs ${s.sub} mt-0.5`}>{srcLabel[m.source]} · {m.bucket}d</div>
+                                          </>
+                                        ) : (
+                                          <>
+                                            <div className="text-lg sm:text-2xl font-bold text-gray-300">—</div>
+                                            <div className="text-[10px] sm:text-xs text-gray-400 mt-0.5">No data</div>
+                                          </>
+                                        )}
+                                      </div>
+                                    )
+                                  })}
                                 </div>
                               </div>
 
